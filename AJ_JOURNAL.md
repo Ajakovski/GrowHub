@@ -43,9 +43,6 @@ Slight network problems were existent but that is not a project issue after all.
 - Write an MVP code in ESP-IDF
 - Test it at home
 
-<img src="./Documentation/Pictures/Journal_AJ/Image_1.png" width="100%" alt="Image1">
-<img src="./Documentation/Pictures/Journal_AJ/Image_2.png" width="100%" alt="Image2">
-<img src="./Documentation/Pictures/Journal_AJ/Image_3.png" width="100%" alt="Image3">
 
 ![Image1](./Documentation/Pictures/Journal_AJ/Image_1.png)
 ![Image2](./Documentation/Pictures/Journal_AJ/Image_2.png)
