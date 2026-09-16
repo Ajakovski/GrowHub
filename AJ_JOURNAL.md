@@ -2,6 +2,50 @@
 
 - Author: ajakovski07
 
+## 2. Timelapse - 16.09.2026
+
+Component shopping!!!
+Or more accurately the pain of not settling down with 1 module which was so disturbing because of the sheer spectrum that this project is consisted of. I've reserched a lot behind timelapse because i know reading documentation is forbiden but still i had jet lags while timelapsing because i was re-ordering my information in my head.
+
+We've also discussed a lot on how to 3D model and implement the multi-PCB concept all in one so i am really excited so see what it is gonna look like.
+
+---
+
+**What i did:**
+In this timelapse which lasted 2 days because yesterday i didnt manage to timelapse for another hour i intended on researching needed components and trying to find them. I am not a biology-person but I tried to research and implement every sensor that is needed for perfecting the growth of one plant.
+
+Researched and read A LOT OF DOCUMENTATION behind timelapse so that i know a bit more about this project
+
+---
+
+**Problems that i've faced**
+
+- A lot of sensors....
+- I had so many options that i didnt know what to choose.
+- I couldnt really show every work via timelapse becuase some of it was just brainstorming options inside of my head and writing it odwn in notepad in my components list
+- The Magnetic Pogo wiring is still a problem and we will need to resolve it with my teammate.
+
+---
+
+**Current State:**
+
+- I've almost picked every essential component that i need for start
+- I have made a clear plan behind the scenes on how the electronic scheme should look like (visual imagination :)))
+- I've redesigned the schematic and how i plan on doing it.
+
+---
+
+**Next Step:**
+
+- Finish the essential component list
+- Start the first version of the schematic.
+
+![Image4](./Documentation/Pictures/Journal_AJ/Image4.png)
+![Image5](./Documentation/Pictures/Journal_AJ/Image5.png)
+![Image6](./Documentation/Pictures/Journal_AJ/Image6.png)
+
+---
+
 ## 1. Timelapse - 14.09.2026
 
 Another project has been started in this organization with a lot of plans and goals that need to be accomplished. 
