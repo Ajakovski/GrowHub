@@ -39,3 +39,78 @@ Another project has been started in this organization with a lot of plans and go
 [View art PDF](Documentation/growhub_design_v1.pdf)
 
 ---
+
+## 2. Timelapse - 16.09.2026
+
+I've simplified the design of the planter by alot and now i like the design itself much more. Also i have started to work on a website that shows off the product.
+
+---
+
+**What i did:**
+
+- I've simplified the design a lot by removing the whole modularity factor since it was overcomplicating things, now instead of 1 product that's modular we have 3 in different sizes.
+- I started working on a landing page/shop website to show off the product and what it can do.
+- I wrote most of the basic HTML for the site and a little bit of JS.
+
+---
+
+**Problems that i've faced**
+
+- Making the design of the planter modular while keeping it simple
+- Routing of pipes and waterflow in setups that have multiple floors of planters.
+- Some small HTML bugs here and there.
+
+---
+
+**Current State**
+
+- Design v2 of the planter is done and im pretty happy with it.
+- Website for the product has been started and going pretty well.
+
+---
+
+**Next Step**
+
+- Start styling the website using CSS.
+- Add a shop part to the website.
+- Digitalize the sketches of the planters and hubs.
+- Draw them with dimensions so we can start the CAD designing of the product ASAP.
+
+[View art PDF](Documentation/growhub_design_v2.pdf)
+
+---
+
+## 3. Timelapse - 17.09.2026
+
+Some style has been added to the website and its starting to look good. But man is CSS boring to write.
+
+---
+
+**What i did:**
+
+- I mostly worked on the website adding CSS to it and making it look nice.
+- Wrote in the journal for the past few days that i've worked and not written anything.
+
+---
+
+**Problems that i've faced**
+
+- Just some problems with styling in CSS but nothing a bit of research and stack overflow can't fix.
+- The website is looking a bit too basic.
+
+---
+
+**Current State**
+
+- The website styiling is going well, i'd say its halfway done.
+- My journal is written.
+
+---
+
+**Next Step**
+
+- Sketch up some UI/UX design for the website so i can make it not that basic.
+- Finish the CSS for the website.
+- Draw the designs of the product digitally with dimensions for CAD.
+
+---
