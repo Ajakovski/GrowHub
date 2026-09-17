@@ -2,6 +2,52 @@
 
 - Author: ajakovski07
 
+## 3. Timelapse - 17.09.2026
+
+Im getting closer to finishing the main PCB component list. I've decided which input voltage i should use. I found every sensors that i need for the first version and now only power management section is left.
+
+I plan for the first week to have every single component that i would need for the main PCB in order to supply the floors with the desired power/signal.
+
+---
+
+**What i did:**
+
+- Finished input/output component selection.
+- Found a 24V diaphragm water pump for our project.
+- Assigned every component with its coresponding footprint in KiCAD.
+- Fixed the issue with my MCU selection.
+- Calculated critical power consumption components
+- Improved the PCB concept of having 3 versions of PCBs for budget efficiency.
+
+---
+
+**Problems that i've faced:**
+
+- None except the fact that some components caused me a headache whilst trying to find a footprint for them.
+- A huge project causes so many aspects to be taken in notice so its really hard to decide where to work first.
+
+--
+
+**Current State:**
+
+- Cleared a lot of uncertainties with the hardware aspect of the project
+- Created a clear path for work behind the "scenes" (timelapsing) with my teammate
+- Almost prepared my work on KiCAD
+
+---
+
+**Next Step:**
+
+- Resolve the Power Management component question.
+- Find watering components that accomodate 24V if possible
+- Try and skip 12V in order to be efficient.
+
+![Image7](./Documentation/Pictures/Journal_AJ/Image7.png)
+![Image8](./Documentation/Pictures/Journal_AJ/Image8.png)
+![Image9](./Documentation/Pictures/Journal_AJ/Image9.png)
+
+---
+
 ## 2. Timelapse - 16.09.2026
 
 Component shopping!!!
