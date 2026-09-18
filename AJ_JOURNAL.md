@@ -2,6 +2,46 @@
 
 - Author: ajakovski07
 
+## 4. Timelapse - 18.09.2026
+
+Finally i've finished the component hunting for the main pcb *for now*. Saying for now is kinda sad considering i wasted so much time implementing them in kicad and avoiding the regulatory obligation that i can not read documentation while timelapsing and honestly i dont account this time as reading documentation because i've researched dozens of coponents in this hours so it is an efficient time spent working on a project.
+
+---
+
+**What i did:**
+
+- Finalised the first hunt for components
+- Made a clear path for a smooth work in KiCAD
+- gathered documentation that will help while making the hardware
+
+---
+
+**Problems that i've faced:**
+
+- A lot of components... I know that we still havent explained the project but its sooo complex that a lot of regulations and procedures are required.
+- Super technical project
+
+---
+
+**Current State:**
+
+- Ready for building the schematic
+- Clear path to work on
+- Ready to start working on the other 2 PCBs
+
+---
+
+**Next Step:**
+
+- Agree what type of pump for watering we are gonna use with my teammate
+- Start the schematic with passive components
+- Create constraints and regulations for my KiCAD project
+
+![Image10](./Documentation/Pictures/Journal_AJ/Image10.png)
+![Image11](./Documentation/Pictures/Journal_AJ/Image11.png)
+
+---
+
 ## 3. Timelapse - 17.09.2026
 
 Im getting closer to finishing the main PCB component list. I've decided which input voltage i should use. I found every sensors that i need for the first version and now only power management section is left.
