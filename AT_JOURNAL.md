@@ -114,3 +114,44 @@ Some style has been added to the website and its starting to look good. But man 
 - Draw the designs of the product digitally with dimensions for CAD.
 
 ---
+
+## 4. Timelapse - 18.09.2026
+
+I finished up the css for the basic website and i like how it looks right now. I also worked a lot on designing how the water would
+travel trough the connected tiles and i played around with how we could fit in hydroponics into our design.
+
+---
+
+**What i did:**
+
+- I finished up styling the last of the classes in the website.
+- I made the website be responsive so it looks good on all devices.
+- Made designs on how the water would travel between floors and if it even should do that.
+- Made designs on how the water would travel between the tiles.
+- Made designs on how we can add hydroponics to our system.
+
+---
+
+**Problems that i've faced**
+
+- Not a lot of problems today, except how boring it is to make a website responsive. Other than that i was pretty inspired today'
+so ideas for the design process came pretty naturally.
+
+---
+
+**Current State**
+
+- The basic shape of the website is done.
+- We have quite a few new designs for all the systems.
+
+---
+
+**Next Step**
+
+- Sketch up some UI/UX design for the website so i can make it not that basic.
+- Choose with what design and system for water and hydroponics we should go with.
+- Draw the designs of the product digitally with dimensions for CAD.
+
+[View design SVG](Documentation/growhub_design_v3.svg)
+
+---
