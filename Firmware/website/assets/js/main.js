@@ -25,6 +25,29 @@ if (navToggle && navMenu) {
 }
 
 const yearElement = document.querySelector("[data-year]");
+
 if (yearElement) {
     yearElement.textContent = Sttring(new Date().getFullYear());
+}
+
+const filterButtons = document.querySelectorAll(".filter-btn");
+const showcaseCards = document.querySelectorAll(".showcase-card");
+
+if (filterButtons.length > 0 && showcaseCards.length > 0) {
+    filterButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            filterButtons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            const filterValue = button.getAttribute("data-filter");
+
+            showcaseCards.forEach(card => {
+                if (filterValue === "all" || card.getAttribute("data-category") === filterValue) {
+                    card.classList.remove("hidden");
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+    });
 }
