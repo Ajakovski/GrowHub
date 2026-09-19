@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="GrowHub">
+  <rect width="64" height="64" rx="16" fill="#ffffff"/>
+  <path
+    d="M32 7C44 20 52 31 52 42c0 10.5-8.4 18-20 18S12 52.5 12 42C12 31 20 20 32 7Z"
+    fill="none"
+    stroke="#18b96d"
+    stroke-width="7"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M34.5 48c7.5-6.1 10.4-14.4 9.6-24.6-7 4-12 9.6-14.8 16.6"
+    fill="none"
+    stroke="#18b96d"
+    stroke-width="5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M29.2 52c-3.8-7.4-3.4-16.4 1.4-27"
+    fill="none"
+    stroke="#004b2d"
+    stroke-width="5"
+    stroke-linecap="round"
+  />
+</svg>
