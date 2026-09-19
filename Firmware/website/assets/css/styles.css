@@ -58,7 +58,7 @@ img {
     border-bottom: 1px solid var(--line);
 }
 
-header-inner {
+.header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -717,7 +717,7 @@ header-inner {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background: var(--green-dark);
+    background: var(--green-soft);
     color: var(--green-dark);
     padding: 0.3rem 0.8rem;
     border-radius: 999px;

@@ -27,7 +27,7 @@ if (navToggle && navMenu) {
 const yearElement = document.querySelector("[data-year]");
 
 if (yearElement) {
-    yearElement.textContent = Sttring(new Date().getFullYear());
+    yearElement.textContent = String(new Date().getFullYear());
 }
 
 const filterButtons = document.querySelectorAll(".filter-btn");
