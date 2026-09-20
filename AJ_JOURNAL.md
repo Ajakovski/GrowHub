@@ -2,6 +2,34 @@
 
 - Author: ajakovski07
 
+## 5. Timelapse - 20.09.2026
+
+I've prepared everything for shipping for this week! A basic README has been constructed in order to have some meaningfull ship for the work that we managed to do in a matter of +20 hours of work on such a big and complex project so please take in notice that we haven't  made a functional project for Week 1.
+
+---
+
+**What i did:**
+
+- Wrote README Week 1
+
+---
+
+**Current State:**
+
+- Finished Week 1
+- Ready to ship for a big project
+
+---
+
+**Next Step:**
+
+- Start Week 2
+- Have the first functional ship
+
+![Image12](./Documentation/Pictures/Journal_AJ/Image12.png)
+
+---
+
 ## 4. Timelapse - 18.09.2026
 
 Finally i've finished the component hunting for the main pcb *for now*. Saying for now is kinda sad considering i wasted so much time implementing them in kicad and avoiding the regulatory obligation that i can not read documentation while timelapsing and honestly i dont account this time as reading documentation because i've researched dozens of coponents in this hours so it is an efficient time spent working on a project.
