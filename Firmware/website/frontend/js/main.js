@@ -51,3 +51,22 @@ if (filterButtons.length > 0 && showcaseCards.length > 0) {
         });
     });
 }
+
+async function loadCatalogData() {
+    try {
+        const response = await fetch("http://localhost:8000/api/web/tiles");
+
+        if (!response.ok) {
+            throw new Error("HTTP error! status: ${response.status}");
+        }
+
+        const catalogData = await response.json();
+
+        console.log("Success! Recieved data from FastAPI:", catalogData);
+
+    } catch (error) {
+        console.error("Failed to fetch catalog from backend:", error);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", loadCatalogData);
