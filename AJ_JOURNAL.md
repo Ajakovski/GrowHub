@@ -2,6 +2,46 @@
 
 - Author: ajakovski07
 
+
+## 6. Timelapse - 22.09.2026
+
+Week one has ended!!! Honestly i think that i achieved my bare minimum and i hope that i beat the hour count this week. Even tho i've been up to a busy schedule with life I will try to do more than 12 hours.
+
+We made a slight mistake by shipping it twice with individual screenshots and description so i hope that is not a problem :))))
+
+Anyways here is what i did in this timelapse.
+
+---
+
+**What i did:**
+
+- Started implementing passive components for the modules
+
+---
+
+**Problems that i've faced:**
+
+- Nothing much except the fact that some components are not displayed with values so i will have to read docs while im not timelapsing....
+- I forgot to transfer the newest schematic to GitHub and now because im working on my laptop (and not on my PC) because im in a different city i will have to transfer it via screenshare.
+
+---
+
+**Next step:**
+
+- Start adding passive components to other modules
+
+![Image13](./Documentation/Pictures/Journal_AJ/Image13.png)
+
+---
+
+<div align="center">
+  
+# ***END OF WEEK 1***
+
+</div>
+
+---
+
 ## 5. Timelapse - 20.09.2026
 
 I've prepared everything for shipping for this week! A basic README has been constructed in order to have some meaningfull ship for the work that we managed to do in a matter of +20 hours of work on such a big and complex project so please take in notice that we haven't  made a functional project for Week 1.
