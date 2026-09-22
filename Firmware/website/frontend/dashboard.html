@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GrowHub | Dashboard</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" href="assets/img/favicon.svg">
 </head>
 <body>
@@ -17,10 +17,66 @@
             <nav class="nav-menu" data-nav-menu aria-label="Primary">
                 <a class="nav-link" href="index.html#products">Products</a>
                 <a href="shop.html" class="nav-link">Catalog</a>
-                <a href="dashboard.html" class="nav-link">Dashboard</a>
-                <a href="index.html#contact" class="nav-link">Contact</a>
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="index.html#contact" class="nav-link navcta">Contact</a>
             </nav>
         </div>
     </header>
+    
+    <main class="section">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+                <div>
+                    <span class="kicker">Live Telemetry</span>
+                    <h1 class="section-title">Plant Health & Stats</h1>
+                    <p class="section-lead">Real-time telemetry and optical camera node streaming.</p>
+                </div>
+                <div class="pill" id="system-status">System: Online</div>
+            </div>
+
+            <div class="metric-grid" style="margin-bottom: 2rem;">
+                <article class="metric-card">
+                    <span class="kicker">Soil Moisture</span>
+                    <strong id="moisture-val">--%</strong>
+                    <span id="moisture-status">Fetching data...</span>
+                </article>
+                <article class="metric-card">
+                    <span class="kicker">Temperatrue</span>
+                    <strong id="temp-val">--°C</strong>
+                    <span id="temp-status">Fetching data...</span>
+                </article>
+                <article class="metric-card">
+                    <span class="kicker">Water Reservoir</span>
+                    <strong id="water-val">--</strong>
+                    <span>Level Check</span>
+                </article>
+                <article class="metric-card">
+                    <span>AI plant stress</span>
+                    <strong id="ai-status">--</strong>
+                    <span>Local AI vision</span>
+                </article>
+            </div>
+
+            <div class="card" style="padding: 1.5rem;">
+                <div style="display: flex;justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>Optical node stream</h3>
+                    <span class="pill" style="font-size: 0.8rem;">Node #1 - Camera 45°</span>
+                </div>
+                <div class="card-image cover" style="background: #000; height: 380px; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <img id="camera-feed" src="assets/img/" alt="Optical feed" style="max-height: 100%; width: 100%; object-fit: contain;" />
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>GrowHub</p>
+            <p>&copy; <span data-year></span> GrowHub. Built to grow better, everywhere.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/dashboard.js"></script>
 </body>
 </html>
