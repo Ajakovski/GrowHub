@@ -55,15 +55,31 @@ if (filterButtons.length > 0 && showcaseCards.length > 0) {
 async function loadCatalogData() {
     try {
         const response = await fetch("http://localhost:8000/api/web/tiles");
-
-        if (!response.ok) {
-            throw new Error("HTTP error! status: ${response.status}");
-        }
+        if (!response.ok) throw new Error("http error! status: ${response.status}");
 
         const catalogData = await response.json();
+        const grid = document.getElementById("showcase-grid");
 
-        console.log("Success! Recieved data from FastAPI:", catalogData);
+        grid.innerHTML = "";
 
+        catalogData.forEach(item => {
+            const card = document.createElement("article");
+            card.className = "showcase-card";
+            card.setAttribute("data-category", item.category);
+
+            card.innerHTML = `
+                <div class="card-img-wrap">
+                    <img src="assets/img/${item.id}.png" alt="${item.name}" onerror="this.src='assets/img/growhub.svg'" />
+                    ${item.category === 'modules' ? '<span class="card-badge">Core</span>' : ''}
+                </div>
+                <div class="card-info">
+                    <h3>${item.name}</h3>
+                    <p>Price: $${item.price}</p>
+                    <a href="index.html#contact" class="text-link">Inquire about specs &rarr;</a>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
     } catch (error) {
         console.error("Failed to fetch catalog from backend:", error);
     }
