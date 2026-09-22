@@ -18,3 +18,14 @@ async def get_hardware_catalog():
             "price": 59.99
         }
     ]
+
+@router.get("/plant-stats")
+async def get_plant_stress():
+    return {
+        "plant_name": "Basil - Tile #1",
+        "moisture_level": 50,
+        "temperature": 22.5,
+        "water_level_ok": True,
+        "ai_health_score": 85,
+        "camera_feed_url": "https://www.google.com"
+    }
