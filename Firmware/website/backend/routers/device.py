@@ -8,7 +8,7 @@ current_state = {
     "hub_id": "Offline Hub",
     "water_level_ok": True,
     "ai_health_status": "Waiting for hardware...",
-    "camera_feed_url": "assets/img/optical-node.png",
+    "camera_feed_url": "assets/img/growhub_tile_render_v1.png",
     "active_tiles": 2,
     "tiles": [
         {"tile_id": "tile_1", "moisture_level": 0.0, "temperature": 0.0,},
@@ -32,7 +32,13 @@ class TelemetryPayload(BaseModel):
 
 @router.post("/telemetry")
 async def receive_telemetry(data: TelemetryPayload):
+    preserved = {
+        "camera_feed_url": current_state.get("camera_feed_url", "assets/img/growhub_tile_render_v1.png"),
+        "ai_health_status": current_state.get("ai_health_status", "Waiting for hardware..."),
+    }
+    
     current_state.clear()
+    current_state.update(preserved)
     current_state.update(data.model_dump())
 
     if len(data.tiles) > 0:
