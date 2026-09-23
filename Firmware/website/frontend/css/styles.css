@@ -454,7 +454,7 @@ img {
 
 .business-grid {
     display: grid;
-    grtid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
     gap: clamp(2rem, 5vw, 4rem);
     align-items: center;
 }
@@ -553,6 +553,17 @@ img {
     padding: 0.42rem 0.7rem;
     font-size: 0.9rem;
     font-weight: 650;
+}
+
+button.pill {
+    cursor: pinter;
+    font: inherit;
+}
+
+.pill.active {
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+    color: var(--surface);
 }
 
 .number-strip {
