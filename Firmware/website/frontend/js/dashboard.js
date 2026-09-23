@@ -7,16 +7,16 @@ async function fetchPlantStats() {
 
         const data = await response.json();
 
-        document.getElementById("moisture-val").textContent = `${data.moisture_level}%`;
-        document.getElementById("moisture-status").textContent = data.moisture_level < 30 ? "action: irrigation required" : "Optimal moisture";
+        document.getElementById("moisture-val").textContent = `${data.soil_moisture_percent}%`;
+        document.getElementById("moisture-status").textContent = data.soil_moisture_percent < 30 ? "action: irrigation required" : "Optimal moisture";
 
-        document.getElementById("temp-val").textContent = `${data.temperature}°C`;
+        document.getElementById("temp-val").textContent = `${data.temperature_c}°C`;
         document.getElementById("temp-status").textContent = "Ambient climate";
 
         document.getElementById("water-val").textContent = data.water_level_ok ? "OK" : "LOW";
         document.getElementById("water-val").style.color = data.water_level_ok ? "var(--green)" : "#e63946";
         
-        document.getElementById("ai-status").textContent = data.ai_health_score > 70 ? "Healthy" : "needs attention";
+        document.getElementById("ai-status").textContent = data.ai_health_status > 70 ? "Healthy" : "needs attention";
 
         const systemStatus = document.getElementById("system-status");
         systemStatus.textContent = `Active: ${data.plant_name}`;
