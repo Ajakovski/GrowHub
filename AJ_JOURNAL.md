@@ -2,6 +2,34 @@
 
 - Author: ajakovski07
 
+## 7. Timelapse - 23.09.2026
+
+A pretty chill day if you ask me considering that i've only assembled passive components around and copied prefered schematics. Ofcourse these recommendations need to be tested at first but that will be possible only after i assign other components.
+
+---
+
+**What i did:**
+
+- Finished a couple modules with their passive component structure
+
+---
+
+**Problems that i had:**
+
+- I am not sure if i have every single passive component integration for the MCU, i will have to double check in my past project but so far it looks ok except the "TBD" value components
+
+---
+
+**Next step:**
+
+- Continue working on the same thing that i am working right now
+- Also integrate other peripherals into the schematic
+
+![Image14](./Documentation/Pictures/Journal_AJ/Image14.png)
+![Image15](./Documentation/Pictures/Journal_AJ/Image15.png)
+![Image16](./Documentation/Pictures/Journal_AJ/Image16.png)
+
+---
 
 ## 6. Timelapse - 22.09.2026
 
