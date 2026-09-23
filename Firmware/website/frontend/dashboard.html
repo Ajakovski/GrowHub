@@ -34,14 +34,18 @@
                 <div class="pill" id="system-status">System: Online</div>
             </div>
 
+            <div class="eyebrow-row" id="device-selector" style="margin-bottom: 1.5rem;">
+                <button type="button" class="pill active" data-id="hub">Main Hub</button>
+            </div>
+
             <div class="metric-grid" style="margin-bottom: 2rem;">
                 <article class="metric-card">
-                    <span class="kicker">Soil Moisture</span>
+                    <span class="kicker" id="card1-label">Soil Moisture</span>
                     <strong id="moisture-val">--%</strong>
                     <span id="moisture-status">Fetching data...</span>
                 </article>
                 <article class="metric-card">
-                    <span class="kicker">Temperatrue</span>
+                    <span class="kicker" id="card2-label">Temperatrue</span>
                     <strong id="temp-val">--°C</strong>
                     <span id="temp-status">Fetching data...</span>
                 </article>

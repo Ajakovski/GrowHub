@@ -5,12 +5,15 @@ from typing import List, Optional
 router = APIRouter()
 
 current_state = {
-    "plant_name": "Hub Beta 001",
-    "temperature_c": 0.0,
-    "soil_moisture_percent": 0.0,
+    "hub_id": "Offline Hub",
     "water_level_ok": True,
-    "ai_health_status": "Waiting for ESP32...",
-    "camera_feed_url": "assets/img/optical-node.png"
+    "ai_health_status": "Waiting for hardware...",
+    "camera_feed_url": "assets/img/optical-node.png",
+    "active_tiles": 2,
+    "tiles": [
+        {"tile_id": "tile_1", "moisture_level": 0.0, "temperature": 0.0,},
+        {"tile_id": "tile_2", "moisture_level": 0.0, "temperature": 0.0,}
+    ]
 }
 
 
@@ -29,7 +32,8 @@ class TelemetryPayload(BaseModel):
 
 @router.post("/telemetry")
 async def receive_telemetry(data: TelemetryPayload):
-    global current_state
+    current_state.clear()
+    current_state.update(data.model_dump())
 
     if len(data.tiles) > 0:
         first_tile = data.tiles[0]
