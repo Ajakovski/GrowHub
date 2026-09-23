@@ -60,6 +60,8 @@ async function loadCatalogData() {
         const catalogData = await response.json();
         const grid = document.getElementById("showcase-grid");
 
+        if (!grid) return;
+
         grid.innerHTML = "";
 
         catalogData.forEach(item => {

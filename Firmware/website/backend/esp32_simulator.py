@@ -8,7 +8,7 @@ HUB_ID = "hub_beta_001"
 def generate_fake_telemetry():
     return {
         "hub_id": HUB_ID,
-        "water_level_ok": random.random() < 0.75,
+        "water_level_ok": random.choice([True, True, True, False]),
         "active_tiles": 2,
         "tiles": [
             {
