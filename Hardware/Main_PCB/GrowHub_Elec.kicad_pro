@@ -416,7 +416,7 @@
         "uuid": "af001b7e-1c5e-4b7a-a0b4-e6af7dd78ca9"
       }
     ],
-    "used_designators": "U1-7,IC1,J1-14,#PWR1,D1-24,X1",
+    "used_designators": "",
     "variants": []
   },
   "sheets": [
@@ -426,7 +426,11 @@
     ],
     [
       "c7e8d3f4-060b-4d22-8783-e9f4f221b151",
-      "Floor Sheet"
+      "Basic_Floor_PCB"
+    ],
+    [
+      "3650033b-afc7-48b9-b39c-39ca5df899a6",
+      "Main_Floor_PCB"
     ]
   ],
   "text_variables": {},
