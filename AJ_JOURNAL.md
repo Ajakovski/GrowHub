@@ -2,6 +2,40 @@
 
 - Author: ajakovski07
 
+## 8. Timelapse - 24.09.2026
+
+Grinded up a bit and i implemented a lot of schematic features. I am still lacking a couple of components tht me and my partner mentioned for this project so i am both implementing and building their environment for efficient workflow.
+
+Also the schematic is starting to recieve its own sections and by the end of it i hope everything is nicely organized and easily readable.
+
+---
+
+**What i did:**
+
+- Added a lot of peripheral components for my modules
+- Started implementing new sensors and modules for the project
+
+---
+
+**Problems that i had:**
+
+- Because we are planning on really making this project functional it is hard to know what is too much expensive so i am very often getting lost into how much should i target efficiency or budget-friendly
+
+---
+
+**Next step:**
+
+- There is still a lot of components that need to be added
+- A lot of peripheral working left
+- Need to assign MCU pins
+
+![Image17](./Documentation/Pictures/Journal_AJ/Image17.png)
+![Image18](./Documentation/Pictures/Journal_AJ/Image18.png)
+![Image19](./Documentation/Pictures/Journal_AJ/Image19.png)
+
+
+---
+
 ## 7. Timelapse - 23.09.2026
 
 A pretty chill day if you ask me considering that i've only assembled passive components around and copied prefered schematics. Ofcourse these recommendations need to be tested at first but that will be possible only after i assign other components.
