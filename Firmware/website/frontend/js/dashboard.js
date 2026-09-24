@@ -1,12 +1,51 @@
 const API_URL = "http://localhost:8000/api/web/plant-stats";
 const HISTORY_LIMIT = 20;
+const HISTORY_STORAGE_KEY = "growhub.dashboard.history";
 
 let globalTelemetry = null;
 let currentSelection = "hub";
 let knownTileIds = null;
 let lastUpdatedAt = null;
 let hasLoadedOnce = null;
-const historyByDevice = {};
+let historyByDevice = loadHistory();
+
+function loadHistory() {
+    try {
+        const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+        if (!raw) return {};
+
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return {};
+
+        const cleaned = {};
+        for (const [deviceId, series] of Object.entries(parsed)) {
+            if (!Array.isArray(series)) continue;
+            cleaned[deviceId] = series
+                .filter(
+                    (point) =>
+                        point &&
+                        typeof point.moisture === "number" &&
+                        typeof point.temperature === "number",
+                )
+                .slice(-HISTORY_LIMIT);
+        }
+        return cleaned;
+    } catch (error) {
+        console.warn("failed to load sparkline history:", error);
+        return {};
+    }
+}
+
+function saveHistroy() {
+    try {
+        localStorage.setItem(
+            HISTORY_STORAGE_KEY,
+            JSON.stringify(historyByDevice),
+        );
+    } catch (error) {
+        console.warn("failed to load sparkline history:", error);
+    }
+}
 
 function moistureStatusText(value) {
     if (value < 30) return "Action: irrigation required";
@@ -66,11 +105,13 @@ function pushHistory(deviceId, moisture, temperature) {
         last.temperature === temperature
     ) {
         last.at = Date.now();
+        saveHistroy();
         return;
     }
 
     series.push({ moisture, temperature, at: Date.now() });
     if (series.length > HISTORY_LIMIT) series.shift();
+    saveHistroy();
 }
 
 function recordTelemetryHistory() {
@@ -199,7 +240,11 @@ function selectDevice(deviceId) {
     if (!deviceId || deviceId === currentSelection) return;
     currentSelection = deviceId;
     updateDeviceSelector();
-    renderStats();
+    if (globalTelemetry) {
+        renderStats();
+    } else {
+        renderHistorySparklines();
+    }
 }
 
 function getCurrentReadings() {
@@ -276,15 +321,7 @@ function renderStats() {
         globalTelemetry.ai_health_status || "Healthy";
     document.getElementById("ai-status-detail").textContent = "Local AI vision";
 
-    const series = historyByDevice[currentSelection] || [];
-    renderSparkLine(
-        "moisture-sparkline",
-        series.map((point) => point.moisture),
-    );
-    renderSparkLine(
-        "temp-sparkline",
-        series.map((point) => point.temperature),
-    );
+    renderHistorySparklines();
 
     const cameraFeed = document.getElementById("camera-feed");
     if (
@@ -304,8 +341,21 @@ function renderStats() {
     systemStatus.style.borderColor = "var(--green)";
 }
 
+function renderHistorySparklines() {
+    const series = historyByDevice[currentSelection] || [];
+    renderSparkLine(
+        "moisture-sparkline",
+        series.map((point) => point.moisture),
+    );
+    renderSparkLine(
+        "temp-sparkline",
+        series.map((point) => point.temperature),
+    );
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     setLoading(true);
+    renderHistorySparklines();
     fetchPlantStats();
     setInterval(fetchPlantStats, 5000);
     setInterval(updateLastUpdatedLabel, 1000);
