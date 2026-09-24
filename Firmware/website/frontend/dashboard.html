@@ -30,12 +30,12 @@
                     <span class="kicker">Live Telemetry</span>
                     <h1 class="section-title">Plant Health & Stats</h1>
                     <p class="section-lead">Real-time telemetry and optical camera node streaming.</p>
-                    <p class="last-updated" id="last-updated">Waiting for fisrt update...</p>
+                    <p class="last-updated" id="last-updated">Waiting for first update...</p>
                 </div>
                 <div class="pill" id="system-status">Connecting...</div>
             </div>
 
-            <div class="eyebrow-row" id="device-selector" style="margin-bottom: 1.5rem;">
+            <div class="eyebrow-row device-selector" id="device-selector">
                 <button type="button" class="pill active" data-id="hub">Main Hub</button>
             </div>
 
@@ -43,14 +43,14 @@
                 <article class="metric-card">
                     <span class="kicker" id="card1-label">Soil Moisture</span>
                     <strong id="moisture-val">--%</strong>
-                    <span id="moisture-status">Fetching data...</span>
                     <svg class="sparkline" id="moisture-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
+                    <span id="moisture-status">Fetching data...</span>
                 </article>
                 <article class="metric-card">
                     <span class="kicker" id="card2-label">Temperature</span>
                     <strong id="temp-val">--°C</strong>
-                    <span id="temp-status">Fetching data...</span>
                     <svg class="sparkline" id="temp-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
+                    <span id="temp-status">Fetching data...</span>
                 </article>
                 <article class="metric-card">
                     <span class="kicker">Water Reservoir</span>
@@ -58,7 +58,7 @@
                     <span id="water-status">Level Check</span>
                 </article>
                 <article class="metric-card">
-                    <span class="kicker">AI plant stress</span>
+                    <span class="kicker">AI Plant Stress</span>
                     <strong id="ai-status">--</strong>
                     <span id="ai-status-detail">Local AI vision</span>
                 </article>
@@ -70,7 +70,7 @@
                     <span class="pill camera-node-pill">Node #1 - Camera 45°</span>
                 </div>
                 <div class="card-image cover camera-frame">
-                    <img id="camera-feed" src="assets/img/growhub_tile_render_v1.png" alt="Optical feed"/>
+                    <img id="camera-feed" src="assets/img/growhub_tile_render_v1.png" alt="Optical feed" />
                 </div>
             </div>
         </div>

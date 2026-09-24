@@ -1,13 +1,15 @@
 const API_URL = "http://localhost:8000/api/web/plant-stats";
 const HISTORY_LIMIT = 20;
 const HISTORY_STORAGE_KEY = "growhub.dashboard.history";
+const LAST_UPDATED_STORAGE_KEY = "growhub.dashboard.lastUpdatedAt";
 
 let globalTelemetry = null;
 let currentSelection = "hub";
 let knownTileIds = null;
 let lastUpdatedAt = null;
-let hasLoadedOnce = null;
+let hasLoadedOnce = false;
 let historyByDevice = loadHistory();
+lastUpdatedAt = loadLastUpdatedAt();
 
 function loadHistory() {
     try {
@@ -25,7 +27,7 @@ function loadHistory() {
                     (point) =>
                         point &&
                         typeof point.moisture === "number" &&
-                        typeof point.temperature === "number",
+                        typeof point.temperature === "number"
                 )
                 .slice(-HISTORY_LIMIT);
         }
@@ -36,15 +38,48 @@ function loadHistory() {
     }
 }
 
-function saveHistroy() {
+function saveHistory() {
     try {
-        localStorage.setItem(
-            HISTORY_STORAGE_KEY,
-            JSON.stringify(historyByDevice),
-        );
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(historyByDevice));
     } catch (error) {
-        console.warn("failed to load sparkline history:", error);
+        console.warn("failed to save sparkline history:", error);
     }
+}
+
+function getLatestHistoryTimestamp() {
+    let latest = null;
+    for (const series of Object.values(historyByDevice)) {
+        if (!Array.isArray(series)) continue;
+        for (const point of series) {
+            if (typeof point.at === "number" && (latest === null || point.at > latest)) {
+                latest = point.at;
+            }
+        }
+    }
+    return latest;
+}
+
+function loadLastUpdatedAt() {
+    try {
+        const raw = localStorage.getItem(LAST_UPDATED_STORAGE_KEY);
+        const stored = Number(raw);
+        if (Number.isFinite(stored) && stored > 0) return stored;
+    } catch (error) {
+        console.warn("failed to load last-updated timestamp:", error);
+    }
+    return getLatestHistoryTimestamp();
+}
+
+function markUpdated(timestamp = Date.now()) {
+    if (!Number.isFinite(timestamp) || timestamp <= 0) return;
+    lastUpdatedAt = timestamp;
+    hasLoadedOnce = true;
+    try {
+        localStorage.setItem(LAST_UPDATED_STORAGE_KEY, String(timestamp));
+    } catch (error) {
+        console.warn("failed to save last-updated timestamp:", error);
+    }
+    updateLastUpdatedLabel();
 }
 
 function moistureStatusText(value) {
@@ -56,17 +91,21 @@ function moistureStatusText(value) {
 function tempStatusText(value) {
     if (value < 18) return "Too cool";
     if (value > 28) return "Too warm";
-    return "Optimal temperature";
+    return "Ambient climate";
 }
 
 function formatRelativeTime(timestamp) {
-    if (!timestamp) return "Waiting for first update...";
+    if (!Number.isFinite(timestamp) || timestamp <= 0) return "Waiting for first update...";
     const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
     if (seconds < 2) return "Updated just now";
     if (seconds < 60) return `Updated ${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `Updated ${minutes} ago`;
+    if (minutes < 60) return `Updated ${minutes}m ago`;
     return `Updated ${Math.floor(minutes / 60)}h ago`;
+}
+
+function getLastUpdatedElement() {
+    return document.getElementById("last-updated") || document.querySelector(".last-updated");
 }
 
 function setLoading(isLoading) {
@@ -74,9 +113,8 @@ function setLoading(isLoading) {
     if (grid) grid.classList.toggle("is-loading", isLoading);
 }
 
-function setOfflineState(message = "Offline / Connection error") {
+function setOfflineState(message = "Offline / Connection Error") {
     const systemStatus = document.getElementById("system-status");
-
     if (systemStatus) {
         systemStatus.textContent = message;
         systemStatus.style.borderColor = "#e63946";
@@ -87,48 +125,40 @@ function setOfflineState(message = "Offline / Connection error") {
     if (moistureStatus) moistureStatus.textContent = "No telemetry";
     if (tempStatus) tempStatus.textContent = "No telemetry";
 
-    const lastUpdated = document.getElementById("last-updated");
-    if (lastUpdated)
-        lastUpdated.textContent = hasLoadedOnce
+    const lastUpdated = getLastUpdatedElement();
+    if (lastUpdated) {
+        lastUpdated.textContent = hasLoadedOnce || lastUpdatedAt
             ? formatRelativeTime(lastUpdatedAt)
             : "Connection lost";
+    }
 }
 
 function pushHistory(deviceId, moisture, temperature) {
     if (!historyByDevice[deviceId]) historyByDevice[deviceId] = [];
     const series = historyByDevice[deviceId];
     const last = series[series.length - 1];
+    const now = Date.now();
 
-    if (
-        last &&
-        last.moisture === moisture &&
-        last.temperature === temperature
-    ) {
-        last.at = Date.now();
-        saveHistroy();
+    if (last && last.moisture === moisture && last.temperature === temperature) {
+        last.at = now;
+        saveHistory();
         return;
     }
 
-    series.push({ moisture, temperature, at: Date.now() });
+    series.push({ moisture, temperature, at: now });
     if (series.length > HISTORY_LIMIT) series.shift();
-    saveHistroy();
+    saveHistory();
 }
 
 function recordTelemetryHistory() {
     if (!globalTelemetry?.tiles?.length) return;
 
     const avgMoisture =
-        globalTelemetry.tiles.reduce((sum, t) => sum + t.moisture_level, 0) /
-        globalTelemetry.tiles.length;
+        globalTelemetry.tiles.reduce((sum, t) => sum + t.moisture_level, 0) / globalTelemetry.tiles.length;
     const avgTemp =
-        globalTelemetry.tiles.reduce((sum, t) => sum + t.temperature, 0) /
-        globalTelemetry.tiles.length;
+        globalTelemetry.tiles.reduce((sum, t) => sum + t.temperature, 0) / globalTelemetry.tiles.length;
 
-    pushHistory(
-        "hub",
-        Number(avgMoisture.toFixed(1)),
-        Number(avgTemp.toFixed(1)),
-    );
+    pushHistory("hub", Number(avgMoisture.toFixed(1)), Number(avgTemp.toFixed(1)));
 
     globalTelemetry.tiles.forEach((tile) => {
         pushHistory(tile.tile_id, tile.moisture_level, tile.temperature);
@@ -151,7 +181,7 @@ function buildSparklinePath(values, width, height) {
         .join(" ");
 }
 
-function renderSparkLine(svgId, values) {
+function renderSparkline(svgId, values) {
     const svg = document.getElementById(svgId);
     if (!svg) return;
 
@@ -170,16 +200,14 @@ function renderSparkLine(svgId, values) {
 }
 
 function updateLastUpdatedLabel() {
-    const lastUpdated = document.getElementById("last-updated");
-    if (!lastUpdated)
-        lastUpdated.textContent = formatRelativeTime(lastUpdatedAt);
+    const lastUpdated = getLastUpdatedElement();
+    if (lastUpdated) lastUpdated.textContent = formatRelativeTime(lastUpdatedAt);
 }
 
 async function fetchPlantStats() {
     try {
         const response = await fetch(API_URL);
-        if (!response.ok)
-            throw new Error(`http error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`http error! status: ${response.status}`);
 
         globalTelemetry = await response.json();
 
@@ -189,13 +217,11 @@ async function fetchPlantStats() {
             return;
         }
 
-        lastUpdatedAt = Date.now();
-        hasLoadedOnce = true;
+        markUpdated(Date.now());
         setLoading(false);
         recordTelemetryHistory();
         updateDeviceSelector();
         renderStats();
-        updateLastUpdatedLabel();
     } catch (error) {
         console.error("failed to load plant telemetry:", error);
         setLoading(false);
@@ -207,9 +233,7 @@ function updateDeviceSelector() {
     const selector = document.getElementById("device-selector");
     if (!selector || !globalTelemetry) return;
 
-    const tileIds = (globalTelemetry.tiles || [])
-        .map((tile) => tile.tile_id)
-        .join(",");
+    const tileIds = (globalTelemetry.tiles || []).map((tile) => tile.tile_id).join(",");
 
     if (knownTileIds !== tileIds) {
         knownTileIds = tileIds;
@@ -218,9 +242,9 @@ function updateDeviceSelector() {
 
         if (globalTelemetry.tiles) {
             globalTelemetry.tiles.forEach((tile) => {
-                const isActive =
-                    currentSelection === tile.tile_id ? "active" : "";
-                html += `<button type="button" class="pill ${isActive}" data-id="${tile.tile_id}">${tile.tile_id.replace("_", " ").toUpperCase()}</button>`;
+                const isActive = currentSelection === tile.tile_id ? "active" : "";
+                const label = tile.tile_id.replace("_", " ").toUpperCase();
+                html += `<button type="button" class="pill ${isActive}" data-id="${tile.tile_id}">${label}</button>`;
             });
         }
 
@@ -229,10 +253,7 @@ function updateDeviceSelector() {
     }
 
     selector.querySelectorAll("button[data-id]").forEach((button) => {
-        button.classList.toggle(
-            "active",
-            button.getAttribute("data-id") === currentSelection,
-        );
+        button.classList.toggle("active", button.getAttribute("data-id") === currentSelection);
     });
 }
 
@@ -254,15 +275,11 @@ function getCurrentReadings() {
     if (currentSelection === "hub") {
         if (globalTelemetry.tiles?.length) {
             moisture =
-                globalTelemetry.tiles.reduce(
-                    (sum, t) => sum + t.moisture_level,
-                    0,
-                ) / globalTelemetry.tiles.length;
+                globalTelemetry.tiles.reduce((sum, t) => sum + t.moisture_level, 0) /
+                globalTelemetry.tiles.length;
             temperature =
-                globalTelemetry.tiles.reduce(
-                    (sum, t) => sum + t.temperature,
-                    0,
-                ) / globalTelemetry.tiles.length;
+                globalTelemetry.tiles.reduce((sum, t) => sum + t.temperature, 0) /
+                globalTelemetry.tiles.length;
         }
         return {
             moisture,
@@ -274,9 +291,7 @@ function getCurrentReadings() {
         };
     }
 
-    const tile = globalTelemetry.tiles?.find(
-        (t) => t.tile_id === currentSelection,
-    );
+    const tile = globalTelemetry.tiles?.find((t) => t.tile_id === currentSelection);
     if (!tile) return null;
 
     return {
@@ -296,65 +311,64 @@ function renderStats() {
     if (!readings) return;
 
     document.getElementById("card1-label").textContent = readings.moistureLabel;
-    document.getElementById("moisture-val").textContent =
-        readings.moistureDisplay;
+    document.getElementById("moisture-val").textContent = readings.moistureDisplay;
     document.getElementById("card2-label").textContent = readings.tempLabel;
     document.getElementById("temp-val").textContent = readings.tempDisplay;
 
-    document.getElementById("moisture-status").textContent = moistureStatusText(
-        readings.moisture,
-    );
-    document.getElementById("temp-status").textContent = tempStatusText(
-        readings.temperature,
-    );
+    document.getElementById("moisture-status").textContent = moistureStatusText(readings.moisture);
+    document.getElementById("temp-status").textContent = tempStatusText(readings.temperature);
 
-    document.getElementById("water-val").textContent =
-        globalTelemetry.water_level_ok ? "OK" : "LOW";
-    document.getElementById("water-val").style.color =
-        globalTelemetry.water_level_ok ? "var(--green)" : "#e63946";
-    document.getElementById("water-status").textContent =
-        globalTelemetry.water_level_ok
-            ? "Reservoir level good"
-            : "Refill reservoir soon";
+    document.getElementById("water-val").textContent = globalTelemetry.water_level_ok ? "OK" : "LOW";
+    document.getElementById("water-val").style.color = globalTelemetry.water_level_ok
+        ? "var(--green)"
+        : "#e63946";
+    document.getElementById("water-status").textContent = globalTelemetry.water_level_ok
+        ? "Reservoir level healthy"
+        : "Refill reservoir soon";
 
-    document.getElementById("ai-status").textContent =
-        globalTelemetry.ai_health_status || "Healthy";
+    document.getElementById("ai-status").textContent = globalTelemetry.ai_health_status || "Healthy";
     document.getElementById("ai-status-detail").textContent = "Local AI vision";
 
     renderHistorySparklines();
 
     const cameraFeed = document.getElementById("camera-feed");
-    if (
-        cameraFeed &&
-        globalTelemetry.camera_feed_url &&
-        cameraFeed.src !==
-            new URL(globalTelemetry.camera_feed_url, window.location.href).href
-    ) {
-        cameraFeed.src = globalTelemetry.camera_feed_url;
-        cameraFeed.alt = `Optical Feed - ${globalTelemetry.hub_id || "hub"}`;
+    if (cameraFeed && globalTelemetry.camera_feed_url) {
+        try {
+            const nextSrc = new URL(globalTelemetry.camera_feed_url, window.location.href).href;
+            if (cameraFeed.src !== nextSrc) {
+                cameraFeed.src = globalTelemetry.camera_feed_url;
+            }
+            cameraFeed.alt = `Optical feed — ${globalTelemetry.hub_id || "hub"}`;
+        } catch (error) {
+            console.warn("invalid camera feed url:", globalTelemetry.camera_feed_url, error);
+        }
     }
 
     const systemStatus = document.getElementById("system-status");
-    const activeLabel =
-        currentSelection === "hub" ? globalTelemetry.hub_id : currentSelection;
-    systemStatus.textContent = `Active: ${activeLabel}`;
-    systemStatus.style.borderColor = "var(--green)";
+    if (systemStatus) {
+        const activeLabel = currentSelection === "hub" ? globalTelemetry.hub_id : currentSelection;
+        systemStatus.textContent = `Active: ${activeLabel}`;
+        systemStatus.style.borderColor = "var(--green)";
+    }
+
+    updateLastUpdatedLabel();
 }
 
 function renderHistorySparklines() {
     const series = historyByDevice[currentSelection] || [];
-    renderSparkLine(
+    renderSparkline(
         "moisture-sparkline",
-        series.map((point) => point.moisture),
+        series.map((point) => point.moisture)
     );
-    renderSparkLine(
+    renderSparkline(
         "temp-sparkline",
-        series.map((point) => point.temperature),
+        series.map((point) => point.temperature)
     );
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function initDashboard() {
     setLoading(true);
+    updateLastUpdatedLabel();
     renderHistorySparklines();
     fetchPlantStats();
     setInterval(fetchPlantStats, 5000);
@@ -364,9 +378,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectorContainer) {
         selectorContainer.addEventListener("click", (event) => {
             const button = event.target.closest("button[data-id]");
-            if (button) {
-                selectDevice(button.getAttribute("data-id"));
-            }
+            if (button) selectDevice(button.getAttribute("data-id"));
         });
     }
-});
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initDashboard);
+} else {
+    initDashboard();
+}

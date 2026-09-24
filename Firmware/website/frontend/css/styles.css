@@ -28,11 +28,7 @@ body {
     font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
     color: var(--ink);
     background:
-        radial-gradient(
-            circle at 8% 8%,
-            rgba(24, 185, 109, 0.08),
-            transparent 20rem
-        ),
+        radial-gradient(circle at 8% 8%, rgba(24, 185, 109, 0.08), transparent 20rem),
         linear-gradient(180deg, #fbfcfa, var(--gb));
     line-height: 1.6;
     overflow-x: hidden;
@@ -126,11 +122,7 @@ img {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(
-            circle at 82% 18%,
-            rgba(24, 185, 109, 0.16),
-            transparent 20rem
-        ),
+        radial-gradient(circle at 82% 18%, rgba(24, 185, 109, 0.16), transparent 20rem),
         linear-gradient(135deg, rgba(0, 75, 45, 0.06), rgba(255, 255, 255, 0));
     pointer-events: none;
 }
@@ -199,16 +191,8 @@ img {
     border-radius: 30px;
     padding: clamp(1rem, 2vw, 1.35rem);
     background:
-        linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.92),
-            rgba(239, 247, 240, 0.92)
-        ),
-        radial-gradient(
-            circle at 70% 0%,
-            rgba(24, 185, 109, 0.18),
-            transparent 22rem
-        );
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(239, 247, 240, 0.92)),
+        radial-gradient(circle at 70% 0%, rgba(24, 185, 109, 0.18), transparent 22rem);
     border: 1px solid var(--line);
     box-shadow: var(--shadow);
 }
@@ -379,11 +363,7 @@ img {
     position: absolute;
     inset: 1rem;
     border-radius: 24px;
-    background: linear-gradient(
-        145deg,
-        rgba(24, 185, 109, 0.14),
-        rgba(255, 255, 255, 0)
-    );
+    background: linear-gradient(145deg, rgba(24, 185, 109, 0.14), rgba(255, 255, 255, 0));
     pointer-events: none;
 }
 
@@ -435,10 +415,7 @@ img {
     border-radius: var(--radius);
     padding: 1.45rem;
     box-shadow: var(--shadow);
-    transition:
-        transform 180ms ease,
-        box-shadow 180ms ease,
-        border-color 180ms ease;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .card:hover {
@@ -477,7 +454,7 @@ img {
 
 .business-grid {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    grtid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
     gap: clamp(2rem, 5vw, 4rem);
     align-items: center;
 }
@@ -510,6 +487,111 @@ img {
 
 .metric-card span {
     color: var(--muted);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.dashboard-header .section-lead {
+    margin-bottom: 0.35rem;
+}
+
+.last-updated {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 550;
+}
+
+.device-selector {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-metrics {
+    margin-bottom: 2rem;
+}
+
+.dashboard-metrics.is-loading .metric-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-metrics.is-loading .metric-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        110deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.45) 45%,
+        transparent 70%
+    );
+    transform: translateX(-100%);
+    animation: dashboard-shimmer 1.4s ease-in-out infinite;
+}
+
+.dashboard-metrics.is-loading .metric-card strong,
+.dashboard-metrics.is-loading .metric-card span:not(.kicker),
+.dashboard-metrics.is-loading .sparkline {
+    opacity: 0.4;
+}
+
+@keyframes dashboard-shimmer {
+    to {
+        transform: translateX(100%);
+    }
+}
+
+.sparkline {
+    width: 120px;
+    height: 36px;
+    color: var(--green);
+    margin: 0.15rem 0;
+}
+
+.sparkline-empty {
+    fill: var(--muted);
+    font-size: 10px;
+    font-family: inherit;
+}
+
+.camera-card {
+    padding: 1.5rem;
+}
+
+.camera-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.camera-node-pill {
+    font-size: 0.8rem;
+}
+
+.camera-frame {
+    background: #000;
+    height: min(380px, 55vw);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.camera-frame img {
+    max-height: 100%;
+    width: 100%;
+    object-fit: contain;
 }
 
 .brand-band .section-title,
@@ -579,7 +661,7 @@ img {
 }
 
 button.pill {
-    cursor: pinter;
+    cursor: pointer;
     font: inherit;
 }
 
@@ -587,110 +669,6 @@ button.pill {
     background: var(--green-dark);
     border-color: var(--green-dark);
     color: var(--surface);
-}
-
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-}
-
-.dashboard-header section-lead {
-    margin-bottom: 0.35rem;
-}
-
-.last-updated {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.9rem;
-    font-weight: 550;
-}
-
-.device-selector {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-}
-
-.dashboard-metrics {
-    margin-bottom: 2rem;
-}
-
-.dashboard-metrics.is-loading .metric-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.dashboard-metrics.is.loading .metric-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        110deg,
-        transparent 20%,
-        rgba(255, 255, 0.45) 45%,
-        transparent 70%
-    );
-    transform: translateX(-100%);
-    animation: dashboard-shimmer 1.4s ease-in-out infinite;
-}
-
-.dashboard-metric.is-loading .metric-card strong,
-.dashboard-metric.is-loading .metric-card span:not(.kicker),
-.dashboard-metrics.is-loading .sparkline {
-    opacity: 0.4;
-}
-
-@keyframes dashboard-shimmer {
-    to {
-        transform: translateX(100%);
-    }
-}
-
-.sparkline {
-    width: 120px;
-    height: 36px;
-    color: var(--green);
-    margin: 0.15rem 0;
-}
-
-.sparkline-empty {
-    fill: var(--muted);
-    font-size: 10px;
-    font-family: inherit;
-}
-
-.camera-card {
-    padding: 1.5rem;
-}
-
-.camera-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-}
-
-.camera-node-pill {
-    font-size: 0.8rem;
-}
-
-.camera-frame {
-    background: #000;
-    height: min(380px, 55vw);
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-.camera-frame img {
-    max-height: 100%;
-    width: 100%;
-    object-fit: contain;
 }
 
 .number-strip {
@@ -822,9 +800,7 @@ button.pill {
     border: 1px solid var(--line);
     border-radius: 24px;
     overflow: hidden;
-    transition:
-        transform 300ms ease,
-        box-shadow 300ms ease;
+    transition: transform 300ms ease, box-shadow 300ms ease;
     display: flex;
     flex-direction: column;
 }
@@ -916,16 +892,6 @@ button.pill {
         grid-template-columns: 1fr;
     }
 
-    .hero {
-        padding-top: 4rem;
-    }
-
-    .product-card {
-        min-height: auto;
-        justify-content: flex-start;
-        padding-top: 5rem;
-    }
-
     .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
@@ -937,6 +903,16 @@ button.pill {
 
     .camera-frame {
         height: min(280px, 70vw);
+    }
+
+    .hero {
+        padding-top: 4rem;
+    }
+
+    .product-card {
+        min-height: auto;
+        justify-content: flex-start;
+        padding-top: 5rem;
     }
 }
 
@@ -1035,9 +1011,7 @@ button.pill {
 
     .product-card {
         border-radius: 22px;
-        padding:
-            4.75rem,
-            1.1rem 1.2rem;
+        padding: 4.75rem, 1.1rem 1.2rem;
     }
 
     .product-card h3 {
@@ -1065,6 +1039,11 @@ button.pill {
         font-size: clamp(1.65rem, 10vw, 2.4rem);
     }
 
+    .sparkline {
+        width: 100%;
+        max-width: 160px;
+    }
+
     .contact-list a,
     .contact-list span {
         max-width: 100%;
@@ -1077,11 +1056,6 @@ button.pill {
 
     .btn {
         width: 100%;
-    }
-
-    .sparkline {
-        width: 100%;
-        max-width: 160px;
     }
 }
 
@@ -1097,7 +1071,7 @@ button.pill {
     .brand {
         width: 110px;
     }
-
+    
     .eyebrow-row {
         gap: 0.45rem;
     }
