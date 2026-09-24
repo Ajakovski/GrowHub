@@ -23,31 +23,34 @@
         </div>
     </header>
     
-    <main class="section">
+    <main class="section dashboard-page">
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div class="dashboard-header">
                 <div>
                     <span class="kicker">Live Telemetry</span>
                     <h1 class="section-title">Plant Health & Stats</h1>
                     <p class="section-lead">Real-time telemetry and optical camera node streaming.</p>
+                    <p class="last-updated" id="last-updated">Waiting for fisrt update...</p>
                 </div>
-                <div class="pill" id="system-status">System: Online</div>
+                <div class="pill" id="system-status">Connecting...</div>
             </div>
 
             <div class="eyebrow-row" id="device-selector" style="margin-bottom: 1.5rem;">
                 <button type="button" class="pill active" data-id="hub">Main Hub</button>
             </div>
 
-            <div class="metric-grid" style="margin-bottom: 2rem;">
+            <div class="metric-grid dashboard-metrics is-loading" id="metric-grid">
                 <article class="metric-card">
                     <span class="kicker" id="card1-label">Soil Moisture</span>
                     <strong id="moisture-val">--%</strong>
                     <span id="moisture-status">Fetching data...</span>
+                    <svg class="sparkline" id="moisture-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
                 </article>
                 <article class="metric-card">
                     <span class="kicker" id="card2-label">Temperature</span>
                     <strong id="temp-val">--°C</strong>
                     <span id="temp-status">Fetching data...</span>
+                    <svg class="sparkline" id="temp-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
                 </article>
                 <article class="metric-card">
                     <span class="kicker">Water Reservoir</span>
@@ -61,13 +64,13 @@
                 </article>
             </div>
 
-            <div class="card" style="padding: 1.5rem;">
-                <div style="display: flex;justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div class="card camera-card">
+                <div class="camera-card-header">
                     <h3>Optical node stream</h3>
-                    <span class="pill" style="font-size: 0.8rem;">Node #1 - Camera 45°</span>
+                    <span class="pill camera-node-pill">Node #1 - Camera 45°</span>
                 </div>
-                <div class="card-image cover" style="background: #000; height: 380px; display: flex; align-items: center; justify-content: center; position: relative;">
-                    <img id="camera-feed" src="assets/img/growhub_tile_render_v1.png" alt="Optical feed" style="max-height: 100%; width: 100%; object-fit: contain;" />
+                <div class="card-image cover camera-frame">
+                    <img id="camera-feed" src="assets/img/growhub_tile_render_v1.png" alt="Optical feed"/>
                 </div>
             </div>
         </div>
