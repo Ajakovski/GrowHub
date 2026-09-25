@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # GrowHub - Journal
 
 <<<<<<< HEAD
