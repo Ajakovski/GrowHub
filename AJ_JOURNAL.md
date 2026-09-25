@@ -2,6 +2,49 @@
 
 - Author: ajakovski07
 
+---
+
+## 9. Timelapse - 25.09.2026
+
+Hooooly timelapse.... And lock in. I Cranked up 4 hours in one sitting which closes me out for this week hour requirement so that i can focus on school through out the weekend :)
+
+A lot of stuff have improved today and most important improvement was the ***Input Protection Controller*** because HOOOLLLYYY WAS THAT A COMPLEX IC as it turned out. Behind timelapsing hours i decided to read the documentation and i found out that the recommendations are all flawed, like a lot. And because im a perfectionist i had to upgrade my IC operating efficiency.
+
+This will probably be the last timelapse for Week 2 and so far i am happy of mine and overall our teams progress. For next week i plan on finishing the schematic so that i can start focusing on the Main_PCB 4-layer PCB.
+
+I know it looks dull that i am working for so long on just the schematic but it really is a long process for such a big project.
+
+---
+
+**What i did:**
+
+- Started working on Floor_PCB and added most of the components
+- Finished a couple peripheral schematics
+- Improved peripheral schematics
+- Fixed a lot of errors that i've made previously
+
+---
+
+**Problems that i had:**
+
+- A lot of issues that i had to fix
+- Complex IC that required a lot of work
+- A lot of multiplexers and expanders are needed
+
+---
+
+**Next step:**
+
+- Continue implementing new components in Floor_PCB
+- Finish the schematics in Main_PCB
+- Upgrade or fix errors in previous modules
+
+![Image20](./Documentation/Pictures/Journal_AJ/Image20.png)
+![Image21](./Documentation/Pictures/Journal_AJ/Image21.png)
+![Image22](./Documentation/Pictures/Journal_AJ/Image22.png)
+
+---
+
 ## 8. Timelapse - 24.09.2026
 
 Grinded up a bit and i implemented a lot of schematic features. I am still lacking a couple of components tht me and my partner mentioned for this project so i am both implementing and building their environment for efficient workflow.
