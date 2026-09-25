@@ -331,18 +331,7 @@ function renderStats() {
 
     renderHistorySparklines();
 
-    const cameraFeed = document.getElementById("camera-feed");
-    if (cameraFeed && globalTelemetry.camera_feed_url) {
-        try {
-            const nextSrc = new URL(globalTelemetry.camera_feed_url, window.location.href).href;
-            if (cameraFeed.src !== nextSrc) {
-                cameraFeed.src = globalTelemetry.camera_feed_url;
-            }
-            cameraFeed.alt = `Optical feed — ${globalTelemetry.hub_id || "hub"}`;
-        } catch (error) {
-            console.warn("invalid camera feed url:", globalTelemetry.camera_feed_url, error);
-        }
-    }
+    updateCameraFeed(globalTelemetry.camera_feed_url, globalTelemetry.hub_id);
 
     const systemStatus = document.getElementById("system-status");
     if (systemStatus) {
@@ -352,6 +341,30 @@ function renderStats() {
     }
 
     updateLastUpdatedLabel();
+}
+
+function updateCameraFeed(cameraFeedUrl, hubId) {
+    const cameraFeed = document.getElementById("camera-feed");
+    if (!cameraFeed || !cameraFeedUrl) return;
+
+    try {
+        const nextUrl = new URL(cameraFeedUrl, window.location.href);
+        const isStream = nextUrl.pathname.includes("/camera/stream");
+
+        if (isStream) {
+            const currentUrl = new URL(cameraFeed.src || cameraFeedUrl, window.location.href);
+            if (currentUrl.origin + currentUrl.pathname !== nextUrl.origin + nextUrl.pathname) {
+                cameraFeed.src = nextUrl.href;
+            }
+        } else {
+            nextUrl.searchParams.set("t", String(Date.now()));
+            cameraFeed.src = nextUrl.href;
+        }
+
+        cameraFeed.alt = `Optical feed — ${hubId || "hub"}`;
+    } catch (error) {
+        console.warn("invalid camera feed url:", cameraFeedUrl, error);
+    }
 }
 
 function renderHistorySparklines() {
