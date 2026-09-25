@@ -105,6 +105,47 @@ A lot of working skills are required for this project to succeed so i hope you u
 
 ---
 
+# Software
+
+The software side of GrowHub is the live monitoring layer: a local FastAPI backend, a web dashboard, and an ESP32-style simulator that can also push webcam frames so the optical node on the dashboard feels real during development.
+
+### Stack
+
+- **Frontend** — static site under `Firmware/website/frontend` (HTML / CSS / JS)
+- **Backend** — FastAPI app under `Firmware/website/backend` (`uvicorn`, port `8000`)
+- **Simulator** — `esp32_simulator.py` (fake hub telemetry + optional webcam upload via OpenCV)
+
+### What it does today
+
+- Hub + per-tile telemetry (moisture, temperature, water reservoir, AI status)
+- Device selector to switch between **Main Hub** averages and individual tiles
+- Live “last updated” stamp and sparkline history (persisted in `localStorage`)
+- Expandable moisture / temperature cards with a larger history chart (min / avg / max)
+- Camera still feed served by the backend (`/api/web/camera`) and shown on the dashboard
+- Simulator posts JSON telemetry to `/api/device/telemetry` and JPEG frames to `/api/device/camera`
+
+### How to run (local)
+
+1. Start the API from `Firmware/website/backend` (example: `uvicorn main:app --reload --port 8000`)
+2. Serve the frontend (example: `python -m http.server 5000` from `Firmware/website/frontend`)
+3. Run the simulator: `python esp32_simulator.py`
+4. Open the dashboard and hard-refresh if assets were just updated
+
+Useful endpoints:
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/web/plant-stats` | Current hub/tile state for the dashboard |
+| POST | `/api/device/telemetry` | Simulator / device telemetry ingest |
+| POST | `/api/device/camera` | Upload latest camera frame |
+| GET | `/api/web/camera` | Latest still image for the dashboard |
+
+### Status
+
+Software is further ahead than the physical build: the dashboard and simulator loop are usable now, while schematic / PCB / final sensor wiring are still in progress on the hardware side.
+
+---
+
 # Creators
 
 ### Ajakovski - Hardware and PCB Design
