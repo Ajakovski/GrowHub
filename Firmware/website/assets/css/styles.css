@@ -364,5 +364,5 @@ header-inner {
     inset: 1rem;
     border-radius: 24px;
     background: linear-gradient(145deg, rgba(24, 185, 109, 0.14), rgba(255, 255, 255, 0));
-    pointer-event: none;
+    pointer-events: none;
 }
