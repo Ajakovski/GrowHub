@@ -40,17 +40,43 @@
             </div>
 
             <div class="metric-grid dashboard-metrics is-loading" id="metric-grid">
-                <article class="metric-card">
-                    <span class="kicker" id="card1-label">Soil Moisture</span>
-                    <strong id="moisture-val">--%</strong>
-                    <svg class="sparkline" id="moisture-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
-                    <span id="moisture-status">Fetching data...</span>
+                <article class="metric-card metric-card-expandable" data-metric="moisture">
+                    <div class="metric-card-main">
+                        <div class="metric-card-heading">
+                            <span class="kicker" id="card1-label">Soil Moisture</span>
+                            <button type="button" class="metric-expand-btn" aria-expanded="false" aria-controls="moisture-detail" aria-label="Show moisture history">
+                                <svg viewBox="0 0 20 20" aria-hidden="true">
+                                    <path d="M5 7.5 L10 12.5 L15 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <strong id="moisture-val">--%</strong>
+                        <svg class="sparkline" id="moisture-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
+                        <span id="moisture-status">Fetching data...</span>
+                    </div>
+                    <div class="metric-card-detail" id="moisture-detail" hidden>
+                        <div class="detail-chart-stats" id="moisture-detail-stats"></div>
+                        <svg class="detail-chart" id="moisture-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="Moisture history chart"></svg>
+                    </div>
                 </article>
-                <article class="metric-card">
-                    <span class="kicker" id="card2-label">Temperature</span>
-                    <strong id="temp-val">--°C</strong>
-                    <svg class="sparkline" id="temp-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
-                    <span id="temp-status">Fetching data...</span>
+                <article class="metric-card metric-card-expandable" data-metric="temperature">
+                    <div class="metric-card-main">
+                        <div class="metric-card-heading">
+                            <span class="kicker" id="card2-label">Temperature</span>
+                            <button type="button" class="metric-expand-btn" aria-expanded="false" aria-controls="temp-detail" aria-label="Show temperature history">
+                                <svg viewBox="0 0 20 20" aria-hidden="true">
+                                    <path d="M5 7.5 L10 12.5 L15 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <strong id="temp-val">--°C</strong>
+                        <svg class="sparkline" id="temp-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
+                        <span id="temp-status">Fetching data...</span>
+                    </div>
+                    <div class="metric-card-detail" id="temp-detail" hidden>
+                        <div class="detail-chart-stats" id="temp-detail-stats"></div>
+                        <svg class="detail-chart" id="temp-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="Temperature history chart"></svg>
+                    </div>
                 </article>
                 <article class="metric-card">
                     <span class="kicker">Water Reservoir</span>
