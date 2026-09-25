@@ -234,7 +234,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "same_local_global_label": "warning",
       "similar_label_and_power": "warning",
@@ -279,6 +279,26 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "GND",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(0, 0, 0)",
+        "tuning_profile": "",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 24,
+        "line_style": 0,
+        "name": "Power",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(255, 0, 0)",
+        "tuning_profile": "",
+        "wire_width": 12
       }
     ],
     "meta": {
@@ -286,7 +306,40 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "Power",
+        "pattern": "+3V3"
+      },
+      {
+        "netclass": "GND",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "3V3"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "24V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+24V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "-5V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+5V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "-3V3"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
@@ -416,7 +469,7 @@
         "uuid": "af001b7e-1c5e-4b7a-a0b4-e6af7dd78ca9"
       }
     ],
-    "used_designators": "",
+    "used_designators": "#PWR33-63,Z1-2,R2,R21-49,C29-35,Q1-2,U1,U10-12",
     "variants": []
   },
   "sheets": [
@@ -425,12 +478,8 @@
       "Root"
     ],
     [
-      "c7e8d3f4-060b-4d22-8783-e9f4f221b151",
+      "60e449cd-fd6d-4899-8c59-5b83fe162284",
       "Basic_Floor_PCB"
-    ],
-    [
-      "3650033b-afc7-48b9-b39c-39ca5df899a6",
-      "Main_Floor_PCB"
     ]
   ],
   "text_variables": {},
