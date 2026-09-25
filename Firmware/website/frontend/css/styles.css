@@ -477,12 +477,21 @@ img {
     box-shadow: var(--shadow);
 }
 
-.metric-card strong {
+.metric-card > strong,
+.metric-card-main > strong {
     display: block;
     color: var(--green-dark);
     font-size: clamp(1.8rem, 3.5vw, 3rem);
     line-height: 1;
     letter-spacing: -0.045em;
+}
+
+.metric-card .detail-stat strong {
+    display: inline;
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
 }
 
 .metric-card span {
@@ -539,7 +548,8 @@ img {
 
 .dashboard-metrics.is-loading .metric-card strong,
 .dashboard-metrics.is-loading .metric-card span:not(.kicker),
-.dashboard-metrics.is-loading .sparkline {
+.dashboard-metrics.is-loading .sparkline,
+.dashboard-metrics.is-loading .metric-expand-btn {
     opacity: 0.4;
 }
 
@@ -560,6 +570,152 @@ img {
     fill: var(--muted);
     font-size: 10px;
     font-family: inherit;
+}
+
+.metric-card-expandable {
+    gap: 0;
+}
+
+.metric-card-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 140px;
+}
+
+.metric-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.metric-expand-btn {
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 200ms ease, color 200ms ease, border-color 200ms ease, background 200ms ease;
+}
+
+.metric-expand-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.metric-expand-btn:hover,
+.metric-expand-btn:focus-visible {
+    color: var(--green-dark);
+    border-color: var(--green);
+    outline: none;
+}
+
+.metric-card-expandable.is-expanded {
+    grid-column: 1 / -1;
+}
+
+.metric-card-expandable.is-expanded .metric-expand-btn {
+    transform: rotate(180deg);
+    color: var(--surface);
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+}
+
+.metric-card-detail {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 0.85rem;
+}
+
+.metric-card-detail[hidden] {
+    display: none;
+}
+
+.detail-chart-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.detail-stat {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 4.5rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.detail-stat span {
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.detail-stat strong {
+    color: var(--ink);
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.detail-chart {
+    width: 100%;
+    height: 220px;
+    color: var(--green);
+    background:
+        linear-gradient(180deg, rgba(24, 185, 109, 0.06), rgba(255, 255, 255, 0)),
+        #fff;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+}
+
+.detail-chart-empty {
+    fill: var(--muted);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.detail-chart-grid {
+    stroke: rgba(15, 40, 28, 0.08);
+    stroke-width: 1;
+}
+
+.detail-chart-axis {
+    fill: var(--muted);
+    font-size: 11px;
+    font-family: inherit;
+}
+
+.detail-chart-area {
+    fill: rgba(24, 185, 109, 0.16);
+}
+
+.detail-chart-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.detail-chart-dot {
+    fill: #fff;
+    stroke: currentColor;
+    stroke-width: 2;
 }
 
 .camera-card {
@@ -1035,13 +1191,18 @@ button.pill {
         gap: 1rem;
     }
 
-    .metric-card strong {
+    .metric-card > strong,
+    .metric-card-main > strong {
         font-size: clamp(1.65rem, 10vw, 2.4rem);
     }
 
     .sparkline {
         width: 100%;
         max-width: 160px;
+    }
+
+    .detail-chart {
+        height: 100%;
     }
 
     .contact-list a,

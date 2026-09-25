@@ -1,5 +1,5 @@
 const API_URL = "http://localhost:8000/api/web/plant-stats";
-const HISTORY_LIMIT = 20;
+const HISTORY_LIMIT = 36;
 const HISTORY_STORAGE_KEY = "growhub.dashboard.history";
 const LAST_UPDATED_STORAGE_KEY = "growhub.dashboard.lastUpdatedAt";
 
@@ -357,6 +357,7 @@ function updateCameraFeed(cameraFeedUrl, hubId) {
                 cameraFeed.src = nextUrl.href;
             }
         } else {
+            // Bust cache so the still image reloads on each telemetry refresh.
             nextUrl.searchParams.set("t", String(Date.now()));
             cameraFeed.src = nextUrl.href;
         }
@@ -364,6 +365,94 @@ function updateCameraFeed(cameraFeedUrl, hubId) {
         cameraFeed.alt = `Optical feed — ${hubId || "hub"}`;
     } catch (error) {
         console.warn("invalid camera feed url:", cameraFeedUrl, error);
+    }
+}
+
+function formatClock(timestamp) {
+    if (!Number.isFinite(timestamp)) return "--:--";
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function renderDetailChart(svgId, statsId, points, unit) {
+    const svg = document.getElementById(svgId);
+    const stats = document.getElementById(statsId);
+    if (!svg) return;
+
+    const values = points.map((point) => point.value);
+    if (values.length < 2) {
+        svg.innerHTML = `<text x="24" y="112" class="detail-chart-empty">Collecting history for a detailed chart...</text>`;
+        if (stats) stats.innerHTML = "";
+        return;
+    }
+
+    const width = 560;
+    const height = 220;
+    const pad = { top: 18, right: 18, bottom: 36, left: 44 };
+    const plotW = width - pad.left - pad.right;
+    const plotH = height - pad.top - pad.bottom;
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+    const range = max - min || 1;
+    const yMin = min - range * 0.08;
+    const yMax = max + range * 0.08;
+    const yRange = yMax - yMin || 1;
+
+    const coords = values.map((value, index) => {
+        const x = pad.left + (index / (values.length - 1)) * plotW;
+        const y = pad.top + (1 - (value - yMin) / yRange) * plotH;
+        return { x, y, value, at: points[index].at };
+    });
+
+    const linePath = coords
+        .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+        .join(" ");
+    const areaPath = `${linePath} L${coords[coords.length - 1].x.toFixed(1)} ${(pad.top + plotH).toFixed(1)} L${coords[0].x.toFixed(1)} ${(pad.top + plotH).toFixed(1)} Z`;
+
+    const gridLines = [0, 0.25, 0.5, 0.75, 1]
+        .map((ratio) => {
+            const y = pad.top + plotH * ratio;
+            const label = yMax - yRange * ratio;
+            return `
+                <line class="detail-chart-grid" x1="${pad.left}" y1="${y.toFixed(1)}" x2="${width - pad.right}" y2="${y.toFixed(1)}"></line>
+                <text class="detail-chart-axis" x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end">${label.toFixed(1)}</text>
+            `;
+        })
+        .join("");
+
+    const xLabels = [0, Math.floor((coords.length - 1) / 2), coords.length - 1]
+        .filter((index, i, arr) => arr.indexOf(index) === i)
+        .map((index) => {
+            const point = coords[index];
+            return `<text class="detail-chart-axis" x="${point.x.toFixed(1)}" y="${height - 12}" text-anchor="middle">${formatClock(point.at)}</text>`;
+        })
+        .join("");
+
+    const dots = coords
+        .map(
+            (point) =>
+                `<circle class="detail-chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.2"></circle>`
+        )
+        .join("");
+
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svg.innerHTML = `
+        ${gridLines}
+        <path class="detail-chart-area" d="${areaPath}"></path>
+        <path class="detail-chart-line" d="${linePath}"></path>
+        ${dots}
+        ${xLabels}
+    `;
+
+    if (stats) {
+        stats.innerHTML = `
+            <div class="detail-stat"><span>Min</span><strong>${min.toFixed(1)}${unit}</strong></div>
+            <div class="detail-stat"><span>Avg</span><strong>${avg.toFixed(1)}${unit}</strong></div>
+            <div class="detail-stat"><span>Max</span><strong>${max.toFixed(1)}${unit}</strong></div>
+            <div class="detail-stat"><span>Samples</span><strong>${values.length}</strong></div>
+        `;
     }
 }
 
@@ -377,6 +466,44 @@ function renderHistorySparklines() {
         "temp-sparkline",
         series.map((point) => point.temperature)
     );
+    renderDetailCharts();
+}
+
+function renderDetailCharts() {
+    const series = historyByDevice[currentSelection] || [];
+    renderDetailChart(
+        "moisture-detail-chart",
+        "moisture-detail-stats",
+        series.map((point) => ({ value: point.moisture, at: point.at })),
+        "%"
+    );
+    renderDetailChart(
+        "temp-detail-chart",
+        "temp-detail-stats",
+        series.map((point) => ({ value: point.temperature, at: point.at })),
+        "°C"
+    );
+}
+
+function toggleMetricCard(card) {
+    if (!card) return;
+    const willExpand = !card.classList.contains("is-expanded");
+    const button = card.querySelector(".metric-expand-btn");
+    const detail = card.querySelector(".metric-card-detail");
+
+    document.querySelectorAll(".metric-card-expandable.is-expanded").forEach((openCard) => {
+        if (openCard === card) return;
+        openCard.classList.remove("is-expanded");
+        const openBtn = openCard.querySelector(".metric-expand-btn");
+        const openDetail = openCard.querySelector(".metric-card-detail");
+        if (openBtn) openBtn.setAttribute("aria-expanded", "false");
+        if (openDetail) openDetail.hidden = true;
+    });
+
+    card.classList.toggle("is-expanded", willExpand);
+    if (button) button.setAttribute("aria-expanded", String(willExpand));
+    if (detail) detail.hidden = !willExpand;
+    if (willExpand) renderDetailCharts();
 }
 
 function initDashboard() {
@@ -394,6 +521,12 @@ function initDashboard() {
             if (button) selectDevice(button.getAttribute("data-id"));
         });
     }
+
+    document.querySelectorAll(".metric-card-expandable").forEach((card) => {
+        const button = card.querySelector(".metric-expand-btn");
+        if (!button) return;
+        button.addEventListener("click", () => toggleMetricCard(card));
+    });
 }
 
 if (document.readyState === "loading") {
