@@ -4,6 +4,36 @@
 
 ---
 
+## 10. Timelapse - 29.09.2026
+
+After a long week I continue again with this project and in todays (midnight) timelapse even though i am super tired i clocked in some work and in particular i assigned some components and added their peripheral schematics. I also started assigning the GPIO Pins finally so once that is done and connected we will move on to PCBs.
+
+---
+
+**What i did:**
+
+- Added 2 different LDOs for different purposes
+- Improved MCU peripheral schematic
+- Assigned MCU GPIOs
+
+---
+
+**Problems that i had:**
+
+- Super exhausted and sleepy
+
+---
+
+**Next steps:**
+
+- Finish off peripheral schematics
+- Finish off GPIO assignments
+
+![Image23](./Documentation/Pictures/Journal_AJ/Image23.png)
+![Image24](./Documentation/Pictures/Journal_AJ/Image24.png)
+
+---
+
 ## 9. Timelapse - 25.09.2026
 
 Hooooly timelapse.... And lock in. I Cranked up 4 hours in one sitting which closes me out for this week hour requirement so that i can focus on school through out the weekend :)
