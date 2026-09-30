@@ -2,6 +2,33 @@
 
 - Author: ajakovski07
 
+## 11. Timelapse - 30.09.2026
+
+A busy day but still managed to get in 3 hours of timelaspse. The work was kinda slow at some periods but i think its understandable that not a single teenager can sort out this much components and pins really fast, sometimes i start jet lagging and it looks like i am AFKing but instead i am thinking about a different module thats not on the screen. Anyways i did manage to get some progress and im getting very sleepy.
+
+---
+
+**What i did:**
+
+- Upgraded a lot of modules with peripheral schematic
+- Added some missing components
+- Started assigning GPIO pins
+
+---
+
+**Problems that i had:**
+
+- I am struggling with finding a nice usb-c port. I reckon i might be searching for something non-existent because i am a perfectionist but by tomorrow i will surely decide at some part.
+
+---
+
+**Next step:**
+
+- Continue with what im doing lowkey
+
+![Image25](./Documentation/Pictures/Journal_AJ/Image25.png)
+![Image26](./Documentation/Pictures/Journal_AJ/Image26.png)
+
 ---
 
 ## 10. Timelapse - 29.09.2026
