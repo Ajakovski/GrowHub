@@ -4,13 +4,13 @@ from pathlib import Path
 from typing import Iterable, List, Tuple
 
 DB_PATH = Path(__file__).resolve().parent / "growhub.db"
-RETENTION_SECONDS = 30 * 24 * 3600
 MAX_POINTS = 120
 RANGE_SECONDS = {
     "1h": 3600,
     "24h": 24 * 3600,
     "7d": 7 * 24 * 3600,
 }
+RETENTION_SECONDS = max(RANGE_SECONDS.values())
 
 
 @contextmanager
