@@ -55,7 +55,14 @@
                         <span id="moisture-status">Fetching data...</span>
                     </div>
                     <div class="metric-card-detail" id="moisture-detail" hidden>
-                        <div class="detail-chart-stats" id="moisture-detail-stats"></div>
+                        <div class="detail-chart-header">
+                            <div class="detail-chart-stats" id="moisture-detail-stats"></div>
+                            <div class="detail-range" role="group" aria-label="Moisture history range">
+                                <button type="button" class="pill active" data-range="1h">1h</button>
+                                <button type="button" class="pill" data-range="24h">24h</button>
+                                <button type="button" class="pill" data-range="7d">7d</button>
+                            </div>
+                        </div>
                         <svg class="detail-chart" id="moisture-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="Moisture history chart"></svg>
                     </div>
                 </article>
@@ -74,7 +81,14 @@
                         <span id="temp-status">Fetching data...</span>
                     </div>
                     <div class="metric-card-detail" id="temp-detail" hidden>
-                        <div class="detail-chart-stats" id="temp-detail-stats"></div>
+                        <div class="detail-chart-header">
+                            <div class="detail-chart-stats" id="temp-detail-stats"></div>
+                            <div class="detail-range" role="group" aria-label="Temperature history range">
+                                <button type="button" class="pill active" data-range="1h">1h</button>
+                                <button type="button" class="pill" data-range="24h">24h</button>
+                                <button type="button" class="pill" data-range="7d">7d</button>
+                            </div>
+                        </div>
                         <svg class="detail-chart" id="temp-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="Temperature history chart"></svg>
                     </div>
                 </article>

@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import device, web, ai
+import history
+
+history.init_db()
 
 app = FastAPI(title="GrowHub core api")
 

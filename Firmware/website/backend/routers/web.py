@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response, StreamingResponse
+from typing import Literal
+import time
+
+import history
 from routers.device import (
     current_state,
     get_latest_frame,
@@ -31,6 +35,18 @@ async def get_hardware_catalog():
 @router.get("/plant-stats")
 async def get_plant_stress():
     return current_state
+
+
+@router.get("/history")
+async def get_history(
+    device: str = "hub",
+    range_key: Literal["1h", "24h", "7d"] = Query("1h", alias="range"),
+):
+    return {
+        "device": device,
+        "range": range_key,
+        "points": history.get_history(device, range_key, time.time()),
+    }
 
 
 @router.get("/camera")

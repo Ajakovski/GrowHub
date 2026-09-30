@@ -15,6 +15,7 @@ try:
 except ImportError:
     cv2 = None
 
+
 def generate_fake_telemetry():
     return {
         "hub_id": HUB_ID,
@@ -37,18 +38,19 @@ def generate_fake_telemetry():
 
 def camera_loop():
     if cv2 is None:
-        print("opencv-python not installed - camera feed disabled.")
+        print("opencv-python not installed — camera feed disabled. Run: pip install opencv-python-headless")
         return
 
     cap = cv2.VideoCapture(CAMERA_INDEX)
     if not cap.isOpened():
-        print(f"could not open webcam index {CAMERA_INDEX}")
+        print(f"could not open webcam index {CAMERA_INDEX} — camera feed disabled")
         return
 
+    # Prefer a modest resolution for faster uploads
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-    print(f"webcam opened (index {CAMERA_INDEX}) - streaming to {CAMERA_URL}")
+    print(f"webcam opened (index {CAMERA_INDEX}) — streaming to {CAMERA_URL}")
     consecutive_failures = 0
 
     while True:
@@ -56,7 +58,7 @@ def camera_loop():
         if not ok or frame is None:
             consecutive_failures += 1
             if consecutive_failures >= 5:
-                print("webcam read failed repeatedly - retrying in 2s")
+                print("webcam read failed repeatedly — retrying in 2s")
                 time.sleep(2)
                 consecutive_failures = 0
             continue
@@ -82,8 +84,8 @@ def camera_loop():
             print(f"camera upload error: {error}")
 
         time.sleep(CAMERA_INTERVAL_SEC)
-                
-        
+
+
 print(f"Starting ESP32 simulator for {HUB_ID}...")
 threading.Thread(target=camera_loop, daemon=True).start()
 
@@ -104,4 +106,3 @@ while True:
         print("Failed to connect to FastAPI. Is the server running?")
 
     time.sleep(5)
-    
