@@ -1,0 +1,33 @@
+services:
+    backend:
+        build: ./backend
+        ports:
+            - "8000:8000"
+        environment:
+            GROWHUB_DB_PATH: /data/growhub.db
+        volumes:
+            - growhub-data:/data
+        restart: unless-stopped
+
+    frontend:
+        image: nginx:alpine
+        ports:
+            - "5000:80"
+        volumes:
+            - ./frontend:/usr/share/nginx/html:ro,z
+        restart: unless-stopped
+
+    simulator:
+        build: ./backend
+        command: ["python", "esp32_simulator.py"]
+        environment:
+            GROWHUB_API_BASE: http://backend:8000
+            CAMERA_INDEX: "0"
+        devices:
+            - /dev/video0:/dev/video0
+        depends_on:
+            - backend
+        restart: unless-stopped
+
+volumes:
+    growhub-data:

@@ -1,12 +1,14 @@
+import os
 import requests
 import time
 import random
 import threading
 
-API_URL = "http://localhost:8000/api/device/telemetry"
-CAMERA_URL = "http://localhost:8000/api/device/camera"
+API_BASE = os.environ.get("GROWHUB_API_BASE", "http://localhost:8000")
+API_URL = f"{API_BASE}/api/device/telemetry"
+CAMERA_URL = f"{API_BASE}/api/device/camera"
 HUB_ID = "hub_beta_001"
-CAMERA_INDEX = 0
+CAMERA_INDEX = int(os.environ.get("CAMERA_INDEX", "0"))
 CAMERA_INTERVAL_SEC = 5
 JPEG_QUALITY = 70
 

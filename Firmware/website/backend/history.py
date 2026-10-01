@@ -1,9 +1,10 @@
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
-DB_PATH = Path(__file__).resolve().parent / "growhub.db"
+DB_PATH = Path(os.environ.get("GROWHUB_DB_PATH", Path(__file__).resolve().parent / "growhub.db"))
 MAX_POINTS = 120
 RANGE_SECONDS = {
     "1h": 3600,
