@@ -2,6 +2,40 @@
 
 - Author: ajakovski07
 
+## 12. Timelapse - 01.09.2026
+
+Im soooo sleeeepy.... I mightve zoned out while timelapsing so i must rewatch my timelapse and edit it. Anyways i did a couple stuff today and in particular i nit picked a couple more components for the project and added other new peripheral components. The work is really repeatable but i must do it now and not in the PCB construction process.
+
+I also FINALLY ASSIGNED the MCU pins. That way i can more clearly and easily wire other modules.
+
+---
+
+**What i did:**
+
+- Assigned the whole MCU pinout
+- Added a couple components
+- Added their peripheral components
+
+---
+
+**Problems that i had:**
+
+- Figuring which schematic to follow for my MCU
+- I am super sleepy and its past 1AM (3 hours past my bedtime) so pls dont get angry on my jetlagging while reviewing.
+
+---
+
+**Next step:**
+
+- Im getting very close to finishing off the main board so i should aim to close that task
+- Overall finish the schematic
+
+![Image27](./Documentation/Pictures/Journal_AJ/Image27.png)
+![Image28](./Documentation/Pictures/Journal_AJ/Image28.png)
+![Image29](./Documentation/Pictures/Journal_AJ/Image29.png)
+
+---
+
 ## 11. Timelapse - 30.09.2026
 
 A busy day but still managed to get in 3 hours of timelaspse. The work was kinda slow at some periods but i think its understandable that not a single teenager can sort out this much components and pins really fast, sometimes i start jet lagging and it looks like i am AFKing but instead i am thinking about a different module thats not on the screen. Anyways i did manage to get some progress and im getting very sleepy.
