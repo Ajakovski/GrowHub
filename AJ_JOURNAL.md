@@ -2,6 +2,140 @@
 
 - Author: ajakovski07
 
+## 12. Timelapse - 01.09.2026
+
+Im soooo sleeeepy.... I mightve zoned out while timelapsing so i must rewatch my timelapse and edit it. Anyways i did a couple stuff today and in particular i nit picked a couple more components for the project and added other new peripheral components. The work is really repeatable but i must do it now and not in the PCB construction process.
+
+I also FINALLY ASSIGNED the MCU pins. That way i can more clearly and easily wire other modules.
+
+---
+
+**What i did:**
+
+- Assigned the whole MCU pinout
+- Added a couple components
+- Added their peripheral components
+
+---
+
+**Problems that i had:**
+
+- Figuring which schematic to follow for my MCU
+- I am super sleepy and its past 1AM (3 hours past my bedtime) so pls dont get angry on my jetlagging while reviewing.
+
+---
+
+**Next step:**
+
+- Im getting very close to finishing off the main board so i should aim to close that task
+- Overall finish the schematic
+
+![Image27](./Documentation/Pictures/Journal_AJ/Image27.png)
+![Image28](./Documentation/Pictures/Journal_AJ/Image28.png)
+![Image29](./Documentation/Pictures/Journal_AJ/Image29.png)
+
+---
+
+## 11. Timelapse - 30.09.2026
+
+A busy day but still managed to get in 3 hours of timelaspse. The work was kinda slow at some periods but i think its understandable that not a single teenager can sort out this much components and pins really fast, sometimes i start jet lagging and it looks like i am AFKing but instead i am thinking about a different module thats not on the screen. Anyways i did manage to get some progress and im getting very sleepy.
+
+---
+
+**What i did:**
+
+- Upgraded a lot of modules with peripheral schematic
+- Added some missing components
+- Started assigning GPIO pins
+
+---
+
+**Problems that i had:**
+
+- I am struggling with finding a nice usb-c port. I reckon i might be searching for something non-existent because i am a perfectionist but by tomorrow i will surely decide at some part.
+
+---
+
+**Next step:**
+
+- Continue with what im doing lowkey
+
+![Image25](./Documentation/Pictures/Journal_AJ/Image25.png)
+![Image26](./Documentation/Pictures/Journal_AJ/Image26.png)
+
+---
+
+## 10. Timelapse - 29.09.2026
+
+After a long week I continue again with this project and in todays (midnight) timelapse even though i am super tired i clocked in some work and in particular i assigned some components and added their peripheral schematics. I also started assigning the GPIO Pins finally so once that is done and connected we will move on to PCBs.
+
+---
+
+**What i did:**
+
+- Added 2 different LDOs for different purposes
+- Improved MCU peripheral schematic
+- Assigned MCU GPIOs
+
+---
+
+**Problems that i had:**
+
+- Super exhausted and sleepy
+
+---
+
+**Next steps:**
+
+- Finish off peripheral schematics
+- Finish off GPIO assignments
+
+![Image23](./Documentation/Pictures/Journal_AJ/Image23.png)
+![Image24](./Documentation/Pictures/Journal_AJ/Image24.png)
+
+---
+
+## 9. Timelapse - 25.09.2026
+
+Hooooly timelapse.... And lock in. I Cranked up 4 hours in one sitting which closes me out for this week hour requirement so that i can focus on school through out the weekend :)
+
+A lot of stuff have improved today and most important improvement was the ***Input Protection Controller*** because HOOOLLLYYY WAS THAT A COMPLEX IC as it turned out. Behind timelapsing hours i decided to read the documentation and i found out that the recommendations are all flawed, like a lot. And because im a perfectionist i had to upgrade my IC operating efficiency.
+
+This will probably be the last timelapse for Week 2 and so far i am happy of mine and overall our teams progress. For next week i plan on finishing the schematic so that i can start focusing on the Main_PCB 4-layer PCB.
+
+I know it looks dull that i am working for so long on just the schematic but it really is a long process for such a big project.
+
+---
+
+**What i did:**
+
+- Started working on Floor_PCB and added most of the components
+- Finished a couple peripheral schematics
+- Improved peripheral schematics
+- Fixed a lot of errors that i've made previously
+
+---
+
+**Problems that i had:**
+
+- A lot of issues that i had to fix
+- Complex IC that required a lot of work
+- A lot of multiplexers and expanders are needed
+
+---
+
+**Next step:**
+
+- Continue implementing new components in Floor_PCB
+- Finish the schematics in Main_PCB
+- Upgrade or fix errors in previous modules
+
+![Image20](./Documentation/Pictures/Journal_AJ/Image20.png)
+![Image21](./Documentation/Pictures/Journal_AJ/Image21.png)
+![Image22](./Documentation/Pictures/Journal_AJ/Image22.png)
+
+---
+
 ## 8. Timelapse - 24.09.2026
 
 Grinded up a bit and i implemented a lot of schematic features. I am still lacking a couple of components tht me and my partner mentioned for this project so i am both implementing and building their environment for efficient workflow.

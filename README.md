@@ -55,7 +55,7 @@ A lot of working skills are required for this project to succeed so i hope you u
 
 | Designator | Function | Part | Package | Qty | Price(USD) | Link |
 |---|---|---|---|---|---|---|
-| X | MCU MODULE | ESP32-S3-WROOM-1 N16R8 | LCC-54 | 1 | X | X |
+| X | MCU MODULE | ESP32-S3-WROOM-1U N16R8 | LCC-54 | 1 | X | X |
 | X | Server (if cloud exempted) | Raspberry Pi 5 | X | 1 | X | X |
 | X | Soil moisture sensor | Capactive | X | 8-24 | X | X |
 | X | CO2 Sensor | SC41-D-R2 NDIR | X | 1 | X | X | 
@@ -67,8 +67,15 @@ A lot of working skills are required for this project to succeed so i hope you u
 | X | Power Supply | 24V 8A DC | X | 1 | X | X |
 | X | 24V->5V Buck | LMR33630ADDA | HSOIC | 1 | X | X |
 | X | 5V->3V3 Buck | LMR33610BDDAR | HSOIC | 1 | X | X |
-| X | High Current Protection | INA226AIDGSR | VSSOP-10P | X | X |
-| X | Input Protection Controller | LTC4364IS-2#PBF | 16-SOIC | X | X |
+| X | High Current Protection | INA226AIDGSR | VSSOP-10P | 1 | X | X |
+| X | Input Protection Controller | LTC4364IS-2#PBF | 16-SOIC | 1 | X | X |
+| X | I2C Mux | TCA9548APWR |  24-TSSOP | 4 | X | X |
+| X | Analog Mux | ADG706BRU | RU-28 | 3 | X | X |
+| X | I/O Expander | MCP23017T | SOIC-28 | 3 | X | X |
+| X | ADC 16-bit | ADS1115IDGSR | DGS | 3 | X | X |
+| X | PWM Expander | PCA9685BS_118 | 28-HVQFN | 3 | X | X |
+| X | I2C Buffer | P82B96D | SOIC-8 | 3 | X | X |
+| X | Board ID | DS28E07Q_T | TDFN-EP | 3 | X | X |
 
 *Notice: These shipping costs are for a Balkan country so if youa re from EU or USA there are very high chances of having lower shipping costs*
 
@@ -90,9 +97,9 @@ A lot of working skills are required for this project to succeed so i hope you u
 
 - [X] Initial Concept
 - [X] Component List
-- [ ] Schematic Layout Main PCB
+- [X] Schematic Layout Main PCB
 - [ ] PCB Design Main PCB
-- [ ] Schematic Layout Floor PCB
+- [X] Schematic Layout Floor PCB
 - [ ] PCB Design Floor PCB
 - [ ] Firmware
 - [ ] AI training
