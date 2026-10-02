@@ -1,85 +1,25 @@
-const API_URL = "http://localhost:8000/api/web/plant-stats";
-const HISTORY_LIMIT = 36;
-const HISTORY_STORAGE_KEY = "growhub.dashboard.history";
-const LAST_UPDATED_STORAGE_KEY = "growhub.dashboard.lastUpdatedAt";
+const API_BASE = "http://localhost:8000/api/web";
+const API_URL = `${API_BASE}/plant-stats`;
+const HISTORY_URL = `${API_BASE}/history`;
+const SPARKLINE_RANGE = "1h";
+const LEGACY_STORAGE_KEYS = ["growhub.dashboard.history", "growhub.dashboard.lastUpdatedAt"];
 
 let globalTelemetry = null;
 let currentSelection = "hub";
 let knownTileIds = null;
 let lastUpdatedAt = null;
-let hasLoadedOnce = false;
-let historyByDevice = loadHistory();
-lastUpdatedAt = loadLastUpdatedAt();
+let hubOnline = false;
+let detailRange = SPARKLINE_RANGE;
+let sparklineSeries = [];
+let detailSeries = [];
+let historyRequestId = 0;
 
-function loadHistory() {
+function clearLegacyStorage() {
     try {
-        const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
-        if (!raw) return {};
-
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object") return {};
-
-        const cleaned = {};
-        for (const [deviceId, series] of Object.entries(parsed)) {
-            if (!Array.isArray(series)) continue;
-            cleaned[deviceId] = series
-                .filter(
-                    (point) =>
-                        point &&
-                        typeof point.moisture === "number" &&
-                        typeof point.temperature === "number"
-                )
-                .slice(-HISTORY_LIMIT);
-        }
-        return cleaned;
+        LEGACY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
     } catch (error) {
-        console.warn("failed to load sparkline history:", error);
-        return {};
+        console.warn("failed to clear legacy dashboard storage:", error);
     }
-}
-
-function saveHistory() {
-    try {
-        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(historyByDevice));
-    } catch (error) {
-        console.warn("failed to save sparkline history:", error);
-    }
-}
-
-function getLatestHistoryTimestamp() {
-    let latest = null;
-    for (const series of Object.values(historyByDevice)) {
-        if (!Array.isArray(series)) continue;
-        for (const point of series) {
-            if (typeof point.at === "number" && (latest === null || point.at > latest)) {
-                latest = point.at;
-            }
-        }
-    }
-    return latest;
-}
-
-function loadLastUpdatedAt() {
-    try {
-        const raw = localStorage.getItem(LAST_UPDATED_STORAGE_KEY);
-        const stored = Number(raw);
-        if (Number.isFinite(stored) && stored > 0) return stored;
-    } catch (error) {
-        console.warn("failed to load last-updated timestamp:", error);
-    }
-    return getLatestHistoryTimestamp();
-}
-
-function markUpdated(timestamp = Date.now()) {
-    if (!Number.isFinite(timestamp) || timestamp <= 0) return;
-    lastUpdatedAt = timestamp;
-    hasLoadedOnce = true;
-    try {
-        localStorage.setItem(LAST_UPDATED_STORAGE_KEY, String(timestamp));
-    } catch (error) {
-        console.warn("failed to save last-updated timestamp:", error);
-    }
-    updateLastUpdatedLabel();
 }
 
 function moistureStatusText(value) {
@@ -94,14 +34,16 @@ function tempStatusText(value) {
     return "Ambient climate";
 }
 
-function formatRelativeTime(timestamp) {
+function formatRelativeTime(timestamp, prefix = "Updated") {
     if (!Number.isFinite(timestamp) || timestamp <= 0) return "Waiting for first update...";
     const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
-    if (seconds < 2) return "Updated just now";
-    if (seconds < 60) return `Updated ${seconds}s ago`;
+    if (seconds < 2) return `${prefix} just now`;
+    if (seconds < 60) return `${prefix} ${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `Updated ${minutes}m ago`;
-    return `Updated ${Math.floor(minutes / 60)}h ago`;
+    if (minutes < 60) return `${prefix} ${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 48) return `${prefix} ${hours} ago`;
+    return `${prefix} ${Math.floor(hours / 24)}d ago`
 }
 
 function getLastUpdatedElement() {
@@ -127,42 +69,65 @@ function setOfflineState(message = "Offline / Connection Error") {
 
     const lastUpdated = getLastUpdatedElement();
     if (lastUpdated) {
-        lastUpdated.textContent = hasLoadedOnce || lastUpdatedAt
-            ? formatRelativeTime(lastUpdatedAt)
+        lastUpdated.textContent = lastUpdatedAt
+            ? formatRelativeTime(lastUpdatedAt, "Last report")
             : "Connection lost";
     }
 }
 
-function pushHistory(deviceId, moisture, temperature) {
-    if (!historyByDevice[deviceId]) historyByDevice[deviceId] = [];
-    const series = historyByDevice[deviceId];
-    const last = series[series.length - 1];
-    const now = Date.now();
+function renderAlerts() {
+    const alerts = Array.isArray(globalTelemetry?.alerts) ? globalTelemetry.alerts : [];
 
-    if (last && last.moisture === moisture && last.temperature === temperature) {
-        last.at = now;
-        saveHistory();
-        return;
+    const list = document.getElementById("alert-list");
+    if (list) {
+        list.replaceChildren(
+            ...alerts.map((alert) => {
+                const item = document.createElement("div");
+                item.className = "alert-item";
+                item.setAttribute("role", "status");
+                item.textContent = alert.message;
+                return item;
+            })
+        );
+        list.hidden = alerts.length === 0;
     }
 
-    series.push({ moisture, temperature, at: now });
-    if (series.length > HISTORY_LIMIT) series.shift();
-    saveHistory();
+    const devicesWithAlerts = new Set(alerts.map((alert) => alert.device));
+    document.querySelectorAll("#device-selector button[data-id]").forEach((button) => {
+        button.classList.toggle("has-alert", devicesWithAlerts.has(button.getAttribute("data-id")));
+    });
 }
 
-function recordTelemetryHistory() {
-    if (!globalTelemetry?.tiles?.length) return;
+async function fetchHistorySeries(deviceId, range) {
+    const url = new URL(HISTORY_URL);
+    url.searchParams.set("device", deviceId);
+    url.searchParams.set("range", range);
 
-    const avgMoisture =
-        globalTelemetry.tiles.reduce((sum, t) => sum + t.moisture_level, 0) / globalTelemetry.tiles.length;
-    const avgTemp =
-        globalTelemetry.tiles.reduce((sum, t) => sum + t.temperature, 0) / globalTelemetry.tiles.length;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`http error! status: ${response.status}`);
 
-    pushHistory("hub", Number(avgMoisture.toFixed(1)), Number(avgTemp.toFixed(1)));
+    const data = await response.json();
+    return Array.isArray(data.points) ? data.points : [];
+}
 
-    globalTelemetry.tiles.forEach((tile) => {
-        pushHistory(tile.tile_id, tile.moisture_level, tile.temperature);
-    });
+async function refreshHistory() {
+    const requestId = ++historyRequestId;
+    const deviceId = currentSelection;
+    const range = detailRange;
+
+    try {
+        const sparkline = await fetchHistorySeries(deviceId, SPARKLINE_RANGE);
+        const detail = range === SPARKLINE_RANGE ? sparkline : await fetchHistorySeries(deviceId, range);
+
+        // A newer request (device or range switch) may have started while this one was in flight.
+        if (requestId !== historyRequestId) return;
+
+        sparklineSeries = sparkline;
+        detailSeries = detail;
+        renderHistorySparklines();
+    } catch (error) {
+        console.warn("failed to load history:", error);
+    }
 }
 
 function buildSparklinePath(values, width, height) {
@@ -201,7 +166,10 @@ function renderSparkline(svgId, values) {
 
 function updateLastUpdatedLabel() {
     const lastUpdated = getLastUpdatedElement();
-    if (lastUpdated) lastUpdated.textContent = formatRelativeTime(lastUpdatedAt);
+    if (!lastUpdated) return;
+    lastUpdated.textContent = lastUpdatedAt
+        ? formatRelativeTime(lastUpdatedAt, hubOnline ? "Updated" : "Last report")
+        : "Waiting for first update...";
 }
 
 async function fetchPlantStats() {
@@ -210,18 +178,20 @@ async function fetchPlantStats() {
         if (!response.ok) throw new Error(`http error! status: ${response.status}`);
 
         globalTelemetry = await response.json();
+        lastUpdatedAt = globalTelemetry.last_telemetry_at ?? null;
+        hubOnline = Boolean(globalTelemetry.hub_online);
+        setLoading(false);
 
-        if (!globalTelemetry.hub_id) {
+        if (!lastUpdatedAt) {
             setOfflineState("Waiting for hub");
-            setLoading(false);
+            renderAlerts();
             return;
         }
 
-        markUpdated(Date.now());
-        setLoading(false);
-        recordTelemetryHistory();
         updateDeviceSelector();
         renderStats();
+        renderAlerts();
+        refreshHistory();
     } catch (error) {
         console.error("failed to load plant telemetry:", error);
         setLoading(false);
@@ -260,12 +230,15 @@ function updateDeviceSelector() {
 function selectDevice(deviceId) {
     if (!deviceId || deviceId === currentSelection) return;
     currentSelection = deviceId;
+    sparklineSeries = [];
+    detailSeries = [];
     updateDeviceSelector();
     if (globalTelemetry) {
         renderStats();
     } else {
         renderHistorySparklines();
     }
+    refreshHistory();
 }
 
 function getCurrentReadings() {
@@ -336,9 +309,11 @@ function renderStats() {
     const systemStatus = document.getElementById("system-status");
     if (systemStatus) {
         const activeLabel = currentSelection === "hub" ? globalTelemetry.hub_id : currentSelection;
-        systemStatus.textContent = `Active: ${activeLabel}`;
-        systemStatus.style.borderColor = "var(--green)";
+        systemStatus.textContent = hubOnline ? `Active: ${activeLabel}` : "Hub offline";
+        systemStatus.style.borderColor = hubOnline ? "var(--green)" : "#e63946";
     }
+
+    document.getElementById("metric-grid")?.classList.toggle("is-stale", !hubOnline);
 
     updateLastUpdatedLabel();
 }
@@ -368,13 +343,16 @@ function updateCameraFeed(cameraFeedUrl, hubId) {
     }
 }
 
-function formatClock(timestamp) {
+function formatAxisTime(timestamp, range) {
     if (!Number.isFinite(timestamp)) return "--:--";
     const date = new Date(timestamp);
+    if (range === "7d") {
+        return date.toLocaleDateString([], { weekday: "short", day: "numeric" });
+    }
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function renderDetailChart(svgId, statsId, points, unit) {
+function renderDetailChart(svgId, statsId, points, unit, range) {
     const svg = document.getElementById(svgId);
     const stats = document.getElementById(statsId);
     if (!svg) return;
@@ -395,9 +373,9 @@ function renderDetailChart(svgId, statsId, points, unit) {
     const min = Math.min(...values);
     const max = Math.max(...values);
     const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
-    const range = max - min || 1;
-    const yMin = min - range * 0.08;
-    const yMax = max + range * 0.08;
+    const spread = max - min || 1;
+    const yMin = min - spread * 0.08;
+    const yMax = max + spread * 0.08;
     const yRange = yMax - yMin || 1;
 
     const coords = values.map((value, index) => {
@@ -426,16 +404,18 @@ function renderDetailChart(svgId, statsId, points, unit) {
         .filter((index, i, arr) => arr.indexOf(index) === i)
         .map((index) => {
             const point = coords[index];
-            return `<text class="detail-chart-axis" x="${point.x.toFixed(1)}" y="${height - 12}" text-anchor="middle">${formatClock(point.at)}</text>`;
+            return `<text class="detail-chart-axis" x="${point.x.toFixed(1)}" y="${height - 12}" text-anchor="middle">${formatAxisTime(point.at, range)}</text>`;
         })
         .join("");
 
-    const dots = coords
-        .map(
-            (point) =>
-                `<circle class="detail-chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.2"></circle>`
-        )
-        .join("");
+    const dots = coords.length > 40
+        ? ""
+        : coords
+            .map(
+                (point) =>
+                    `<circle class="detail-chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.2"></circle>`
+            )
+            .join("");
 
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     svg.innerHTML = `
@@ -451,38 +431,49 @@ function renderDetailChart(svgId, statsId, points, unit) {
             <div class="detail-stat"><span>Min</span><strong>${min.toFixed(1)}${unit}</strong></div>
             <div class="detail-stat"><span>Avg</span><strong>${avg.toFixed(1)}${unit}</strong></div>
             <div class="detail-stat"><span>Max</span><strong>${max.toFixed(1)}${unit}</strong></div>
-            <div class="detail-stat"><span>Samples</span><strong>${values.length}</strong></div>
+            <div class="detail-stat"><span>Points</span><strong>${values.length}</strong></div>
         `;
     }
 }
 
 function renderHistorySparklines() {
-    const series = historyByDevice[currentSelection] || [];
     renderSparkline(
         "moisture-sparkline",
-        series.map((point) => point.moisture)
+        sparklineSeries.map((point) => point.moisture)
     );
     renderSparkline(
         "temp-sparkline",
-        series.map((point) => point.temperature)
+        sparklineSeries.map((point) => point.temperature)
     );
     renderDetailCharts();
 }
 
 function renderDetailCharts() {
-    const series = historyByDevice[currentSelection] || [];
     renderDetailChart(
         "moisture-detail-chart",
         "moisture-detail-stats",
-        series.map((point) => ({ value: point.moisture, at: point.at })),
-        "%"
+        detailSeries.map((point) => ({ value: point.moisture, at: point.at })),
+        "%",
+        detailRange
     );
     renderDetailChart(
         "temp-detail-chart",
         "temp-detail-stats",
-        series.map((point) => ({ value: point.temperature, at: point.at })),
-        "°C"
+        detailSeries.map((point) => ({ value: point.temperature, at: point.at })),
+        "°C",
+        detailRange
     );
+}
+
+function setDetailRange(range) {
+    if (!range || range === detailRange) return;
+    detailRange = range;
+
+    document.querySelectorAll(".detail-range button[data-range]").forEach((button) => {
+        button.classList.toggle("active", button.getAttribute("data-range") === detailRange);
+    });
+
+    refreshHistory();
 }
 
 function toggleMetricCard(card) {
@@ -507,9 +498,11 @@ function toggleMetricCard(card) {
 }
 
 function initDashboard() {
+    clearLegacyStorage();
     setLoading(true);
     updateLastUpdatedLabel();
     renderHistorySparklines();
+    refreshHistory();
     fetchPlantStats();
     setInterval(fetchPlantStats, 5000);
     setInterval(updateLastUpdatedLabel, 1000);
@@ -526,6 +519,13 @@ function initDashboard() {
         const button = card.querySelector(".metric-expand-btn");
         if (!button) return;
         button.addEventListener("click", () => toggleMetricCard(card));
+    });
+
+    document.querySelectorAll(".detail-range").forEach((group) => {
+        group.addEventListener("click", (event) => {
+            const button = event.target.closest("button[data-range]");
+            if (button) setDetailRange(button.getAttribute("data-range"));
+        });
     });
 }
 
