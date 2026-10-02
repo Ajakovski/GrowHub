@@ -11,9 +11,19 @@ router = APIRouter()
 CAMERA_STREAM_URL = "http://localhost:8000/api/web/camera/stream"
 CAMERA_STILL_URL = "http://localhost:8000/api/web/camera"
 
+NEXT_WAKE_MINUTES = 15
+MIN_OFFLINE_SECONDS = 30
+MISSED_REPORTS_BEFORE_OFFLINE = 3
+DRY_MOISTURE_PERCENT = 30.0
+SUSTAINED_READINGS = 3
+
 _latest_frame: Optional[bytes] = None
 _latest_frame_at: float = 0.0
 _frame_event = asyncio.Event()
+
+_last_telemetry_at: Optional[float] = None
+_telemetry_interval: Optional[float] = None
+_low_water_streak = 0
 
 current_state = {
     "hub_id": "Offline Hub",
@@ -74,8 +84,57 @@ async def wait_for_frame_change(since: float, timeout: float = 1.0) -> Tuple[Opt
     return _latest_frame, _latest_frame_at
 
 
+def get_hub_status(now: float) -> dict:
+    if _last_telemetry_at is None:
+        return {"hub_online": False, "last_telemetry_at": None}
+
+    interval = _telemetry_interval or NEXT_WAKE_MINUTES * 60
+    offline_after = max(MIN_OFFLINE_SECONDS, MISSED_REPORTS_BEFORE_OFFLINE * interval)
+    return {
+        "hub_online": now - _last_telemetry_at <= offline_after,
+        "last_telemetry_at": int(_last_telemetry_at * 1000),
+    }
+
+
+def _tile_label(tile_id: str) -> str:
+    return tile_id.replace("_", " ").title()
+
+
+def get_alerts() -> List[dict]:
+    alerts = []
+
+    for tile in current_state.get("tiles", []):
+        tile_id = tile["tile_id"]
+        recent = history.get_recent_moisture(tile_id, SUSTAINED_READINGS)
+        if len(recent) == SUSTAINED_READINGS and all (m < DRY_MOISTURE_PERCENT for m in recent):
+            alerts.append({
+                "kind": "dry_tile",
+                "device": tile_id,
+                "message": f"{_tile_label(tile_id)} has been below {DRY_MOISTURE_PERCENT:.0f}% moisture "
+                        f"for the last {SUSTAINED_READINGS} readings.",
+            })
+
+    if _low_water_streak >= SUSTAINED_READINGS:
+        alerts.append({
+            "kind": "reservoir_low",
+            "device": "hub",
+            "message": f"Reservoir has been low for the last {_low_water_streak} readings. refill it"
+        })
+
+    return alerts
+
+
 @router.post("/telemetry")
 async def receive_telemetry(data: TelemetryPayload):
+    global _last_telemetry_at, _telemetry_interval, _low_water_streak
+
+    now = time.time()
+    if _last_telemetry_at is not None:
+        _telemetry_interval = now - _last_telemetry_at
+    _last_telemetry_at = now
+    _low_water_streak = 0 if data.water_level_ok else _low_water_streak + 1
+
+    
     preserved = {
         "camera_feed_url": current_state.get("camera_feed_url", CAMERA_STILL_URL),
         "camera_online": current_state.get("camera_online", False),
@@ -98,7 +157,7 @@ async def receive_telemetry(data: TelemetryPayload):
         avg_moisture = sum(tile.moisture_level for tile in data.tiles) / len(data.tiles)
         avg_temp = sum(tile.temperature for tile in data.tiles) / len(data.tiles)
         rows.append(("hub", avg_moisture, avg_temp))
-        history.record_readings(time.time(), rows)
+        history.record_readings(now, rows)
 
     print(f"hub {data.hub_id} reported {data.active_tiles} active tiles.")
     for tile in data.tiles:
@@ -107,7 +166,7 @@ async def receive_telemetry(data: TelemetryPayload):
     return {
         "status": "success",
         "action": "sleep",
-        "next_wake_minutes": 15,
+        "next_wake_minutes": NEXT_WAKE_MINUTES,
     }
 
 

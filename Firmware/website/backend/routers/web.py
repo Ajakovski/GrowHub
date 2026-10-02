@@ -6,6 +6,8 @@ import time
 import history
 from routers.device import (
     current_state,
+    get_alerts,
+    get_hub_status,
     get_latest_frame,
     get_latest_frame_at,
     wait_for_frame_change,
@@ -34,7 +36,7 @@ async def get_hardware_catalog():
 
 @router.get("/plant-stats")
 async def get_plant_stress():
-    return current_state
+    return {**current_state, **get_hub_status(time.time()), "alerts": get_alerts()}
 
 
 @router.get("/history")

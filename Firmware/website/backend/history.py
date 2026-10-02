@@ -52,6 +52,15 @@ def record_readings(recorded_at: float, rows: Iterable[Tuple[str, float, float]]
         conn.execute("DELETE FROM readings WHERE recorded_at < ?", (recorded_at - RETENTION_SECONDS,))
 
 
+def get_recent_moisture(device_id: str, limit: int) -> List[float]:
+    with _connection() as conn:
+        rows = conn.execute(
+            "SELECT moisture FROM readings WHERE device_id = ? ORDER BY recorded_at DESC LIMIT ?",
+            (device_id, limit),
+        ).fetchall()
+    return [moisture for (moisture,) in rows]
+
+
 def get_history(device_id: str, range_key: str, now: float) -> List[dict]:
     span = RANGE_SECONDS[range_key]
     bucket_seconds = span / MAX_POINTS

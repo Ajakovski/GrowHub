@@ -113,29 +113,57 @@ The software side of GrowHub is the live monitoring layer: a local FastAPI backe
 
 - **Frontend** — static site under `Firmware/website/frontend` (HTML / CSS / JS)
 - **Backend** — FastAPI app under `Firmware/website/backend` (`uvicorn`, port `8000`)
+- **Database** — SQLite (`growhub.db`) for sensor history, no extra server needed
 - **Simulator** — `esp32_simulator.py` (fake hub telemetry + optional webcam upload via OpenCV)
+- **Docker Compose** — `Firmware/website/compose.yaml` starts all three with one command
 
 ### What it does today
 
 - Hub + per-tile telemetry (moisture, temperature, water reservoir, AI status)
 - Device selector to switch between **Main Hub** averages and individual tiles
-- Live “last updated” stamp and sparkline history (persisted in `localStorage`)
-- Expandable moisture / temperature cards with a larger history chart (min / avg / max)
-- Camera still feed served by the backend (`/api/web/camera`) and shown on the dashboard
-- Simulator posts JSON telemetry to `/api/device/telemetry` and JPEG frames to `/api/device/camera`
+- Live “last updated” stamp and 1-hour sparklines on the moisture / temperature cards
+- Sensor history stored on the backend in SQLite, so every browser sees the same charts and they survive refreshes and restarts
+- Expandable moisture / temperature cards with a larger history chart (min / avg / max) and **1h / 24h / 7d** range buttons
+- History is averaged into at most 120 points per chart and kept for **7 days**, older readings are deleted automatically
+- **Hub offline detection**: the backend tracks when the hub last reported and how often it reports. If about 3 reports are missed (never less than 30 seconds), the dashboard shows a red "Hub offline" pill, "Last report Xm ago", and fades the last known values. This works for both the 5-second simulator and a real ESP32 that wakes every 15 minutes
+- **Alerts**: a red banner appears above the cards, and a red dot on that device's button, when a tile stays below 30% moisture or the reservoir stays low for 3 readings in a row. One noisy reading never triggers an alert
+- Camera still feed served by the backend (`/api/web/camera`) and shown on the dashboard. Frames are kept in memory only, never written to the database
+- Simulator posts JSON telemetry to `/api/device/telemetry` and JPEG frames to `/api/device/camera` every 5 seconds
 
-### How to run (local)
+### How to run (Docker, recommended)
+
+From `Firmware/website`:
+
+```bash
+docker compose up -d --build
+```
+
+- Dashboard: `http://localhost:5000/dashboard.html`
+- API: `http://localhost:8000`
+- Stop everything with `docker compose down` (history stays in the `growhub-data` volume; `docker compose down -v` wipes it)
+- The simulator container uses the webcam at `/dev/video0`. Remove the `devices` lines in `compose.yaml` if your machine has no camera
+
+### How to run (manually, three terminals)
 
 1. Start the API from `Firmware/website/backend` (example: `uvicorn main:app --reload --port 8000`)
 2. Serve the frontend (example: `python -m http.server 5000` from `Firmware/website/frontend`)
 3. Run the simulator: `python esp32_simulator.py`
 4. Open the dashboard and hard-refresh if assets were just updated
 
+Optional environment variables:
+
+| Variable | Default | Used by |
+|---|---|---|
+| `GROWHUB_DB_PATH` | `backend/growhub.db` | Backend, where the SQLite file lives |
+| `GROWHUB_API_BASE` | `http://localhost:8000` | Simulator, which backend to post to |
+| `CAMERA_INDEX` | `0` | Simulator, which webcam OpenCV opens |
+
 Useful endpoints:
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/web/plant-stats` | Current hub/tile state for the dashboard |
+| GET | `/api/web/plant-stats` | Current hub/tile state for the dashboard, plus `hub_online`, `last_telemetry_at` and active `alerts` |
+| GET | `/api/web/history?device=hub&range=1h` | Moisture / temperature history (`device` = `hub` or a tile id, `range` = `1h`, `24h`, `7d`) |
 | POST | `/api/device/telemetry` | Simulator / device telemetry ingest |
 | POST | `/api/device/camera` | Upload latest camera frame |
 | GET | `/api/web/camera` | Latest still image for the dashboard |

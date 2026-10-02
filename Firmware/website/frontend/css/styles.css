@@ -840,6 +840,47 @@ button.pill {
     color: var(--surface);
 }
 
+.pill.has-alert {
+    position: relative;
+}
+
+.pill.has-alert::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: #e63946;
+    border: 2px solid var(--line);
+}
+
+.alert-list {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.alert-list[hidden] {
+    display: none;
+}
+
+.alert-item {
+    border: 1px solid rgba(230, 57, 70, 0.35);
+    background: rgba(230, 57, 70, 0.08);
+    color: #a4161a;
+    border-radius: 14px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.dashboard-metrics.is-stale .metric-card > strong,
+.dashboard-metrics.is-stale .metric-card-main > strong {
+    opacity: 0.5;
+}
+
 .number-strip {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1112,7 +1153,7 @@ button.pill {
         background: var(--surface);
         padding: 0.45rem;
         box-shadow: var(--shadow);
-        display: noen;
+        display: none;
         z-index: 1001;
     }
 

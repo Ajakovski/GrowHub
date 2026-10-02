@@ -2,48 +2,24 @@ const API_BASE = "http://localhost:8000/api/web";
 const API_URL = `${API_BASE}/plant-stats`;
 const HISTORY_URL = `${API_BASE}/history`;
 const SPARKLINE_RANGE = "1h";
-const LEGACY_HISTORY_STORAGE_KEY = "growhub.dashboard.history";
-const LAST_UPDATED_STORAGE_KEY = "growhub.dashboard.lastUpdatedAt";
+const LEGACY_STORAGE_KEYS = ["growhub.dashboard.history", "growhub.dashboard.lastUpdatedAt"];
 
 let globalTelemetry = null;
 let currentSelection = "hub";
 let knownTileIds = null;
-let lastUpdatedAt = loadLastUpdatedAt();
-let hasLoadedOnce = false;
+let lastUpdatedAt = null;
+let hubOnline = false;
 let detailRange = SPARKLINE_RANGE;
 let sparklineSeries = [];
 let detailSeries = [];
 let historyRequestId = 0;
 
-function clearLegacyHistory() {
+function clearLegacyStorage() {
     try {
-        localStorage.removeItem(LEGACY_HISTORY_STORAGE_KEY);
+        LEGACY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
     } catch (error) {
-        console.warn("failed to clear legacy sparkline history:", error);
+        console.warn("failed to clear legacy dashboard storage:", error);
     }
-}
-
-function loadLastUpdatedAt() {
-    try {
-        const raw = localStorage.getItem(LAST_UPDATED_STORAGE_KEY);
-        const stored = Number(raw);
-        if (Number.isFinite(stored) && stored > 0) return stored;
-    } catch (error) {
-        console.warn("failed to load last-updated timestamp:", error);
-    }
-    return null;
-}
-
-function markUpdated(timestamp = Date.now()) {
-    if (!Number.isFinite(timestamp) || timestamp <= 0) return;
-    lastUpdatedAt = timestamp;
-    hasLoadedOnce = true;
-    try {
-        localStorage.setItem(LAST_UPDATED_STORAGE_KEY, String(timestamp));
-    } catch (error) {
-        console.warn("failed to save last-updated timestamp:", error);
-    }
-    updateLastUpdatedLabel();
 }
 
 function moistureStatusText(value) {
@@ -58,14 +34,16 @@ function tempStatusText(value) {
     return "Ambient climate";
 }
 
-function formatRelativeTime(timestamp) {
+function formatRelativeTime(timestamp, prefix = "Updated") {
     if (!Number.isFinite(timestamp) || timestamp <= 0) return "Waiting for first update...";
     const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
-    if (seconds < 2) return "Updated just now";
-    if (seconds < 60) return `Updated ${seconds}s ago`;
+    if (seconds < 2) return `${prefix} just now`;
+    if (seconds < 60) return `${prefix} ${seconds}s ago`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `Updated ${minutes}m ago`;
-    return `Updated ${Math.floor(minutes / 60)}h ago`;
+    if (minutes < 60) return `${prefix} ${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 48) return `${prefix} ${hours} ago`;
+    return `${prefix} ${Math.floor(hours / 24)}d ago`
 }
 
 function getLastUpdatedElement() {
@@ -91,10 +69,33 @@ function setOfflineState(message = "Offline / Connection Error") {
 
     const lastUpdated = getLastUpdatedElement();
     if (lastUpdated) {
-        lastUpdated.textContent = hasLoadedOnce || lastUpdatedAt
-            ? formatRelativeTime(lastUpdatedAt)
+        lastUpdated.textContent = lastUpdatedAt
+            ? formatRelativeTime(lastUpdatedAt, "Last report")
             : "Connection lost";
     }
+}
+
+function renderAlerts() {
+    const alerts = Array.isArray(globalTelemetry?.alerts) ? globalTelemetry.alerts : [];
+
+    const list = document.getElementById("alert-list");
+    if (list) {
+        list.replaceChildren(
+            ...alerts.map((alert) => {
+                const item = document.createElement("div");
+                item.className = "alert-item";
+                item.setAttribute("role", "status");
+                item.textContent = alert.message;
+                return item;
+            })
+        );
+        list.hidden = alerts.length === 0;
+    }
+
+    const devicesWithAlerts = new Set(alerts.map((alert) => alert.device));
+    document.querySelectorAll("#device-selector button[data-id]").forEach((button) => {
+        button.classList.toggle("has-alert", devicesWithAlerts.has(button.getAttribute("data-id")));
+    });
 }
 
 async function fetchHistorySeries(deviceId, range) {
@@ -165,7 +166,10 @@ function renderSparkline(svgId, values) {
 
 function updateLastUpdatedLabel() {
     const lastUpdated = getLastUpdatedElement();
-    if (lastUpdated) lastUpdated.textContent = formatRelativeTime(lastUpdatedAt);
+    if (!lastUpdated) return;
+    lastUpdated.textContent = lastUpdatedAt
+        ? formatRelativeTime(lastUpdatedAt, hubOnline ? "Updated" : "Last report")
+        : "Waiting for first update...";
 }
 
 async function fetchPlantStats() {
@@ -174,17 +178,19 @@ async function fetchPlantStats() {
         if (!response.ok) throw new Error(`http error! status: ${response.status}`);
 
         globalTelemetry = await response.json();
+        lastUpdatedAt = globalTelemetry.last_telemetry_at ?? null;
+        hubOnline = Boolean(globalTelemetry.hub_online);
+        setLoading(false);
 
-        if (!globalTelemetry.hub_id) {
+        if (!lastUpdatedAt) {
             setOfflineState("Waiting for hub");
-            setLoading(false);
+            renderAlerts();
             return;
         }
 
-        markUpdated(Date.now());
-        setLoading(false);
         updateDeviceSelector();
         renderStats();
+        renderAlerts();
         refreshHistory();
     } catch (error) {
         console.error("failed to load plant telemetry:", error);
@@ -303,9 +309,11 @@ function renderStats() {
     const systemStatus = document.getElementById("system-status");
     if (systemStatus) {
         const activeLabel = currentSelection === "hub" ? globalTelemetry.hub_id : currentSelection;
-        systemStatus.textContent = `Active: ${activeLabel}`;
-        systemStatus.style.borderColor = "var(--green)";
+        systemStatus.textContent = hubOnline ? `Active: ${activeLabel}` : "Hub offline";
+        systemStatus.style.borderColor = hubOnline ? "var(--green)" : "#e63946";
     }
+
+    document.getElementById("metric-grid")?.classList.toggle("is-stale", !hubOnline);
 
     updateLastUpdatedLabel();
 }
@@ -490,7 +498,7 @@ function toggleMetricCard(card) {
 }
 
 function initDashboard() {
-    clearLegacyHistory();
+    clearLegacyStorage();
     setLoading(true);
     updateLastUpdatedLabel();
     renderHistorySparklines();
