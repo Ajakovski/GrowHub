@@ -2,7 +2,39 @@
 
 - Author: ajakovski07
 
-## 12. Timelapse - 01.09.2026
+## 13. Timelapse - 02.10.2026
+
+Once again i am timelapsing late and sleepy but now with even worse condition and that was a bad WiFi....... I lowkey crashed out a couple times because the timelapse was running slow due to low internet connection and not being able to open anything. I did get a couple stuff sorted out tho :)))
+
+---
+
+**What i did:**
+
+- I finally found good connectors. Honestly i had to search for them without timelapsing because i just couldnt find the appropriate one without taking too much time on timelapse.
+- Improved the LDO for my basic floor.
+- Added more wiring connections
+- Added more peripherals
+
+---
+
+**Problems that i had:**
+
+- The WiFi issues were SOOO ANNOYING. I hope that isnt a problem even though at the start it is super noticable that i ahd issues with loading pages.
+- Because i am travelling its super hard for me to work like i am so tired.
+
+--- 
+
+**Whats next:**
+
+- I think by the end of week i will have 90% done of the schematic which is amazing so that next week i can start the PCB as planned.
+- We need to define the final way of water sourcing the floors and also to decide whether its hydroponics or basic watering system.
+
+![Image30](./Documentation/Pictures/Journal_AJ/Image30.png)
+![Image31](./Documentation/Pictures/Journal_AJ/Image31.png)
+
+---
+
+## 12. Timelapse - 01.10.2026
 
 Im soooo sleeeepy.... I mightve zoned out while timelapsing so i must rewatch my timelapse and edit it. Anyways i did a couple stuff today and in particular i nit picked a couple more components for the project and added other new peripheral components. The work is really repeatable but i must do it now and not in the PCB construction process.
 
