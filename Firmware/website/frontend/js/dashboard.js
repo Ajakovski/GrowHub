@@ -22,16 +22,21 @@ function clearLegacyStorage() {
     }
 }
 
-function moistureStatusText(value) {
-    if (value < 30) return "Action: irrigation required";
-    if (value > 70) return "High moisture";
-    return "Optimal moisture";
+function ecStatusText(value) {
+    if (value == null) return "No EC sensor reading";
+    if (value < 0.8) return "Low nutrients: dose reservoir";
+    if (value > 2.5) return "High nutrients: dilute reservoir";
+    return "Nutrients in range";
 }
 
 function tempStatusText(value) {
-    if (value < 18) return "Too cool";
-    if (value > 28) return "Too warm";
-    return "Ambient climate";
+    if (value < 16) return "Too cold for roots";
+    if (value > 24) return "Too warm: low oxygen risk";
+    return "Ideal DWC water temperature";
+}
+
+function average(values) {
+    return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
 }
 
 function formatRelativeTime(timestamp, prefix = "Updated") {
@@ -42,8 +47,8 @@ function formatRelativeTime(timestamp, prefix = "Updated") {
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${prefix} ${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 48) return `${prefix} ${hours} ago`;
-    return `${prefix} ${Math.floor(hours / 24)}d ago`
+    if (hours < 48) return `${prefix} ${hours}h ago`;
+    return `${prefix} ${Math.floor(hours / 24)}d ago`;
 }
 
 function getLastUpdatedElement() {
@@ -62,9 +67,9 @@ function setOfflineState(message = "Offline / Connection Error") {
         systemStatus.style.borderColor = "#e63946";
     }
 
-    const moistureStatus = document.getElementById("moisture-status");
+    const ecStatus = document.getElementById("ec-status");
     const tempStatus = document.getElementById("temp-status");
-    if (moistureStatus) moistureStatus.textContent = "No telemetry";
+    if (ecStatus) ecStatus.textContent = "No telemetry";
     if (tempStatus) tempStatus.textContent = "No telemetry";
 
     const lastUpdated = getLastUpdatedElement();
@@ -241,25 +246,21 @@ function selectDevice(deviceId) {
     refreshHistory();
 }
 
-function getCurrentReadings() {
-    let moisture = 0;
-    let temperature = 0;
+function formatEc(value) {
+    return value == null ? "--" : `${value.toFixed(2)} mS/cm`;
+}
 
+function getCurrentReadings() {
     if (currentSelection === "hub") {
-        if (globalTelemetry.tiles?.length) {
-            moisture =
-                globalTelemetry.tiles.reduce((sum, t) => sum + t.moisture_level, 0) /
-                globalTelemetry.tiles.length;
-            temperature =
-                globalTelemetry.tiles.reduce((sum, t) => sum + t.temperature, 0) /
-                globalTelemetry.tiles.length;
-        }
+        const tiles = globalTelemetry.tiles || [];
+        const temperature = average(tiles.map((t) => t.temperature)) ?? 0;
+        const ec = average(tiles.map((t) => t.ec_level).filter(Number.isFinite));
         return {
-            moisture,
+            ec,
             temperature,
-            moistureLabel: "Avg Soil Moisture",
-            tempLabel: "Avg Temperature",
-            moistureDisplay: `${moisture.toFixed(1)}%`,
+            ecLabel: "Avg EC (Nutrients)",
+            tempLabel: "Avg Water Temp",
+            ecDisplay: formatEc(ec),
             tempDisplay: `${temperature.toFixed(1)}°C`,
         };
     }
@@ -267,12 +268,13 @@ function getCurrentReadings() {
     const tile = globalTelemetry.tiles?.find((t) => t.tile_id === currentSelection);
     if (!tile) return null;
 
+    const ec = Number.isFinite(tile.ec_level) ? tile.ec_level : null;
     return {
-        moisture: tile.moisture_level,
+        ec,
         temperature: tile.temperature,
-        moistureLabel: "Tile Moisture",
-        tempLabel: "Tile Temperature",
-        moistureDisplay: `${tile.moisture_level}%`,
+        ecLabel: "Tile EC (Nutrients)",
+        tempLabel: "Tile Water Temp",
+        ecDisplay: formatEc(ec),
         tempDisplay: `${tile.temperature}°C`,
     };
 }
@@ -283,12 +285,12 @@ function renderStats() {
     const readings = getCurrentReadings();
     if (!readings) return;
 
-    document.getElementById("card1-label").textContent = readings.moistureLabel;
-    document.getElementById("moisture-val").textContent = readings.moistureDisplay;
-    document.getElementById("card2-label").textContent = readings.tempLabel;
+    document.getElementById("ec-label").textContent = readings.ecLabel;
+    document.getElementById("ec-val").textContent = readings.ecDisplay;
+    document.getElementById("temp-label").textContent = readings.tempLabel;
     document.getElementById("temp-val").textContent = readings.tempDisplay;
 
-    document.getElementById("moisture-status").textContent = moistureStatusText(readings.moisture);
+    document.getElementById("ec-status").textContent = ecStatusText(readings.ec);
     document.getElementById("temp-status").textContent = tempStatusText(readings.temperature);
 
     document.getElementById("water-val").textContent = globalTelemetry.water_level_ok ? "OK" : "LOW";
@@ -296,8 +298,8 @@ function renderStats() {
         ? "var(--green)"
         : "#e63946";
     document.getElementById("water-status").textContent = globalTelemetry.water_level_ok
-        ? "Reservoir level healthy"
-        : "Refill reservoir soon";
+        ? "18 L reservoir level healthy"
+        : "Top up the 18 L reservoir";
 
     document.getElementById("ai-status").textContent = globalTelemetry.ai_health_status || "Healthy";
     document.getElementById("ai-status-detail").textContent = "Local AI vision";
@@ -438,10 +440,6 @@ function renderDetailChart(svgId, statsId, points, unit, range) {
 
 function renderHistorySparklines() {
     renderSparkline(
-        "moisture-sparkline",
-        sparklineSeries.map((point) => point.moisture)
-    );
-    renderSparkline(
         "temp-sparkline",
         sparklineSeries.map((point) => point.temperature)
     );
@@ -449,13 +447,6 @@ function renderHistorySparklines() {
 }
 
 function renderDetailCharts() {
-    renderDetailChart(
-        "moisture-detail-chart",
-        "moisture-detail-stats",
-        detailSeries.map((point) => ({ value: point.moisture, at: point.at })),
-        "%",
-        detailRange
-    );
     renderDetailChart(
         "temp-detail-chart",
         "temp-detail-stats",

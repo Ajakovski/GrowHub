@@ -30,10 +30,17 @@ if (yearElement) {
     yearElement.textContent = String(new Date().getFullYear());
 }
 
-const filterButtons = document.querySelectorAll(".filter-btn");
-const showcaseCards = document.querySelectorAll(".showcase-card");
+if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll("[data-autoplay-video]").forEach(video => {
+        video.removeAttribute("autoplay");
+        video.pause();
+        video.controls = true;
+    });
+}
 
-if (filterButtons.length > 0 && showcaseCards.length > 0) {
+const filterButtons = document.querySelectorAll(".filter-btn");
+
+if (filterButtons.length > 0) {
     filterButtons.forEach(button => {
         button.addEventListener("click", () => {
             filterButtons.forEach(btn => btn.classList.remove("active"));
@@ -41,7 +48,7 @@ if (filterButtons.length > 0 && showcaseCards.length > 0) {
 
             const filterValue = button.getAttribute("data-filter");
 
-            showcaseCards.forEach(card => {
+            document.querySelectorAll(".showcase-card").forEach(card => {
                 if (filterValue === "all" || card.getAttribute("data-category") === filterValue) {
                     card.classList.remove("hidden");
                 } else {
@@ -72,11 +79,12 @@ async function loadCatalogData() {
             card.innerHTML = `
                 <div class="card-img-wrap">
                     <img src="assets/img/${item.id}.png" alt="${item.name}" onerror="this.src='assets/img/growhub.svg'" />
-                    ${item.category === 'modules' ? '<span class="card-badge">Core</span>' : ''}
+                    ${item.category === 'tech' ? '<span class="card-badge">Core</span>' : ''}
                 </div>
                 <div class="card-info">
                     <h3>${item.name}</h3>
-                    <p>Price: $${item.price}</p>
+                    ${item.description ? `<p>${item.description}</p>` : ''}
+                    <p>${item.price != null ? `Price: ${item.price}` : 'Pricing on request'}</p>
                     <a href="index.html#contact" class="text-link">Inquire about specs &rarr;</a>
                 </div>
             `;

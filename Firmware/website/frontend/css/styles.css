@@ -810,6 +810,25 @@ img {
     gap: 1.1rem;
 }
 
+.stack-showcase {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+}
+
+.stack-visual {
+    margin: 0;
+}
+
+.stack-visual video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 22px;
+}
+
 .eyebrow-row {
     display: flex;
     flex-wrap: wrap;
@@ -853,7 +872,7 @@ button.pill {
     height: 0.65rem;
     border-radius: 50%;
     background: #e63946;
-    border: 2px solid var(--line);
+    border: 2px solid var(--surface);
 }
 
 .alert-list {
@@ -893,6 +912,17 @@ button.pill {
     border-radius: 18px;
     border: 1px solid var(--line);
     background: var(--surface);
+}
+
+.number-card strong {
+    display: block;
+    color: var(--green-dark);
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    line-height: 1.1;
+}
+
+.tier-grid {
+    margin-top: 1.2rem;
 }
 
 .feature-list {
@@ -1094,6 +1124,7 @@ button.pill {
     .grid-3,
     .grid-2,
     .split-panel,
+    .stack-showcase,
     .brand-gallery,
     .number-strip,
     .product-grid,

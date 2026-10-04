@@ -20,16 +20,20 @@ router = APIRouter()
 async def get_hardware_catalog():
     return [
         {
-            "id": "module_15x15",
-            "name": "15x15 Hydroponic Base Tile",
-            "category": "modules",
-            "price": 39.99,
+            "id": "growhub_hub",
+            "name": "GrowHub Hub",
+            "category": "tech",
+            "description": "The central power and water unit. Runs the continuous loop water circulation and smart "
+                           "controllers for every 40x70 cm tile daisy-chained to it.",
+            "price": "Under $300",
         },
         {
-            "id": "hub_ai",
-            "name": "Central Control Hub",
-            "category": "tech",
-            "price": 59.99,
+            "id": "planter_tile_40x70",
+            "name": "40x70 cm DWC Planter Tile",
+            "category": "modules",
+            "description": "A full Deep Water Culture (DWC) floor with 18 clay-pebble planter cups (3x6) under a "
+                           "smart LED canopy. Daisy-chains to the Hub for power and water.",
+            "price": "$90",
         },
     ]
 

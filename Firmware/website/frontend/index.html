@@ -5,10 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta 
             name="description"
-            content="Growhub builds accesible smart tileable growing systems for indoor planters and commercial greenhouse solutions"
+            content="GrowHub builds accessible smart hydroponic growing systems: a 3-tier Deep Water Culture (DWC) appliance for indoor growers and commercial greenhouse solutions"
         />
 
-        <title>Growhub | Smart Tileable Growing Systems</title>
+        <title>GrowHub | Smart Hydroponic Growing Systems</title>
         <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml" />
         <link rel="stylesheet" href="css/styles.css" />
     </head>
@@ -18,7 +18,7 @@
                 <a class="brand focus-strip" href="index.html" aria-label="GrowHub home">
                     <img src="assets/img/growhub.svg" alt="Growhub logo" />
                 </a>
-                <button class="nav-toggle" dagta-nav-toggle aria-expanded="false" aria-label="Toggle menu">Menu</button>
+                <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle menu">Menu</button>
                 <nav class="nav-menu" data-nav-menu aria-label="Primary">
                     <a class="nav-link" href="#products">Products</a>
                     <a href="shop.html" class="nav-link">Catalog</a>
@@ -32,26 +32,27 @@
             <section class="hero">
                 <div class="container hero-grid">
                     <div class="hero-copy">
-                        <span class="kicker">Smart Planter - Powered by AI</span>
-                        <h1>Accesible Smart Tileable Growing Systems</h1>
+                        <span class="kicker">Smart Hydroponics - Powered by AI</span>
+                        <h1>Accessible Smart Hydroponic Growing Systems</h1>
                         <p>
-                            Growhub brings high-end agricultural control to indoor planters and commercial greenhouse solutionns.
+                            GrowHub is a premium 3-tier hydroponic appliance with a fixed 40x70 cm footprint, bringing high-end
+                            agricultural control to indoor growers and commercial greenhouse solutions.
                         </p>
                         <div class="eyebrow-row" aria-label="GrowHub highlights">
-                            <spam class="pill">Local AI plant care</spam>
-                            <spam class="pill">Sensor-driven automation</spam>
-                            <spam class="pill">Made for regional farms</spam>
+                            <span class="pill">Deep Water Culture (DWC)</span>
+                            <span class="pill">Continuous loop water circulation</span>
+                            <span class="pill">Local AI plant care</span>
                         </div>
                         <div class="button-group">
-                            <a class="btn btn-primary" href="#products">Explore the system</a>
+                            <a class="btn btn-primary" href="#system">Explore the system</a>
                             <a class="btn btn-secondary" href="#contact">Partner with us</a>
                         </div>
                     </div>
-                    <aside class="product-visual" aria-label="GrowHub tileable planter render">
-                        <img src="assets/img/growhub_tile_render_v1.png" alt="Colored render of the GrowHub tileable planter" />
+                    <aside class="product-visual" aria-label="GrowHub prototype render">
+                        <img src="assets/img/growhub_render_v2.png" alt="Render of the GrowHub planter with lettuce growing under its light canopy" />
                         <div class="visual-note">
-                            <strong>GrowHub Tile Prototype</strong>
-                            <span>Modular planter body with integrated AI plant care and sensor-driven automation</span>
+                            <strong>GrowHub Early Prototype</strong>
+                            <span>Clay-pebble hydroponic planter with integrated AI plant care and sensor-driven automation</span>
                         </div>
                     </aside>
                 </div>
@@ -61,46 +62,183 @@
                 <div class="container">
                     <div class="problem-card">
                         <span class="kicker">The gap</span>
-                        <h2>Snart agriculture is split between cheap timers and expensive enterprise platforms</h2>
+                        <h2>Smart agriculture is split between cheap timers and expensive enterprise platforms</h2>
                         <p>
                             Home users get plastic boxes that water on a schedule. Farmers often rely on basic drip irrigation because
-                            commercial automation systems are too costly. GrowHub sits in the middle: practical, connected, and affordable.
+                            commercial automation systems are too costly. GrowHub closes that gap with one modular product that works
+                            at both scales: practical, connected, and affordable.
                         </p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="system">
+                <div class="container">
+                    <span class="kicker">Inside the appliance</span>
+                    <h2 class="section-title">Three floors, one continuous water loop</h2>
+                    <p class="section-lead">
+                        Every GrowHub is built on a fixed 40x70 cm footprint and runs full-scale Deep Water Culture (DWC). Water
+                        is pumped from the base reservoir up to the hydroponic grid and loops back down, so roots always sit in
+                        fresh, oxygenated, nutrient-rich water.
+                    </p>
+                    <div class="number-strip" aria-label="GrowHub key specifications">
+                        <div class="number-card">
+                            <strong>40x70 cm</strong>
+                            <p class="label">Fixed footprint per tile</p>
+                        </div>
+                        <div class="number-card">
+                            <strong>18 L</strong>
+                            <p class="label">Base water reservoir</p>
+                        </div>
+                        <div class="number-card">
+                            <strong>18 cups</strong>
+                            <p class="label">3x6 DWC planter grid</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-3 tier-grid">
+                        <article class="card">
+                            <span class="kicker">Floor 3</span>
+                            <h3>The Canopy</h3>
+                            <p>
+                                An overhead smart LED lighting system that turns on automatically and adapts its output to the
+                                specific needs of the plants below.
+                            </p>
+                            <ul class="feature-list">
+                                <li>Automatic on/off scheduling</li>
+                                <li>Light adapts to each crop's growth stage</li>
+                            </ul>
+                        </article>
+                        <article class="card">
+                            <span class="kicker">Floor 2</span>
+                            <h3>The Hydroponic Grid</h3>
+                            <p>
+                                A full DWC water basin with a grid of 18 planter cups in a 3x6 layout, filled with clay pebbles.
+                                Water circulates continuously from the base reservoir up to this layer and loops back.
+                            </p>
+                            <ul class="feature-list">
+                                <li>18 clay-pebble planter cups (3x6)</li>
+                                <li>Continuous loop water circulation</li>
+                            </ul>
+                        </article>
+                        <article class="card">
+                            <span class="kicker">Floor 1</span>
+                            <h3>The Base</h3>
+                            <p>
+                                The foundation houses the main water reservoir (up to 18 liters) and pump, alongside a completely
+                                isolated, waterproof compartment for the electronics and smart controllers.
+                            </p>
+                            <ul class="feature-list">
+                                <li>18 L reservoir and circulation pump</li>
+                                <li>Sealed, waterproof electronics bay</li>
+                            </ul>
+                        </article>
                     </div>
                 </div>
             </section>
 
             <section class="section" id="products">
                 <div class="container">
-                    <span class="kicker">One product, two solutions</span>
-                    <h2 class="section-title">The GrowHub Home Prototype</h2>
+                    <span class="kicker">One product, every scale</span>
+                    <h2 class="section-title">From one kitchen to a commercial garden</h2>
                     <p class="section-lead">
-                        GrowHub home focuses on beatiful automated indoor growing. GrowHub Industrial focuses on affordable
-                        control for greenhouses and fields that already use drip irrigation.
+                        We built GrowHub to close the gap between home growing and industrial agriculture. That's why it's
+                        modular: buy one to grow at home, or buy 40 and build a commercial garden. Same hardware, same
+                        dashboard, same AI plant care at every scale.
                     </p>
                     <div class="product-grid">
-                        <article class="product-card" id="home-system">
-                            <span class="product-index">01</span>
-                            <h3>Growhub Home</h3>
+                        <article class="product-card" id="single-unit">
+                            <span class="product-index">1</span>
+                            <h3>Buy one, grow at home</h3>
                             <p>
-                                A modular indoor planter system sith one central hub, up to five planters a camera and sensors for light, temperature, humidity and nutrients.
+                                A single GrowHub is a premium 3-tier hydroponic appliance on a 40x70 cm footprint: an 18 L base
+                                reservoir, an 18-cup Deep Water Culture (DWC) grid and a smart LED canopy, monitored by a camera
+                                and sensors for reservoir level, water temperature and nutrients (EC).
                             </p>
                             <ul class="feature-list">
                                 <li>Local AI detects plant stress before it is visible</li>
-                                <li>Automatically adjusts water and light conditions</li>
+                                <li>Automatically manages water circulation, nutrients and light</li>
                                 <li>Designed to look clean in kitchens and apartments</li>
                             </ul>
                         </article>
-                        <article class="product-card dark-card" id="industrial">
-                            <span class="product-index">02</span>
-                            <h3>GrowHub Industrial</h3>
+                        <article class="product-card dark-card" id="commercial-garden">
+                            <span class="product-index">40</span>
+                            <h3>Buy 40, build a commercial garden</h3>
                             <p>
-                                A retrofit for existing drip irrigation: solar-powered pumps, ESP32 microcontrollers, sensor data, and automated fertilizer valves.
+                                Daisy-chain GrowHub tiles into a full commercial installation. Every tile is the same 40x70 cm
+                                unit, so you can expand the garden one tile at a time as demand grows.
                             </p>
                             <ul class="feature-list">
-                                <li>No expensive camera hardware at farm scale.</li>
-                                <li>Remote control and mobile automation for farmers.</li>
-                                <li>Custom per-hectare pricing for real deployments.</li>
+                                <li>No re-engineering as you scale, just add tiles</li>
+                                <li>Monitor every tile from one dashboard</li>
+                                <li>Continuous loop DWC across the whole installation</li>
+                            </ul>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="stacking">
+                <div class="container stack-showcase">
+                    <figure class="product-visual stack-visual">
+                        <video
+                            src="assets/video/growhub-stack.mp4"
+                            poster="assets/img/growhub_stack_poster.jpg"
+                            autoplay
+                            muted
+                            loop
+                            playsinline
+                            preload="metadata"
+                            data-autoplay-video
+                            aria-label="Animation of a single GrowHub unit stacking into a three-unit tower"
+                        ></video>
+                    </figure>
+                    <div class="stack-copy">
+                        <span class="kicker">Built to stack</span>
+                        <h2 class="section-title">Grow up, not out</h2>
+                        <p class="section-lead">
+                            Short on floor space? GrowHub units stack vertically on the same 40x70 cm footprint. Start with one
+                            and add more on top as your harvest grows, every level with its own DWC grid and smart LED canopy.
+                        </p>
+                        <ul class="feature-list">
+                            <li>Triple the growing area without using more floor</li>
+                            <li>Each level is a complete, self-contained GrowHub</li>
+                            <li>Every unit shows up in the same dashboard</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="tiling">
+                <div class="container">
+                    <span class="kicker">Tiling System</span>
+                    <h2 class="section-title">One Hub, as many tiles as you need</h2>
+                    <p class="section-lead">
+                        GrowHub scales with a Hub-and-Tile model. You daisy-chain complete 40x70 cm planter tiles to a central
+                        Hub, which supplies power and water to every tile attached to it.
+                    </p>
+                    <div class="split-panel">
+                        <article class="card">
+                            <span class="kicker">The Hub</span>
+                            <h3>Central power and water</h3>
+                            <p>
+                                The Hub is the heart of the installation. It runs the continuous loop water circulation and the
+                                smart controllers, and powers every tile in the chain from a single connection point.
+                            </p>
+                            <ul class="feature-list">
+                                <li>One power and water source for the whole chain</li>
+                                <li>Every tile reports to one dashboard</li>
+                            </ul>
+                        </article>
+                        <article class="card">
+                            <span class="kicker">The Tiles</span>
+                            <h3>40x70 cm floor tiles</h3>
+                            <p>
+                                Each planter tile shares the same fixed 40x70 cm footprint. Attach another tile to add a full
+                                18-cup DWC grid under its own smart LED canopy, with water and power flowing through the chain.
+                            </p>
+                            <ul class="feature-list">
+                                <li>Daisy-chain tiles as your growing needs expand</li>
+                                <li>Same footprint and grid on every tile</li>
                             </ul>
                         </article>
                     </div>
@@ -113,7 +251,7 @@
                         <span class="kicker">Contact</span>
                         <h2 class="section-title">Looking for manufacturing, pilot and scaling partners.</h2>
                         <p class="section-lead">
-                            We are open to invetors and partners who bring more than capital we want production knowledge, scaling experience or access to commercial
+                            We are open to investors and partners who bring more than capital: we want production knowledge, scaling experience or access to commercial
                             greenhouse pilots.
                         </p>
                         <div class="contact-list">
@@ -133,6 +271,6 @@
             </div>
         </footer>
 
-        <script src="frontend/js/main.js"></script>
+        <script src="js/main.js"></script>
     </body>
 </html>

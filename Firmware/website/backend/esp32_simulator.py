@@ -28,11 +28,13 @@ def generate_fake_telemetry():
                 "tile_id": "tile_1",
                 "moisture_level": round(random.uniform(30.0, 60.0), 1),
                 "temperature": round(random.uniform(20.0, 25.0), 1),
+                "ec_level": round(random.uniform(1.2, 2.0), 2),
             },
             {
                 "tile_id": "tile_2",
                 "moisture_level": round(random.uniform(25.0, 55.0), 1),
                 "temperature": round(random.uniform(19.0, 24.0), 1),
+                "ec_level": round(random.uniform(1.0, 1.9), 2),
             },
         ],
     }

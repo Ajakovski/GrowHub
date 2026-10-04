@@ -88,6 +88,7 @@ def get_hub_status(now: float) -> dict:
     if _last_telemetry_at is None:
         return {"hub_online": False, "last_telemetry_at": None}
 
+    # Until a second report arrives, assume the hub follows the sleep schedule we hand it.
     interval = _telemetry_interval or NEXT_WAKE_MINUTES * 60
     offline_after = max(MIN_OFFLINE_SECONDS, MISSED_REPORTS_BEFORE_OFFLINE * interval)
     return {
@@ -106,19 +107,19 @@ def get_alerts() -> List[dict]:
     for tile in current_state.get("tiles", []):
         tile_id = tile["tile_id"]
         recent = history.get_recent_moisture(tile_id, SUSTAINED_READINGS)
-        if len(recent) == SUSTAINED_READINGS and all (m < DRY_MOISTURE_PERCENT for m in recent):
+        if len(recent) == SUSTAINED_READINGS and all(m < DRY_MOISTURE_PERCENT for m in recent):
             alerts.append({
                 "kind": "dry_tile",
                 "device": tile_id,
                 "message": f"{_tile_label(tile_id)} has been below {DRY_MOISTURE_PERCENT:.0f}% moisture "
-                        f"for the last {SUSTAINED_READINGS} readings.",
+                           f"for the last {SUSTAINED_READINGS} readings.",
             })
 
     if _low_water_streak >= SUSTAINED_READINGS:
         alerts.append({
             "kind": "reservoir_low",
             "device": "hub",
-            "message": f"Reservoir has been low for the last {_low_water_streak} readings. refill it"
+            "message": f"Reservoir has been low for the last {_low_water_streak} readings. Refill it.",
         })
 
     return alerts
@@ -134,7 +135,6 @@ async def receive_telemetry(data: TelemetryPayload):
     _last_telemetry_at = now
     _low_water_streak = 0 if data.water_level_ok else _low_water_streak + 1
 
-    
     preserved = {
         "camera_feed_url": current_state.get("camera_feed_url", CAMERA_STILL_URL),
         "camera_online": current_state.get("camera_online", False),
