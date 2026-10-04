@@ -1,3 +1,6 @@
+const GROWHUB_API_ORIGIN = window.GROWHUB_API_ORIGIN
+    || `${window.location.protocol === "https:" ? "https:" : "http:"}//${window.location.hostname || "localhost"}:8000`;
+
 const navToggle = document.querySelector("[data-nav-toggle]");
 const navMenu = document.querySelector("[data-nav-menu]");
 
@@ -61,8 +64,8 @@ if (filterButtons.length > 0) {
 
 async function loadCatalogData() {
     try {
-        const response = await fetch("http://localhost:8000/api/web/tiles");
-        if (!response.ok) throw new Error("http error! status: ${response.status}");
+        const response = await fetch(`${GROWHUB_API_ORIGIN}/api/web/tiles`);
+        if (!response.ok) throw new Error(`http error! status: ${response.status}`);
 
         const catalogData = await response.json();
         const grid = document.getElementById("showcase-grid");

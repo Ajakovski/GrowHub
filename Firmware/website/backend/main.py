@@ -4,6 +4,7 @@ from routers import device, web, ai
 import history
 
 history.init_db()
+device.load_hubs()
 
 app = FastAPI(title="GrowHub core api")
 

@@ -154,3 +154,39 @@ so ideas for the design process came pretty naturally.
 [View design SVG](Documentation/growhub_design_v3.svg)
 
 ---
+
+## 5. Timelapse - 28.09.2026 - 04.10.2026
+
+I have since realised i do not need to keep a journal for my coding so this entry just covers what i did
+with the cad design of the planter over the week.
+
+---
+
+**What i did:**
+
+- I made up my mind on the fundamental style, look, and functionality of the planter.
+- Started working on it in CAD
+- Created the first basic CAD model of the planter that will help us visualise the planter and iterate on it more easily.
+
+---
+
+**Problems that i've faced**
+
+- Just the usual FreeCAD problems, nothing major.
+
+---
+
+**Current State**
+
+- The fundamental design for the planter is done (it will probably change again :))
+
+---
+
+**Next Step**
+
+- Start working on the basic layout of the internal components
+- Make the design actually manufacturable.
+
+[View design SVG](Documentation/growhub_design_v3.svg)
+
+---

@@ -1,10 +1,11 @@
-const API_BASE = "http://localhost:8000/api/web";
+const API_BASE = `${GROWHUB_API_ORIGIN}/api/web`;
 const API_URL = `${API_BASE}/plant-stats`;
 const HISTORY_URL = `${API_BASE}/history`;
 const SPARKLINE_RANGE = "1h";
 const LEGACY_STORAGE_KEYS = ["growhub.dashboard.history", "growhub.dashboard.lastUpdatedAt"];
 
 let globalTelemetry = null;
+let currentHubId = null;
 let currentSelection = "hub";
 let knownTileIds = null;
 let lastUpdatedAt = null;
@@ -105,6 +106,7 @@ function renderAlerts() {
 
 async function fetchHistorySeries(deviceId, range) {
     const url = new URL(HISTORY_URL);
+    if (currentHubId) url.searchParams.set("hub", currentHubId);
     url.searchParams.set("device", deviceId);
     url.searchParams.set("range", range);
 
@@ -179,10 +181,18 @@ function updateLastUpdatedLabel() {
 
 async function fetchPlantStats() {
     try {
-        const response = await fetch(API_URL);
+        const url = new URL(API_URL);
+        if (currentHubId) url.searchParams.set("hub", currentHubId);
+
+        const response = await fetch(url);
+        if (response.status === 404 && currentHubId) {
+            currentHubId = null;
+            return fetchPlantStats();
+        }
         if (!response.ok) throw new Error(`http error! status: ${response.status}`);
 
         globalTelemetry = await response.json();
+        currentHubId = globalTelemetry.hub_id ?? null;
         lastUpdatedAt = globalTelemetry.last_telemetry_at ?? null;
         hubOnline = Boolean(globalTelemetry.hub_online);
         setLoading(false);
@@ -301,8 +311,10 @@ function renderStats() {
         ? "18 L reservoir level healthy"
         : "Top up the 18 L reservoir";
 
-    document.getElementById("ai-status").textContent = globalTelemetry.ai_health_status || "Healthy";
-    document.getElementById("ai-status-detail").textContent = "Local AI vision";
+    document.getElementById("ai-status").textContent = globalTelemetry.ai_health_status || "Not analysed yet";
+    document.getElementById("ai-status-detail").textContent = globalTelemetry.camera_online
+        ? "Local AI vision"
+        : "No camera feed";
 
     renderHistorySparklines();
 
@@ -325,11 +337,11 @@ function updateCameraFeed(cameraFeedUrl, hubId) {
     if (!cameraFeed || !cameraFeedUrl) return;
 
     try {
-        const nextUrl = new URL(cameraFeedUrl, window.location.href);
+        const nextUrl = new URL(cameraFeedUrl, GROWHUB_API_ORIGIN);
         const isStream = nextUrl.pathname.includes("/camera/stream");
 
         if (isStream) {
-            const currentUrl = new URL(cameraFeed.src || cameraFeedUrl, window.location.href);
+            const currentUrl = new URL(cameraFeed.src || cameraFeedUrl, GROWHUB_API_ORIGIN);
             if (currentUrl.origin + currentUrl.pathname !== nextUrl.origin + nextUrl.pathname) {
                 cameraFeed.src = nextUrl.href;
             }
@@ -354,11 +366,12 @@ function formatAxisTime(timestamp, range) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function renderDetailChart(svgId, statsId, points, unit, range) {
+function renderDetailChart(svgId, statsId, allPoints, unit, range, decimals = 1) {
     const svg = document.getElementById(svgId);
     const stats = document.getElementById(statsId);
     if (!svg) return;
 
+    const points = allPoints.filter((point) => Number.isFinite(point.value));
     const values = points.map((point) => point.value);
     if (values.length < 2) {
         svg.innerHTML = `<text x="24" y="112" class="detail-chart-empty">Collecting history for a detailed chart...</text>`;
@@ -397,7 +410,7 @@ function renderDetailChart(svgId, statsId, points, unit, range) {
             const label = yMax - yRange * ratio;
             return `
                 <line class="detail-chart-grid" x1="${pad.left}" y1="${y.toFixed(1)}" x2="${width - pad.right}" y2="${y.toFixed(1)}"></line>
-                <text class="detail-chart-axis" x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end">${label.toFixed(1)}</text>
+                <text class="detail-chart-axis" x="${pad.left - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end">${label.toFixed(decimals)}</text>
             `;
         })
         .join("");
@@ -430,9 +443,9 @@ function renderDetailChart(svgId, statsId, points, unit, range) {
 
     if (stats) {
         stats.innerHTML = `
-            <div class="detail-stat"><span>Min</span><strong>${min.toFixed(1)}${unit}</strong></div>
-            <div class="detail-stat"><span>Avg</span><strong>${avg.toFixed(1)}${unit}</strong></div>
-            <div class="detail-stat"><span>Max</span><strong>${max.toFixed(1)}${unit}</strong></div>
+            <div class="detail-stat"><span>Min</span><strong>${min.toFixed(decimals)}${unit}</strong></div>
+            <div class="detail-stat"><span>Avg</span><strong>${avg.toFixed(decimals)}${unit}</strong></div>
+            <div class="detail-stat"><span>Max</span><strong>${max.toFixed(decimals)}${unit}</strong></div>
             <div class="detail-stat"><span>Points</span><strong>${values.length}</strong></div>
         `;
     }
@@ -442,6 +455,10 @@ function renderHistorySparklines() {
     renderSparkline(
         "temp-sparkline",
         sparklineSeries.map((point) => point.temperature)
+    );
+    renderSparkline(
+        "ec-sparkline",
+        sparklineSeries.map((point) => point.ec).filter(Number.isFinite)
     );
     renderDetailCharts();
 }
@@ -454,6 +471,14 @@ function renderDetailCharts() {
         "°C",
         detailRange
     );
+    renderDetailChart(
+        "ec-detail-chart",
+        "ec-detail-stats",
+        detailSeries.map((point) => ({ value: point.ec, at: point.at })),
+        " mS/cm",
+        detailRange,
+        2
+    )
 }
 
 function setDetailRange(range) {

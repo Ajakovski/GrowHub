@@ -7,7 +7,9 @@ import threading
 API_BASE = os.environ.get("GROWHUB_API_BASE", "http://localhost:8000")
 API_URL = f"{API_BASE}/api/device/telemetry"
 CAMERA_URL = f"{API_BASE}/api/device/camera"
-HUB_ID = "hub_beta_001"
+HUB_ID = os.environ.get("GROWHUB_HUB_ID", "hub_beta_001")
+DEVICE_KEY = os.environ.get("GROWHUB_DEVICE_KEY")
+HEADERS = {"X-Device-Key": DEVICE_KEY} if DEVICE_KEY else {}
 CAMERA_INDEX = int(os.environ.get("CAMERA_INDEX", "0"))
 CAMERA_INTERVAL_SEC = 5
 JPEG_QUALITY = 70
@@ -79,6 +81,8 @@ def camera_loop():
         try:
             response = requests.post(
                 CAMERA_URL,
+                headers=HEADERS,
+                data={"hub_id": HUB_ID},
                 files={"frame": ("frame.jpg", buffer.tobytes(), "image/jpeg")},
                 timeout=10,
             )
@@ -96,9 +100,11 @@ threading.Thread(target=camera_loop, daemon=True).start()
 while True:
     payload = generate_fake_telemetry()
     try:
-        response = requests.post(API_URL, json=payload)
+        response = requests.post(API_URL, json=payload, headers=HEADERS)
 
-        if response.status_code == 422:
+        if response.status_code == 401:
+            print("server rejected the device key. set GROWHUB_DEVICE_KEY to match the backend.")
+        elif response.status_code == 422:
             print("fastapi rejected the payload. error details:")
             print(response.text)
         else:
