@@ -187,6 +187,4 @@ with the cad design of the planter over the week.
 - Start working on the basic layout of the internal components
 - Make the design actually manufacturable.
 
-[View design SVG](Documentation/growhub_design_v3.svg)
-
 ---
