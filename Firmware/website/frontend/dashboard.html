@@ -73,10 +73,31 @@
                         <svg class="detail-chart" id="temp-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="Water temperature history chart"></svg>
                     </div>
                 </article>
-                <article class="metric-card">
-                    <span class="kicker" id="ec-label">EC (Nutrients)</span>
-                    <strong id="ec-val">--</strong>
-                    <span id="ec-status">Fetching data...</span>
+                <article class="metric-card metric-card-expandable" data-metric="ec">
+                    <div class="metric-card-main">
+                        <div class="metric-card-heading">
+                            <span class="kicker" id="ec-label">EC (Nutrients)</span>
+                            <button type="button" class="metric-expand-btn" aria-expanded="false" aria-controls="ec-detail" aria-label="Show EC history">
+                                <svg viewBox="0 0 20 20" aria-hidden="true">
+                                    <path d="M5 7.5 L10 12.5 L15 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <strong id="ec-val">--</strong>
+                        <svg class="sparkline" id="ec-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
+                        <span id="ec-status">Fetching data...</span>
+                    </div>
+                    <div class="metric-card-detail" id="ec-detail" hidden>
+                        <div class="detail-chart-header">
+                            <div class="detail-chart-stats" id="ec-detail-stats"></div>
+                            <div class="detail-range" role="group" aria-label="EC history range">
+                                <button type="button" class="pill active" data-range="1h">1h</button>
+                                <button type="button" class="pill" data-range="24h">24h</button>
+                                <button type="button" class="pill" data-range="7d">7d</button>
+                            </div>
+                        </div>
+                        <svg class="detail-chart" id="ec-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="EC history chart"></svg>
+                    </div>
                 </article>
                 <article class="metric-card">
                     <span class="kicker">AI Plant Stress</span>
