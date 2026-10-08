@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, File, Form, Header, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from pydantic import BaseModel
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import quote
 import asyncio
-import time
 import os
 import secrets
+import time
 
 import history
 
@@ -16,7 +16,7 @@ MISSED_REPORTS_BEFORE_OFFLINE = 3
 CAMERA_OFFLINE_SECONDS = 60
 DRY_MOISTURE_PERCENT = 30.0
 SUSTAINED_READINGS = 3
-NO_AI_ANALASYS = "Not analaysed yet"
+NO_AI_ANALYSIS = "Not analysed yet"
 
 DEVICE_KEY = os.environ.get("GROWHUB_DEVICE_KEY")
 if not DEVICE_KEY:
@@ -58,11 +58,12 @@ class Hub:
     last_telemetry_at: Optional[float] = None
     telemetry_interval: Optional[float] = None
     low_water_streak: int = 0
-    ai_health_status: str = NO_AI_ANALASYS
+    ai_health_status: str = NO_AI_ANALYSIS
+    ai_summary: Optional[str] = None
+    ai_updated_at: Optional[float] = None
     latest_frame: Optional[bytes] = None
     latest_frame_at: float = 0.0
     frame_event: asyncio.Event = field(default_factory=asyncio.Event)
-
 
     def status(self, now: float) -> dict:
         if self.last_telemetry_at is None:
@@ -74,7 +75,6 @@ class Hub:
             "hub_online": now - self.last_telemetry_at <= offline_after,
             "last_telemetry_at": int(self.last_telemetry_at * 1000),
         }
-
 
     def alerts(self) -> List[dict]:
         alerts = []
@@ -105,6 +105,8 @@ class Hub:
             **self.state,
             "hub_id": self.hub_id,
             "ai_health_status": self.ai_health_status,
+            "ai_summary": self.ai_summary,
+            "ai_updated_at": int(self.ai_updated_at * 1000) if self.ai_updated_at else None,
             "camera_online": has_frame and now - self.latest_frame_at <= CAMERA_OFFLINE_SECONDS,
             "camera_feed_url": f"/api/web/camera?hub={quote(self.hub_id)}" if has_frame else None,
             **self.status(now),
@@ -116,7 +118,7 @@ class Hub:
         self.latest_frame_at = time.time()
         self.frame_event.set()
 
-    async def wait_for_frame_change(self, since: float, timeout: float = 1.0) -> Tuple[Optional[bytes]]:
+    async def wait_for_frame_change(self, since: float, timeout: float = 1.0) -> Tuple[Optional[bytes], float]:
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             if self.latest_frame is not None and self.latest_frame_at > since:
@@ -132,19 +134,22 @@ class Hub:
 
 hubs: Dict[str, Hub] = {}
 
+
 def load_hubs() -> None:
     for row in history.load_hubs():
         hubs[row["hub_id"]] = Hub(
             hub_id=row["hub_id"],
             state=row["state"],
             last_telemetry_at=row["last_telemetry_at"],
-            telemetry_interval=["telemetry_interval"],
-            low_water_streak=["low_water_streak"],
+            telemetry_interval=row["telemetry_interval"],
+            low_water_streak=row["low_water_streak"],
+            ai_health_status=row["ai_status"] or NO_AI_ANALYSIS,
+            ai_summary=row["ai_summary"],
+            ai_updated_at=row["ai_updated_at"],
         )
 
 
 def get_hub(hub_id: Optional[str] = None) -> Optional[Hub]:
-    """Return the na,ed hub, or the most recently reportings one when no id is given."""
     if hub_id is not None:
         return hubs.get(hub_id)
     reporting = [hub for hub in hubs.values() if hub.last_telemetry_at is not None]
@@ -178,7 +183,7 @@ async def receive_telemetry(data: TelemetryPayload):
             "hub",
             _average([tile.moisture_level for tile in data.tiles]),
             _average([tile.temperature for tile in data.tiles]),
-            _average([tile.ec_level for tile in data.tiles if tile.ec_lvel is not None]),
+            _average([tile.ec_level for tile in data.tiles if tile.ec_level is not None]),
         ))
         history.record_readings(hub.hub_id, now, rows)
 

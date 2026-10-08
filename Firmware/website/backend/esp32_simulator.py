@@ -52,7 +52,6 @@ def camera_loop():
         print(f"could not open webcam index {CAMERA_INDEX} — camera feed disabled")
         return
 
-    # Prefer a modest resolution for faster uploads
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -103,7 +102,7 @@ while True:
         response = requests.post(API_URL, json=payload, headers=HEADERS)
 
         if response.status_code == 401:
-            print("server rejected the device key. set GROWHUB_DEVICE_KEY to match the backend.")
+            print("server rejected the device key. Set GROWHUB_DEVICE_KEY to match the backend.")
         elif response.status_code == 422:
             print("fastapi rejected the payload. error details:")
             print(response.text)

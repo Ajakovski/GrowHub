@@ -89,7 +89,7 @@ async def get_camera_stream(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
         raise HTTPException(status_code=503, detail="No camera frame yet")
-        
+
     boundary = "frame"
 
     async def mjpeg_generator():

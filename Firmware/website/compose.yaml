@@ -5,8 +5,25 @@ services:
       - "8000:8000"
     environment:
       GROWHUB_DB_PATH: /data/growhub.db
+      GROWHUB_DEVICE_KEY: ${GROWHUB_DEVICE_KEY:-dev-device-key}
+      GROWHUB_AI_KEY: ${GROWHUB_AI_KEY:-dev-ai-key}
     volumes:
       - growhub-data:/data
+    restart: unless-stopped
+
+  ai:
+    build: ./ai
+    ports:
+      - "8001:8001"
+    environment:
+      GROWHUB_API_BASE: http://backend:8000
+      GROWHUB_AI_KEY: ${GROWHUB_AI_KEY:-dev-ai-key}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://openrouter.ai/api/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-google/gemini-2.5-flash}
+      REVIEW_INTERVAL_MINUTES: ${REVIEW_INTERVAL_MINUTES:-30}
+    depends_on:
+      - backend
     restart: unless-stopped
 
   frontend:
@@ -14,7 +31,6 @@ services:
     ports:
       - "5000:80"
     volumes:
-      # :z relabels the folder so SELinux (Fedora) lets nginx read it.
       - ./frontend:/usr/share/nginx/html:ro,z
     restart: unless-stopped
 
@@ -23,6 +39,7 @@ services:
     command: ["python", "esp32_simulator.py"]
     environment:
       GROWHUB_API_BASE: http://backend:8000
+      GROWHUB_DEVICE_KEY: ${GROWHUB_DEVICE_KEY:-dev-device-key}
       CAMERA_INDEX: "0"
     devices:
       - /dev/video0:/dev/video0

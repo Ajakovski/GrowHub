@@ -10,7 +10,7 @@ app = FastAPI(title="GrowHub core api")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # change to web url in prod
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

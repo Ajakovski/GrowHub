@@ -3,6 +3,11 @@ const API_URL = `${API_BASE}/plant-stats`;
 const HISTORY_URL = `${API_BASE}/history`;
 const SPARKLINE_RANGE = "1h";
 const LEGACY_STORAGE_KEYS = ["growhub.dashboard.history", "growhub.dashboard.lastUpdatedAt"];
+const AI_STATUS_COLORS = {
+    "Healthy": "var(--green-dark)",
+    "Watch": "#b7791f",
+    "Action needed": "#e63946",
+};
 
 let globalTelemetry = null;
 let currentHubId = null;
@@ -126,7 +131,6 @@ async function refreshHistory() {
         const sparkline = await fetchHistorySeries(deviceId, SPARKLINE_RANGE);
         const detail = range === SPARKLINE_RANGE ? sparkline : await fetchHistorySeries(deviceId, range);
 
-        // A newer request (device or range switch) may have started while this one was in flight.
         if (requestId !== historyRequestId) return;
 
         sparklineSeries = sparkline;
@@ -311,10 +315,7 @@ function renderStats() {
         ? "18 L reservoir level healthy"
         : "Top up the 18 L reservoir";
 
-    document.getElementById("ai-status").textContent = globalTelemetry.ai_health_status || "Not analysed yet";
-    document.getElementById("ai-status-detail").textContent = globalTelemetry.camera_online
-        ? "Local AI vision"
-        : "No camera feed";
+    renderAiCard();
 
     renderHistorySparklines();
 
@@ -332,6 +333,18 @@ function renderStats() {
     updateLastUpdatedLabel();
 }
 
+function renderAiCard() {
+    const status = globalTelemetry.ai_health_status || "Not analysed yet";
+    const statusElement = document.getElementById("ai-status");
+    statusElement.textContent = status;
+    statusElement.style.color = AI_STATUS_COLORS[status] || "";
+
+    const detail = document.getElementById("ai-status-detail");
+    detail.textContent = globalTelemetry.ai_summary
+        ? `${globalTelemetry.ai_summary} · ${formatRelativeTime(globalTelemetry.ai_updated_at, "Reviewed")}`
+        : "Waiting for the first AI review";
+}
+
 function updateCameraFeed(cameraFeedUrl, hubId) {
     const cameraFeed = document.getElementById("camera-feed");
     if (!cameraFeed || !cameraFeedUrl) return;
@@ -346,7 +359,6 @@ function updateCameraFeed(cameraFeedUrl, hubId) {
                 cameraFeed.src = nextUrl.href;
             }
         } else {
-            // Bust cache so the still image reloads on each telemetry refresh.
             nextUrl.searchParams.set("t", String(Date.now()));
             cameraFeed.src = nextUrl.href;
         }
@@ -478,7 +490,7 @@ function renderDetailCharts() {
         " mS/cm",
         detailRange,
         2
-    )
+    );
 }
 
 function setDetailRange(range) {

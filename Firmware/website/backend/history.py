@@ -61,16 +61,24 @@ def init_db() -> None:
                 state TEXT NOT NULL,
                 last_telemetry_at REAL,
                 telemetry_interval REAL,
-                low_water_streak INTEGER NOT NULL DEFAULT 0
+                low_water_streak INTEGER NOT NULL DEFAULT 0,
+                ai_status TEXT,
+                ai_summary TEXT,
+                ai_updated_at REAL
             )
             """
         )
+
+        hub_columns = {row[1] for row in conn.execute("PRAGMA table_info(hubs)")}
+        for column, column_type in (("ai_status", "TEXT"), ("ai_summary", "TEXT"), ("ai_updated_at", "REAL")):
+            if column not in hub_columns:
+                conn.execute(f"ALTER TABLE hubs ADD COLUMN {column} {column_type}")
 
 
 def record_readings(
     hub_id: str,
     recorded_at: float,
-    rows: Iterable[Tuple[str, float, float Optional[float]]]
+    rows: Iterable[Tuple[str, float, float, Optional[float]]],
 ) -> None:
     with _connection() as conn:
         conn.executemany(
@@ -87,8 +95,8 @@ def record_readings(
 def get_recent_moisture(hub_id: str, device_id: str, limit: int) -> List[float]:
     with _connection() as conn:
         rows = conn.execute(
-            "SELECT moisture FROM readings WHERE hub_id = ? AND device_id = ? ",
-            "ORDER BY recorded_at DESC LIMIT",
+            "SELECT moisture FROM readings WHERE hub_id = ? AND device_id = ? "
+            "ORDER BY recorded_at DESC LIMIT ?",
             (hub_id, device_id, limit),
         ).fetchall()
     return [moisture for (moisture,) in rows]
@@ -140,17 +148,26 @@ def save_hub(
             ON CONFLICT (hub_id) DO UPDATE SET
                 state = excluded.state,
                 last_telemetry_at = excluded.last_telemetry_at,
-                telemetry_interval = excluded.telemetry_interval.
+                telemetry_interval = excluded.telemetry_interval,
                 low_water_streak = excluded.low_water_streak
             """,
             (hub_id, json.dumps(state), last_telemetry_at, telemetry_interval, low_water_streak),
         )
 
 
+def save_hub_ai(hub_id: str, status: str, summary: str, updated_at: float) -> None:
+    with _connection() as conn:
+        conn.execute(
+            "UPDATE hubs SET ai_status = ?, ai_summary = ?, ai_updated_at = ? WHERE hub_id = ?",
+            (status, summary, updated_at, hub_id),
+        )
+
+
 def load_hubs() -> List[dict]:
     with _connection() as conn:
         rows = conn.execute(
-            "SELECT hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak FROM hubs"
+            "SELECT hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak, "
+            "ai_status, ai_summary, ai_updated_at FROM hubs"
         ).fetchall()
     return [
         {
@@ -159,6 +176,12 @@ def load_hubs() -> List[dict]:
             "last_telemetry_at": last_telemetry_at,
             "telemetry_interval": telemetry_interval,
             "low_water_streak": low_water_streak,
+            "ai_status": ai_status,
+            "ai_summary": ai_summary,
+            "ai_updated_at": ai_updated_at,
         }
-        for hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak in rows
+        for (
+            hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak,
+            ai_status, ai_summary, ai_updated_at,
+        ) in rows
     ]
