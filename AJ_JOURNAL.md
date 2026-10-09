@@ -32,9 +32,9 @@ Anyways in this timelapse i FINALLY found the right MOSFETs and i started workin
 - I just need to finish off the connections on main board
 - Finish off peripherals on Floor board
 
-![Image34](./Documentation/Picture/Journal_AJ/Image34.png)
-![Image35](./Documentation/Picture/Journal_AJ/Image35.png)
-![Image36](./Documentation/Picture/Journal_AJ/Image36.png)
+![Image34](./Documentation/Pictures/Journal_AJ/Image34.png)
+![Image35](./Documentation/Pictures/Journal_AJ/Image35.png)
+![Image36](./Documentation/Pictures/Journal_AJ/Image36.png)
 
 ---
 
@@ -62,8 +62,8 @@ Finally finished my tournament and came back home to sleep and go to school in t
 - I really need to finish the schematic next week.
 - I also need to assign every single MOSFET im missing a lot of them
 
-![Image32](./Documentation/Picture/Journal_AJ/Image32.png)
-![Image33](./Documentation/Picture/Journal_AJ/Image33.png)
+![Image32](./Documentation/Pictures/Journal_AJ/Image32.png)
+![Image33](./Documentation/Pictures/Journal_AJ/Image33.png)
 
 ---
 
