@@ -2,6 +2,42 @@
 
 - Author: ajakovski07
 
+## 15. TImelapse - 09.10.2026
+
+Long time no see.... I had some personal issues both with my laptop and also other stuff that made me start this week all the way in Friday :/// Now i need to do atleast 11 hours by the end of Sunday. I hope that i am gonna achieve that because I am invited to 2 birthday parties.... Thats amusing right, IM GONNA OBLITERATE MYSELF.
+
+Personally i think expressing my rage in journal is a fun thing if somebody ever decides to read it.
+
+Anyways in this timelapse i FINALLY found the right MOSFETs and i started working on that logic section about the valves and LED control.
+
+---
+
+**What i did:**
+
+- I had to make the main board schematic an A1 paper
+- Added the needed MOSFETs
+- Included other peripherals
+
+---
+
+**Problems that i've had:**
+
+- Lagging on my PC which disrupted my work a couple times
+- The schematic is getting messy now that i need to finalise everything
+
+---
+
+**Whats next:**
+
+- I just need to finish off the connections on main board
+- Finish off peripherals on Floor board
+
+![Image34](./Documentation/Picture/Journal_AJ/Image34.png)
+![Image35](./Documentation/Picture/Journal_AJ/Image35.png)
+![Image36](./Documentation/Picture/Journal_AJ/Image36.png)
+
+---
+
 ## 14. Timelapse - 04.10.2026
 
 Finally finished my tournament and came back home to sleep and go to school in the different city tomorrow again... Anyways i tried making some hours from my laptop and i managed to fix some previous confusions about powering this project. Also me and my partner are thinking of changing the path of this project towards hydroponics meaning i might remove some components.
