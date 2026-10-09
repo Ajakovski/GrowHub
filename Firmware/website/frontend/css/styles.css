@@ -748,6 +748,18 @@ img {
     font-size: 0.8rem;
 }
 
+.camera-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+#camera-source button:bisabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
 .camera-frame {
     background: #000;
     height: min(380px, 55vw);

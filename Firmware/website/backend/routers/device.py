@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from pydantic import BaseModel
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NamedTuple, Optional, Tuple
 from urllib.parse import quote
 import asyncio
 import os
@@ -9,6 +9,7 @@ import secrets
 import time
 
 import history
+import stock_images
 
 NEXT_WAKE_MINUTES = 15
 MIN_OFFLINE_SECONDS = 30
@@ -17,6 +18,9 @@ CAMERA_OFFLINE_SECONDS = 60
 DRY_MOISTURE_PERCENT = 30.0
 SUSTAINED_READINGS = 3
 NO_AI_ANALYSIS = "Not analysed yet"
+CAMERA_SOURCE_WEBCAM = "webcam"
+CAMERA_SOURCE_STOCK = "stock"
+CAMERA_SOURCES = (CAMERA_SOURCE_WEBCAM, CAMERA_SOURCE_STOCK)
 
 DEVICE_KEY = os.environ.get("GROWHUB_DEVICE_KEY")
 if not DEVICE_KEY:
@@ -51,6 +55,12 @@ def _tile_label(tile_id: str) -> str:
     return tile_id.replace("_", " ").title()
 
 
+class CameraFrame(NamedTuple):
+    data: bytes
+    captured_at: float
+    media_type: str
+
+
 @dataclass
 class Hub:
     hub_id: str
@@ -61,6 +71,7 @@ class Hub:
     ai_health_status: str = NO_AI_ANALYSIS
     ai_summary: Optional[str] = None
     ai_updated_at: Optional[float] = None
+    camera_source: str = CAMERA_SOURCE_WEBCAM
     latest_frame: Optional[bytes] = None
     latest_frame_at: float = 0.0
     frame_event: asyncio.Event = field(default_factory=asyncio.Event)
@@ -99,15 +110,30 @@ class Hub:
 
         return alerts
 
+    def current_frame(self, now: float) -> Optional[CameraFrame]:
+        if self.camera_source == CAMERA_SOURCE_STOCK:
+            stock = stock_images.current_frame(now)
+            return CameraFrame(stock.data, stock.captured_at, stock.media_type) if stock else None
+        if self.latest_frame is None:
+            return None
+        return CameraFrame(self.latest_frame, self.latest_frame_at, "image/jpeg")
+
     def snapshot(self, now: float) -> dict:
-        has_frame = self.latest_frame is not None
+        stock_image_count = len(stock_images.list_images())
+        if self.camera_source == CAMERA_SOURCE_STOCK:
+            has_frame = camera_online = stock_image_count > 0
+        else:
+            has_frame = self.latest_frame is not None
+            camera_online = has_frame and now - self.latest_frame_at <= CAMERA_OFFLINE_SECONDS
         return {
             **self.state,
             "hub_id": self.hub_id,
             "ai_health_status": self.ai_health_status,
             "ai_summary": self.ai_summary,
             "ai_updated_at": int(self.ai_updated_at * 1000) if self.ai_updated_at else None,
-            "camera_online": has_frame and now - self.latest_frame_at <= CAMERA_OFFLINE_SECONDS,
+            "camera_source": self.camera_source,
+            "stock_image_count": stock_image_count,
+            "camera_online": camera_online,
             "camera_feed_url": f"/api/web/camera?hub={quote(self.hub_id)}" if has_frame else None,
             **self.status(now),
             "alerts": self.alerts(),
@@ -146,6 +172,7 @@ def load_hubs() -> None:
             ai_health_status=row["ai_status"] or NO_AI_ANALYSIS,
             ai_summary=row["ai_summary"],
             ai_updated_at=row["ai_updated_at"],
+            camera_source=row["camera_source"] if row["camera_source"] in CAMERA_SOURCES else CAMERA_SOURCE_WEBCAM,
         )
 
 

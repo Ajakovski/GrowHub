@@ -7,8 +7,10 @@ services:
       GROWHUB_DB_PATH: /data/growhub.db
       GROWHUB_DEVICE_KEY: ${GROWHUB_DEVICE_KEY:-dev-device-key}
       GROWHUB_AI_KEY: ${GROWHUB_AI_KEY:-dev-ai-key}
+      GROWHUB_AI_IMAGES_DIR: /stock_images
     volumes:
       - growhub-data:/data
+      - ./stock_images:/stock_images:ro,z
     restart: unless-stopped
 
   ai:

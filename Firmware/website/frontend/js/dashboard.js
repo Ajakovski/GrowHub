@@ -1,6 +1,8 @@
 const API_BASE = `${GROWHUB_API_ORIGIN}/api/web`;
 const API_URL = `${API_BASE}/plant-stats`;
 const HISTORY_URL = `${API_BASE}/history`;
+const CAMERA_SOURCE_URL = `${API_BASE}/camera-source`;
+const CAMERA_PLACEHOLDER = "assets/img/growhub_tile_render_v1.png";
 const SPARKLINE_RANGE = "1h";
 const LEGACY_STORAGE_KEYS = ["growhub.dashboard.history", "growhub.dashboard.lastUpdatedAt"];
 const AI_STATUS_COLORS = {
@@ -19,6 +21,7 @@ let detailRange = SPARKLINE_RANGE;
 let sparklineSeries = [];
 let detailSeries = [];
 let historyRequestId = 0;
+let cameraSourcePending = false;
 
 function clearLegacyStorage() {
     try {
@@ -319,7 +322,7 @@ function renderStats() {
 
     renderHistorySparklines();
 
-    updateCameraFeed(globalTelemetry.camera_feed_url, globalTelemetry.hub_id);
+    renderCamera();
 
     const systemStatus = document.getElementById("system-status");
     if (systemStatus) {
@@ -345,9 +348,69 @@ function renderAiCard() {
         : "Waiting for the first AI review";
 }
 
+function cameraStatusText() {
+    if (globalTelemetry.camera_source === "stock") {
+        const count = globalTelemetry.stock_image_count || 0;
+        if (!count) return "No stock images affed";
+        return `Stock images ${count} ${count === 1 ? "photo" : "photos"}`;
+    }
+    if (globalTelemetry.camera_online) return "Live webcam";
+    return globalTelemetry.camera_feed_url ? "Webcam offline last frame" : "No webcam frames yet";
+}
+
+function renderCamera() {
+    const source = globalTelemetry.camera_source || "webcam";
+    if (!cameraSourcePending) {
+        document.querySelectorAll("#camera-source button[data-source]").forEach((button) => {
+            button.classList.toggle("active", button.getAttribute("data-source") === source);
+        });
+    }
+
+    const pill = document.getElementById("camera-node-pill");
+    if (pill) pill.textContent = cameraStatusText();
+
+    updateCameraFeed(globalTelemetry.camera_feed_url, globalTelemetry.hubId);
+}
+
+async function selectCameraSource(source) {
+    if (!source || !currentHubId || cameraSourcePending) return;
+    if (source === globalTelemetry?.camera_source) return;
+
+    const buttons = document.querySelectorAll("#camera-source button[data-source]");
+    cameraSourcePending = true;
+    buttons.forEach((button) => {
+        button.disabled = true;
+        button.classList.toggle("active", button.getAttribute("data-source") === source);
+    });
+
+    try {
+        const url = new URL(CAMERA_SOURCE_URL);
+        url.searchParams.set("hub", currentHubId);
+        const response = await fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ source }),
+        });
+        if (!response.ok) throw new Error(`http error! status: ${response.status}`);
+    } catch (error) {
+        console.error("failed to switch camera source:", error);
+    } finally {
+        cameraSourcePending = false;
+        button.forEach((button) => {
+            button.disabled = false;
+        });
+        await fetchPlantStats();
+    }
+}
+
 function updateCameraFeed(cameraFeedUrl, hubId) {
     const cameraFeed = document.getElementById("camera-feed");
-    if (!cameraFeed || !cameraFeedUrl) return;
+    if (!cameraFeed) return;
+    if (!cameraFeedUrl) {
+        if (!cameraFeed.src.endsWith(CAMERA_PLACEHOLDER)) cameraFeed.src = CAMERA_PLACEHOLDER;
+        cameraFeed.alt = "No camera image available";
+        return;
+    }
 
     try {
         const nextUrl = new URL(cameraFeedUrl, GROWHUB_API_ORIGIN);
@@ -542,6 +605,11 @@ function initDashboard() {
             if (button) selectDevice(button.getAttribute("data-id"));
         });
     }
+
+    document.getElementById("camera-source")?.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-source]");
+        if (button) selectCameraSource(button.getAttribute("data-source"));
+    });
 
     document.querySelectorAll(".metric-card-expandable").forEach((card) => {
         const button = card.querySelector(".metric-expand-btn");

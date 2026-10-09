@@ -64,13 +64,19 @@ def init_db() -> None:
                 low_water_streak INTEGER NOT NULL DEFAULT 0,
                 ai_status TEXT,
                 ai_summary TEXT,
-                ai_updated_at REAL
+                ai_updated_at REAL,
+                camera_source TEXT
             )
             """
         )
 
         hub_columns = {row[1] for row in conn.execute("PRAGMA table_info(hubs)")}
-        for column, column_type in (("ai_status", "TEXT"), ("ai_summary", "TEXT"), ("ai_updated_at", "REAL")):
+        for column, column_type in (
+            ("ai_status", "TEXT"),
+            ("ai_summary", "TEXT"),
+            ("ai_updated_at", "REAL"),
+            ("camera_source", "TEXT"),
+        ):
             if column not in hub_columns:
                 conn.execute(f"ALTER TABLE hubs ADD COLUMN {column} {column_type}")
 
@@ -163,11 +169,22 @@ def save_hub_ai(hub_id: str, status: str, summary: str, updated_at: float) -> No
         )
 
 
+def save_hub_camera_source(hub_id: str, camera_source: str) -> None:
+    with _connection() as conn:
+        conn.execute(
+            f"""
+            INSERT INTO hubs (hub_id, state, camera_source) VALUES (?, '{}', ?)
+            ON CONFLICT (hub_id) DO UPDATE SET camera_source = excluded.camera_source
+            """,
+            (hub_id, camera_source),
+        )
+
+
 def load_hubs() -> List[dict]:
     with _connection() as conn:
         rows = conn.execute(
             "SELECT hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak, "
-            "ai_status, ai_summary, ai_updated_at FROM hubs"
+            "ai_status, ai_summary, ai_updated_at, camera_source FROM hubs"
         ).fetchall()
     return [
         {
@@ -179,9 +196,10 @@ def load_hubs() -> List[dict]:
             "ai_status": ai_status,
             "ai_summary": ai_summary,
             "ai_updated_at": ai_updated_at,
+            "camera_source": camera_source,
         }
         for (
             hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak,
-            ai_status, ai_summary, ai_updated_at,
+            ai_status, ai_summary, ai_updated_at, camera_source,
         ) in rows
     ]

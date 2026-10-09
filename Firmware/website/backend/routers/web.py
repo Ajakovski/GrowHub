@@ -1,12 +1,18 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response, StreamingResponse
+from pydantic import BaseModel
 from typing import Literal, Optional
+import asyncio
 import time
 
 import history
-from routers.device import Hub, get_hub, hubs
+from routers.device import CAMERA_SOURCE_STOCK, Hub, get_hub, hubs
 
 router = APIRouter()
+
+
+class CameraSourceUpdate(BaseModel):
+    source: Literal["webcam", "stock"]
 
 
 def _resolve_hub(hub_id: Optional[str]) -> Optional[Hub]:
@@ -67,19 +73,31 @@ async def get_history(
     }
 
 
+@router.put("/camera-source")
+async def set_camera_source(update: CameraSourceUpdate, hub: Optional[str] = None):
+    record = _resolve_hub(hub)
+    if record is None:
+        raise HTTPException(status_code=404, detail="No hub has reported yet")
+
+    record.camera_source = update.source
+    history.save_hub_camera_source(record.hub_id, update.source)
+    return {"hub_id": record.hub_id, "camera_source": record.camera_source}
+
+
 @router.get("/camera")
 async def get_camera_still(hub: Optional[str] = None):
     record = _resolve_hub(hub)
-    if record is None or not record.latest_frame:
+    frame = record.current_frame(time.time()) if record else None
+    if frame is None:
         raise HTTPException(status_code=503, detail="No camera frame yet")
 
     return Response(
-        content=record.latest_frame,
-        media_type="image/jpeg",
+        content=frame.data,
+        media_type=frame.media_type,
         headers={
             "Cache-Control": "no-store, no-cache, must-revalidate",
             "Pragma": "no-cache",
-            "X-Frame-Captured-At": str(record.latest_frame_at),
+            "X-Frame-Captured-At": str(frame.captured_at),
         },
     )
 
@@ -95,14 +113,18 @@ async def get_camera_stream(hub: Optional[str] = None):
     async def mjpeg_generator():
         last_sent_at = 0.0
         while True:
-            frame, captured_at = await record.wait_for_frame_change(last_sent_at, timeout=1.0)
-            if frame and captured_at > last_sent_at:
-                last_sent_at = captured_at
+            if record.camera_source == CAMERA_SOURCE_STOCK:
+                await asyncio.sleep(1.0)
+            else:
+                await record.wait_for_frame_change(last_sent_at, timeout=1.0)
+            frame = record.current_frame(time.time())
+            if frame and frame.captured_at != last_sent_at:
+                last_sent_at = frame.captured_at
                 yield (
                     f"--{boundary}\r\n"
-                    f"Content-Type: image/jpeg\r\n"
-                    f"Content-Length: {len(frame)}\r\n\r\n"
-                ).encode("utf-8") + frame + b"\r\n"
+                    f"Content-Type: {frame.media_type}\r\n"
+                    f"Content-Length: {len(frame.data)}\r\n\r\n"
+                ).encode("utf-8") + frame.data + b"\r\n"
 
     return StreamingResponse(
         mjpeg_generator(),
