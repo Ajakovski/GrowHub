@@ -1,8 +1,12 @@
+import math
 import os
-import requests
 import time
 import random
 import threading
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+
+import requests
 
 API_BASE = os.environ.get("GROWHUB_API_BASE", "http://localhost:8000")
 API_URL = f"{API_BASE}/api/device/telemetry"
@@ -14,33 +18,161 @@ CAMERA_INDEX = int(os.environ.get("CAMERA_INDEX", "0"))
 CAMERA_INTERVAL_SEC = 5
 JPEG_QUALITY = 70
 
+REPORT_INTERVAL_SEC = float(os.environ.get("SIM_REPORT_INTERVAL_SEC", "5"))
+SIM_SPEED = float(os.environ.get(f"SIM_SPEED", "60"))
+SIM_TILES = int(os.environ.get("SIM_TILES", "2"))
+SIM_SEED = os.environ.get("SIM_SEED")
+
+RESERVOIR_LITRES = 18.0
+LOW_WATER_LITRES = 5.0
+PUMP_MIN_LITRES = 2.5
+ROOT_REACH_LITRES = 2.0
+TARGET_EC = 1.6
+NUTRIENT_TO_WATER_UPTAKE = 0.75
+REFILL_DELAY_HOURS = (2.0, 14.0)
+RESERVOIR_CHANGE_DAYS = 7
+
+LIGHTS_ON_HOUR = 6
+LIGHTS_OFF_HOUR = 22
+PUMP_MINUTES_PER_HOUR = 15
+
+DAILY_UPTAKE_LITRES = 2.5
+MAX_GROWTH = 2.0
+GROWTH_PER_DAY = 0.04
+
+WATER_TEMP_TAU_HOURS = 3.0
+WEATHER_TAU_HOURS = 12.0
+WEATHER_SIGMA = 1.0
+MOISTURE_WET = 85.0
+MOISTURE_DRY = 15.0
+MOISTURE_WET_TAU_HOURS = 0.1
+MOISTURE_DRY_TAU_HOURS = 3.0
+
 try:
     import cv2
 except ImportError:
     cv2 = None
 
 
-def generate_fake_telemetry():
-    return {
-        "hub_id": HUB_ID,
-        "water_level_ok": random.choice([True, True, True, False]),
-        "active_tiles": 2,
-        "tiles": [
-            {
-                "tile_id": "tile_1",
-                "moisture_level": round(random.uniform(30.0, 60.0), 1),
-                "temperature": round(random.uniform(20.0, 25.0), 1),
-                "ec_level": round(random.uniform(1.2, 2.0), 2),
-            },
-            {
-                "tile_id": "tile_2",
-                "moisture_level": round(random.uniform(25.0, 55.0), 1),
-                "temperature": round(random.uniform(19.0, 24.0), 1),
-                "ec_level": round(random.uniform(1.0, 1.9), 2),
-            },
-        ],
-    }
+@dataclass
+class Tile:
+    tile_id: str
+    vigour: float
+    temp_offset: float
+    ec_offset: float
+    growth: float = 1.0
+    moisture: float = 70.0
 
+    def uptake_litres(self, hours: float, air_temp: float, lights_on: bool) -> float:
+        demand = 1.0 + 0.06 * (air_temp - 20.0)
+        if not lights_on:
+            demand *= 0.03
+        return max(0.0, DAILY_UPTAKE_LITRES / 24.0 * hours * self.growth * self.vigour * demand)
+
+
+class Greenhouse:
+    def __init__(self, start: datetime, tile_count: int, rng: random.Random):
+        self.rng = rng
+        self.clock = start
+        self.weather = 0.0
+        self.volume = RESERVOIR_LITRES
+        self.nutrients = RESERVOIR_LITRES * TARGET_EC
+        self.low_since = None
+        self.refill_delay = rng.uniform(*REFILL_DELAY_HOURS)
+        self.last_change = start
+        self.tiles = [
+            Tile(
+                tile_id=f"tile_{index + 1}",
+                vigour=rng.uniform(0.85, 1.1),
+                temp_offset=rng.uniform(-0.3, 0.4),
+                ec_offset=rng.uniform(-0.05, 0.05),
+            )
+            for index in range(tile_count)
+        ]
+        self.water_temp = self._water_temp_target()
+
+    @property
+    def lights_on(self) -> bool:
+        return LIGHTS_ON_HOUR <= self.clock.hour < LIGHTS_OFF_HOUR
+
+    @property
+    def pump_running(self) -> bool:
+        return self.clock.minute < PUMP_MINUTES_PER_HOUR and self.volume > PUMP_MIN_LITRES
+
+    @property
+    def ec(self) -> float:
+        return self.nutrients / self.volume
+
+    def air_temp(self) -> float:
+        hour = self.clock.hour + self.clock.minute / 60
+        daily = 21.0 + 3.0 * math.sin(2 * math.pi * (hour - 9) / 24)
+        return daily + self.weather + (1.0 if self.lights_on else 0.0)
+
+    def _water_temp_target(self) -> float:
+        return self.air_temp() - 0.5 + (0.8 if self.lights_on else 0.0)
+
+    def step(self, hours: float) -> None:
+        if hours <= 0:
+            return
+        self.clock += timedelta(hours=hours)
+
+        decay = math.exp(-hours / WEATHER_TAU_HOURS)
+        self.weather = self.weather * decay + self.rng.gauss(0, WEATHER_SIGMA * math.sqrt(1 - decay ** 2))
+
+        air = self.air_temp()
+        self.water_temp += (self._water_temp_target() - self.water_temp) * (1 - math.exp(-hours / WATER_TEMP_TAU_HOURS))
+
+        for tile in self.tiles:
+            drunk = min(tile.uptake_litres(hours, air, self.lights_on), max(0.0, self.volume - ROOT_REACH_LITRES))
+            self.nutrients -= drunk * self.ec * NUTRIENT_TO_WATER_UPTAKE
+            self.volume -= drunk
+            tile.growth = min(MAX_GROWTH, tile.growth + GROWTH_PER_DAY * hours / 24 * tile.vigour)
+
+            if self.pump_running:
+                target, tau = MOISTURE_DRY, MOISTURE_DRY_TAU_HOURS / (tile.growth * tile.vigour)
+            tile.moisture += (target - tile.moisture) * (1 - math.exp(-hours / tau))
+
+        self._maintain_reservoir()
+
+    def _maintain_reservoir(self) -> None:
+        if self.clock - self.last_change >= timedelta(days=RESERVOIR_CHANGE_DAYS):
+            self.volume = RESERVOIR_LITRES
+            self.nutrients = RESERVOIR_LITRES * TARGET_EC
+            self.last_change = self.clock
+            self.low_since = None
+            print(f"[{self.clock:%a %H:%M}] weekly reservoir change: fresh {RESERVOIR_LITRES:.of} L at EC {TARGET_EC}")
+            return
+
+        if self.volume >= LOW_WATER_LITRES:
+            self.low_since = None
+            return
+        if self.low_since is None:
+            self.low_since = self.clock
+        elif self.clock - self.low_since >= timedelta(hours=self.refill_delay):
+            added = RESERVOIR_LITRES - self.volume
+            self.nutrients += added * TARGET_EC
+            self.volume = RESERVOIR_LITRES
+            self.low_since = None
+            self.refill_delay = self.rng.uniform(*REFILL_DELAY_HOURS)
+            print(f"[{self.clock:%a %H:%M}] reservoir topped up with {added:.1f} L, EC now {self.ec:.2f}")
+
+    def telemetry(self) -> dict:
+        noise = self.rng.gauss
+        return {
+            "hub_id": HUB_ID,
+            "water_level_ok": self.volume >= LOW_WATER_LITRES,
+            "active_tiles": len(self.tiles),
+            "tiles": [
+                {
+                    "tile_id": tile.tile_id,
+                    "moisture_level": round(min(100.0, max(0.0, tile.moisture + noise(0, 1.0))), 1),
+                    "temperature": round(self.water_temp + tile.temp_offset + noise(0, 0.1), 1),
+                    "ec_level": round(max(0.0, self.ec + tile.ec_offset + noise(0, 0.02)), 2),
+                }
+                for tile in self.tiles
+            ],
+        }
+        
 
 def camera_loop():
     if cv2 is None:
@@ -93,25 +225,40 @@ def camera_loop():
         time.sleep(CAMERA_INTERVAL_SEC)
 
 
-print(f"Starting ESP32 simulator for {HUB_ID}...")
-threading.Thread(target=camera_loop, daemon=True).start()
+def main():
+    rng = random.Random(SIM_SEED)
+    greenhouse = Greenhouse(datetime.now(), SIM_TILES, rng)
+    print(f"Starting ESP32 simulator for {HUB_ID} at {SIM_SPEED:g}x speed with {SIM_TILES} tiles...")
+    threading.Thread(target=camera_loop, daemon=True).start()
 
-while True:
-    payload = generate_fake_telemetry()
-    try:
-        response = requests.post(API_URL, json=payload, headers=HEADERS)
+    last_tick = time.monotonic()
+    while True:
+        now = time.monotonic()
+        greenhouse.step((now - last_tick) * SIM_SPEED / 3600)
+        last_tick = now
 
-        if response.status_code == 401:
-            print("server rejected the device key. Set GROWHUB_DEVICE_KEY to match the backend.")
-        elif response.status_code == 422:
-            print("fastapi rejected the payload. error details:")
-            print(response.text)
-        else:
-            print(
-                f"sent data: moisture T1={payload['tiles'][0]['moisture_level']}% "
-                f"| server says: {response.json().get('action')}"
-            )
-    except requests.exceptions.ConnectionError:
-        print("Failed to connect to FastAPI. Is the server running?")
+        payload = greenhouse.telemetry()
+        try:
+            response = request.post(API_URL, json=payload, headers=HEADERS, timeour=10)
 
-    time.sleep(5)
+            if response.status_code == 401:
+                print("server rejected the device key. Set GROWHUB_DEVICE_KEY to match the backend.")
+            elif response.status_code == 422:
+                print("fastapi rejected the payload. error details:")
+                print(response.text)
+            else:
+                first = payload["tiles"][0]
+                print(
+                    f"[{greenhouse.clock:%a %H:%M}] lights {'on ' if greenhouse.lights_on else 'off'} "
+                    f"| pump {'on ' if greenhouse.pump_running else 'off'} "
+                    f"| reservoir {greenhouse.volume:4.1f} L | EC {greenhouse.ec:.2f} "
+                    f"| water {greenhouse.water_temp:.1f}°C | T1 moisture {first['moisture_level']}%"
+                )
+        except requests.exceptions.RequestException as error:
+            print(f"Failed to reach FastAPI ({error.__class__.__name__}). Is the server running?")
+
+        time.sleep(REPORT_INTERVAL_SEC)
+
+
+if __name__ == "__main__":
+    main()
