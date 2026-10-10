@@ -2,6 +2,38 @@
 
 - Author: ajakovski07
 
+## 16. Timelapse - 10.10.2026
+
+Holy lock in... I just did 5 hours of timelapse on a normal day and its still 6PM!!! Now i lowkey have my whole afternoon free and i also finished 99% of the schematic and double checked everyhting. Thats sound that by tomorrow i will probably start the PCB as expected :)))
+
+---
+
+**What i did:**
+
+- Soo i placed every single component needed and locked it in
+- I finished every peripheral schematic
+- I connected 99% of the component with each other
+- I also started organizing the schematic so that is easier to review
+
+**Problems that i had:**
+
+- none :)
+
+---
+
+**Next Step:**
+
+- I need to discuss with my partner whether we keep soil based tiling or hydroponics. If we adopt hydroponics then a lot of changes will be needed with the valve regulation...
+- I need to finish that 1% on the schematic
+- And if i am done with all of that i will prep the PCB for Week 5
+
+![Image37](./Dpcumentation/Pictures/Journal_AJ/Images37.png)
+![Image38](./Dpcumentation/Pictures/Journal_AJ/Images38.png)
+
+Only 2 pictures but if you compare them to the previous day you could see that a lot has been changed.
+
+--- 
+
 ## 15. TImelapse - 09.10.2026
 
 Long time no see.... I had some personal issues both with my laptop and also other stuff that made me start this week all the way in Friday :/// Now i need to do atleast 11 hours by the end of Sunday. I hope that i am gonna achieve that because I am invited to 2 birthday parties.... Thats amusing right, IM GONNA OBLITERATE MYSELF.
