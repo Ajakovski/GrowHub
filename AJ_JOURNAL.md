@@ -27,8 +27,8 @@ Holy lock in... I just did 5 hours of timelapse on a normal day and its still 6P
 - I need to finish that 1% on the schematic
 - And if i am done with all of that i will prep the PCB for Week 5
 
-![Image37](./Dpcumentation/Pictures/Journal_AJ/Images37.png)
-![Image38](./Dpcumentation/Pictures/Journal_AJ/Images38.png)
+![Image37](./Documentation/Pictures/Journal_AJ/Image37.png)
+![Image38](./Documentation/Pictures/Journal_AJ/Image38.png)
 
 Only 2 pictures but if you compare them to the previous day you could see that a lot has been changed.
 
