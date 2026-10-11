@@ -584,12 +584,6 @@
         },
         {
           "group_by": false,
-          "label": "HEIGHT",
-          "name": "HEIGHT",
-          "show": false
-        },
-        {
-          "group_by": false,
           "label": "IPC",
           "name": "IPC",
           "show": false
@@ -622,12 +616,6 @@
           "group_by": false,
           "label": "MANUFACTURER",
           "name": "MANUFACTURER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "MANUFACTURER_NAME",
-          "name": "MANUFACTURER_NAME",
           "show": false
         },
         {
@@ -821,6 +809,18 @@
           "label": "#",
           "name": "${ITEM_NUMBER}",
           "show": false
+        },
+        {
+          "group_by": false,
+          "label": "HEIGHT",
+          "name": "Height",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "MANUFACTURER_NAME",
+          "name": "Manufacturer_Name",
+          "show": false
         }
       ],
       "filter_string": "",
@@ -871,7 +871,7 @@
         "uuid": "af001b7e-1c5e-4b7a-a0b4-e6af7dd78ca9"
       }
     ],
-    "used_designators": "D7-8,#PWR7-8,#PWR90-101,C61-66,R7,J2-3",
+    "used_designators": "U1-22,U25,Q1-24,D1-35,D37-41,#PWR1-216,C1-85,C87-89,FB1,F1,IC1,J1-15,L1-2,PS1,R1-140,SW1-4,Z1-2",
     "variants": []
   },
   "sheets": [
