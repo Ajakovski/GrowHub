@@ -188,3 +188,44 @@ with the cad design of the planter over the week.
 - Make the design actually manufacturable.
 
 ---
+
+## 6. Timelapse - 05.10.2026 - 11.10.2026
+
+I will continue with this format of journaling, a whole week at once since i mostly work with software
+and either log timalapses when doing CAD designs or art. But i dont remember which days i actually log my time so
+its easier for me to just do it like this.
+
+---
+
+**What i did:**
+
+- I fixed some inconsistencies in the cad model
+- I also fixed some tolerance problems in the cad model
+- I came up with the piping design in the planters
+- And i also learned about plumbing along the way :)
+
+---
+
+**Problems that i've faced**
+
+- How bad plumbing tutorials and websites were. If it werent for ai to help me research and help me understand
+- theese things i would have never understood it because of how bad their websites are.
+
+---
+
+**Current State**
+
+- The CAD design is in good shape right now. Its still not manufacturable tough.
+- We have the piping system designed.
+
+---
+
+**Next Step**
+
+- Start working on designing the piping and the fitment of everything in CAD
+- Make the overall CAD design more realistic
+- Also i was thinking about kind of making a mascot for the brand or something like that but im not sure yet.
+
+[View piping design SVG](Documentation/growhub_water_route_v1.svg)
+
+---
