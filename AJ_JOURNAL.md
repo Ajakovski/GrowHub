@@ -2,6 +2,35 @@
 
 - Author: ajakovski07
 
+## 17. Timelapse - 11.10.2026
+
+I FKIN HATE MYSELFF
+
+So basically i was doing my work as per usual and i decided to write in the README for a bit just so that i can update it. But i opened 2 github windows and not realising i closed the one in which i was writing it.... I LOST MY WORK WITHOUT COMMITING. It wasnt a lot of work but that is such a tedious work and i dont wanna think of doing it again.
+
+**What i did:**
+
+- I finished the schematic
+- We changed the schematic according to a hydroponic lifestyle
+- And finished everything except the last 2 MOSFETs which i need to research a bit but i dont have the time anymore for this week.
+  
+--- 
+
+**Problems that i've had:**
+
+- Well the fact that i had to change a lot of components due to the watering system.
+- And my stupidity of closing the wrong window causing me to waste my time.
+
+---
+
+**What's next:**
+
+- Well now i am prepared to start the PCB
+- Start the PCB :)
+
+![Image39](./Documentation/Pictures/Journal_AJ/Image39.png)
+![Image40](./Documentation/Pictures/Journal_AJ/Image40.png)
+
 ## 16. Timelapse - 10.10.2026
 
 Holy lock in... I just did 5 hours of timelapse on a normal day and its still 6PM!!! Now i lowkey have my whole afternoon free and i also finished 99% of the schematic and double checked everyhting. Thats sound that by tomorrow i will probably start the PCB as expected :)))
