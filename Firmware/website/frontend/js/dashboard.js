@@ -10,6 +10,8 @@ const AI_STATUS_COLORS = {
     "Watch": "#b7791f",
     "Action needed": "#e63946",
 };
+const LOW_FLOW_LPM = 1.0;
+const EMPTY_SERIES = { sparkline: [], detail: [] };
 
 let globalTelemetry = null;
 let currentHubId = null;
@@ -18,8 +20,7 @@ let knownTileIds = null;
 let lastUpdatedAt = null;
 let hubOnline = false;
 let detailRange = SPARKLINE_RANGE;
-let sparklineSeries = [];
-let detailSeries = [];
+let historySeries = { hub: EMPTY_SERIES, tile: EMPTY_SERIES };
 let historyRequestId = 0;
 let cameraSourcePending = false;
 
@@ -31,6 +32,23 @@ function clearLegacyStorage() {
     }
 }
 
+function tileLabel(tileId) {
+    return tileId.replace("_", "").replace(/^\w/, (letter) => letter.toUpperCase());
+}
+
+function waterTempStatusText(value) {
+    if (value == null) return "No water temperature reading";
+    if (value < 16) return "Too cold for roots";
+    if (value > 24) return "Too warm: low oxygen risk";
+    return "Ideal DWC water temperature";
+}
+
+function headerStatusText() {
+    const heaterOn = globalTelemetry?.heater_on;
+    if (typeof heaterOn !== "boolean") return "";
+    return heaterOn ? "heater on" : "heater off";
+}
+
 function ecStatusText(value) {
     if (value == null) return "No EC sensor reading";
     if (value < 0.8) return "Low nutrients: dose reservoir";
@@ -38,10 +56,106 @@ function ecStatusText(value) {
     return "Nutrients in range";
 }
 
-function tempStatusText(value) {
-    if (value < 16) return "Too cold for roots";
-    if (value > 24) return "Too warm: low oxygen risk";
-    return "Ideal DWC water temperature";
+function phStatusText(value) {
+    if (value == null) return "No pH sensor reading";
+    if (value < 5.5) return "Too acidic: add pH up";
+    if (value > 6.5) return "Too alkaline: add pH down";
+    return "pH in range";
+}
+
+function airTempStatusText(value) {
+    if (value == null) return "No air temperature reading";
+    if (value < 15) return "Too cold for growth";
+    if (value > 30) return "Too hot: heat stress risk";
+    return "Comfortable for plants";
+}
+
+function humidityStatusText(value) {
+    if (value == null) return "No humidity reading";
+    if (value < 40) return "Dry air: leaves may stress";
+    if (value > 80) return "Very humid: mould risk, add airflow";
+    return "Humidity in range";
+}
+
+function lightStatusText(value) {
+    if (value == null) return "No light sensor reading";
+    if (value >= 5000) return "LED canopy on";
+    if (value >= 50) return "Ambient light only";
+    return "Dark: lights off";
+}
+
+function flowStatusText(value, tiles) {
+    if (value == null) return "No flow sensor reading";
+    const lowTiles = tiles.filter((tile) => Number.isFinite(tile.flow_lpm) && tile.flow_lpm < LOW_FLOW_LPM);
+    if (tiles.length > 1 && lowTiles.length && lowTiles.length < tiles.length) {
+        return `Low flow in ${lowTiles.map((tile) => tileLabel(tile.tile_id)).join(", ")}: possible clog`;
+    }
+    if (value < 0.2) return "No flow: check pump and piping";
+    if (value < LOW_FLOW_LPM) return "Low flow: possible clog";
+    return "Flowing normally";
+}
+
+function formatLux(value) {
+    return value >= 1000 ? `${(value / 1000).toFixed(1)}k lux` : `${Math.round(value)} lux`
+}
+
+const METRICS = [
+    {
+        key: "water_temp", scope: "hub", field: "water_temperature", label: "Water Temp", unit: "°C", decimals: 1,
+        status: (value) => [waterTempStatusText(value), headerStatusText()].filter(Boolean).join(" · "),
+    },
+    { key: "ec", scope: "hub", field: "ec_level", label: "EC (Nutrients)", unit: " mS/cm", decimals: 2, status: ecStatusText },
+    { key: "ph", scope: "hub", field: "ph", label: "pH", unit: "", decimals: 2, stats: phStatusText },
+    { key: "air_temp", scope: "tile", field: "air_temperature", label: "Air Temp", unit: "°C", decimals: 1, status: airTempStatusText },
+    { key: "humidity", scope: "tile", field: "humidity", label: "Humidity", unit: "%", decimals: 0, status: humidityStatusText },
+    { key: "light", scope: "tile", field: "light_lux", label: "Light", unit: " lux", decimals: 0, status: lightStatusText },
+    { key: "flow", scope: "tile", field: "flow_lpm", label: "Water Flow", unit: " L/min", decimals: 2, status: flowStatusText },
+];
+
+function formatMetric(metric, value) {
+    if (value == null) return "--";
+    return metric.format ? metric.format(value) : `${value.toFixed(metric.decimals)}${metric.unit}`;
+}
+
+function metricCardHtml(metric) {
+    return `
+        <article class="metric-card metric-card-expandable" data-metric="${metric.key}">
+            <div class="metric-card-main">
+                <div class="metric-card-heading">
+                    <span class="kicker" id="${metric.key}-label">${metric.label}</span>
+                    <button type="button" class="metric-expand-btn" aria-expanded="false" aria-controls="${metric.key}-detail" aria-label="Show ${metric.label} history">
+                        <svg viewBox="0 0 20 20" aria-hidden="true">
+                            <path d="M5 7.5 L10 12.5 L15 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+                </div>
+                <strong id="${metric.key}-val">--</strong>
+                <svg class="sparkline" id="${metric.key}-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
+                <span id="${metric.key}-status">Fetching data...</span>
+            </div>
+            <div class="metric-card-detail" id="${metric.key}-detail" hidden>
+                <div class="detail-chart-header">
+                    <div class="detail-chart-stats" id="${metric.key}-detail-stats"></div>
+                    <div class="detail-range" role="group" aria-label="${metric.label} history range">
+                        <button type="button" class="pill ${detailRange === "1h" ? "active" : ""}" data-range="1h">1h</button>
+                        <button type="button" class="pill ${detailRange === "24h" ? "active" : ""}" data-range="24h">24h</button>
+                        <button type="button" class="pill ${detailRange === "7d" ? "active" : ""}" data-range="7d">7d</button>
+                    </div>
+                </div>
+                <svg class="detail-chart" id="${metric.key}-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="${metric.label} history chart"></svg>
+            </div>
+        </article>
+    `;
+}
+
+function buildMetricCards() {
+    const containers = {
+        hub: document.getElementById("hub-metrics"),
+        tile: document.getElementById("tile-metrics"),
+    };
+    METRICS.forEach((metric) => {
+        containers[metric.scope]?.insertAdjacentHTML("beforeend", metricCardHtml(metric));
+    })
 }
 
 function average(values) {
@@ -76,10 +190,10 @@ function setOfflineState(message = "Offline / Connection Error") {
         systemStatus.style.borderColor = "#e63946";
     }
 
-    const ecStatus = document.getElementById("ec-status");
-    const tempStatus = document.getElementById("temp-status");
-    if (ecStatus) ecStatus.textContent = "No telemetry";
-    if (tempStatus) tempStatus.textContent = "No telemetry";
+    METRICS.forEach((metric) => {
+        const element = document.getElementById(`${metric.key}-status`);
+        if (element) element.textContent = "No telemetry";
+    });
 
     const lastUpdated = getLastUpdatedElement();
     if (lastUpdated) {
@@ -125,20 +239,25 @@ async function fetchHistorySeries(deviceId, range) {
     return Array.isArray(data.points) ? data.points : [];
 }
 
+async function loadSeries(deviceId, range) {
+    const sparkline = fetchHistorySeries(deviceId, SPARKLINE_RANGE);
+    const detail = range === SPARKLINE_RANGE ? sparkline : await fetchHistorySeries(deviceId, range);
+    return { sparkline, detail };
+}
+
 async function refreshHistory() {
     const requestId = ++historyRequestId;
     const deviceId = currentSelection;
     const range = detailRange;
 
     try {
-        const sparkline = await fetchHistorySeries(deviceId, SPARKLINE_RANGE);
-        const detail = range === SPARKLINE_RANGE ? sparkline : await fetchHistorySeries(deviceId, range);
+        const hub = await loadSeries("hub", range);
+        const tile = deviceId === "hub" ? hub : await loadSeries(deviceId, range);
 
         if (requestId !== historyRequestId) return;
 
-        sparklineSeries = sparkline;
-        detailSeries = detail;
-        renderHistorySparklines();
+        historySeries = { hub, tile };
+        renderHistory();
     } catch (error) {
         console.warn("failed to load history:", error);
     }
@@ -230,7 +349,7 @@ function updateDeviceSelector() {
     if (knownTileIds !== tileIds) {
         knownTileIds = tileIds;
 
-        let html = `<button type="button" class="pill ${currentSelection === "hub" ? "active" : ""}" data-id="hub">Main Hub</button>`;
+        let html = `<button type="button" class="pill ${currentSelection === "hub" ? "active" : ""}" data-id="hub">All tiles</button>`;
 
         if (globalTelemetry.tiles) {
             globalTelemetry.tiles.forEach((tile) => {
@@ -252,63 +371,49 @@ function updateDeviceSelector() {
 function selectDevice(deviceId) {
     if (!deviceId || deviceId === currentSelection) return;
     currentSelection = deviceId;
-    sparklineSeries = [];
-    detailSeries = [];
+    historySeries = { ...historySeries, tile: EMPTY_SERIES };
     updateDeviceSelector();
     if (globalTelemetry) {
         renderStats();
     } else {
-        renderHistorySparklines();
+        renderHistory();
     }
     refreshHistory();
 }
 
-function formatEc(value) {
-    return value == null ? "--" : `${value.toFixed(2)} mS/cm`;
+function selectedTiles() {
+    const tiles = globalTelemetry?.tiles || [];
+    return currentSelection === "hub" ? tiles.filter((tile) => tile.tile_id === currentSelection);
 }
 
-function getCurrentReadings() {
-    if (currentSelection === "hub") {
-        const tiles = globalTelemetry.tiles || [];
-        const temperature = average(tiles.map((t) => t.temperature)) ?? 0;
-        const ec = average(tiles.map((t) => t.ec_level).filter(Number.isFinite));
-        return {
-            ec,
-            temperature,
-            ecLabel: "Avg EC (Nutrients)",
-            tempLabel: "Avg Water Temp",
-            ecDisplay: formatEc(ec),
-            tempDisplay: `${temperature.toFixed(1)}°C`,
-        };
+function metricValue(metric) {
+    if (metric.scope === "hub") {
+        const value = globa.globalTelemetry[metric.field];
+        retrun Number.isFinite(value) ? value : null;
     }
+    return average(selectedTiles().map((tile) => tile[metric.field]).filter(Number.isFinite));
+}
 
-    const tile = globalTelemetry.tiles?.find((t) => t.tile_id === currentSelection);
-    if (!tile) return null;
+function renderMetrics() {
+    const tiles = selectedTiles();
+    const showingAverage = currentSelection === "hub";
 
-    const ec = Number.isFinite(tile.ec_level) ? tile.ec_level : null;
-    return {
-        ec,
-        temperature: tile.temperature,
-        ecLabel: "Tile EC (Nutrients)",
-        tempLabel: "Tile Water Temp",
-        ecDisplay: formatEc(ec),
-        tempDisplay: `${tile.temperature}°C`,
-    };
+    METRICS.forEach((metric) => {
+        const value = metricValue(metric);
+        const label = metric.scope === "tile" && showingAverage ? `Avg ${metric.label}` : metric.label;
+        document.getElementById(`${metric.key}-label`).textContent = label;
+        document.getElementById(`${metric.key}-val`).textContent = formatMetric(metric, value);
+        document.getElementById(`${metric.key}-status`).textContent = metric.status(value, tiles);
+    });
+
+    const scope = document.getElementById("tile-scope");
+    if (scope) scope.textContent = showingAverage ? "Average across all tiles" : tileLabel(currentSelection);
 }
 
 function renderStats() {
     if (!globalTelemetry) return;
 
-    const readings = getCurrentReadings();
-    if (!readings) return;
-
-    document.getElementById("ec-label").textContent = readings.ecLabel;
-    document.getElementById("ec-val").textContent = readings.ecDisplay;
-    document.getElementById("temp-label").textContent = readings.tempLabel;
-    document.getElementById("temp-val").textContent = readings.tempDisplay;
-
-    document.getElementById("ec-status").textContent = ecStatusText(readings.ec);
-    document.getElementById("temp-status").textContent = tempStatusText(readings.temperature);
+    renderMetrics();
 
     document.getElementById("water-val").textContent = globalTelemetry.water_level_ok ? "OK" : "LOW";
     document.getElementById("water-val").style.color = globalTelemetry.water_level_ok
@@ -320,14 +425,13 @@ function renderStats() {
 
     renderAiCard();
 
-    renderHistorySparklines();
+    renderHistory();
 
     renderCamera();
 
     const systemStatus = document.getElementById("system-status");
     if (systemStatus) {
-        const activeLabel = currentSelection === "hub" ? globalTelemetry.hub_id : currentSelection;
-        systemStatus.textContent = hubOnline ? `Active: ${activeLabel}` : "Hub offline";
+        systemStatus.textContent = hubOnline ? `Active: ${globalTelemetry.hub_id}` : "Hub offline";
         systemStatus.style.borderColor = hubOnline ? "var(--green)" : "#e63946";
     }
 
@@ -526,34 +630,28 @@ function renderDetailChart(svgId, statsId, allPoints, unit, range, decimals = 1)
     }
 }
 
-function renderHistorySparklines() {
-    renderSparkline(
-        "temp-sparkline",
-        sparklineSeries.map((point) => point.temperature)
-    );
-    renderSparkline(
-        "ec-sparkline",
-        sparklineSeries.map((point) => point.ec).filter(Number.isFinite)
-    );
+function renderHistory() {
+    METRICS.forEach((metric) => {
+        const series = historySeries[metric.scope];
+        renderSparkline(
+            `${metric.key}-sparkline`,
+            series.sparkline.map((point) => point[metric.key]).filter(Number.isFinite)
+        );
+    });
     renderDetailCharts();
 }
 
 function renderDetailCharts() {
-    renderDetailChart(
-        "temp-detail-chart",
-        "temp-detail-stats",
-        detailSeries.map((point) => ({ value: point.temperature, at: point.at })),
-        "°C",
-        detailRange
-    );
-    renderDetailChart(
-        "ec-detail-chart",
-        "ec-detail-stats",
-        detailSeries.map((point) => ({ value: point.ec, at: point.at })),
-        " mS/cm",
-        detailRange,
-        2
-    );
+    METRICS.forEach((metric) => {
+        renderDetailChart(
+            `${metric.key}-detail-chart`,
+            `${metric.key}-detail-stats`,
+            historySeries[metric.scope].detail.map((point) => ({ value: point[metric.key], at: point.at })),
+            metric.unit,
+            detailRange,
+            metric.decimals
+        );
+    });
 }
 
 function setDetailRange(range) {
@@ -590,9 +688,10 @@ function toggleMetricCard(card) {
 
 function initDashboard() {
     clearLegacyStorage();
+    buildMetricCards();
     setLoading(true);
     updateLastUpdatedLabel();
-    renderHistorySparklines();
+    renderHistory();
     refreshHistory();
     fetchPlantStats();
     setInterval(fetchPlantStats, 5000);

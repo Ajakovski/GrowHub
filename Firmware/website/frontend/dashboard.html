@@ -35,75 +35,35 @@
                 <div class="pill" id="system-status">Connecting...</div>
             </div>
 
-            <div class="eyebrow-row device-selector" id="device-selector">
-                <button type="button" class="pill active" data-id="hub">Main Hub</button>
-            </div>
-
             <div class="alert-list" id="alert-list" hidden></div>
 
-            <div class="metric-grid dashboard-metrics is-loading" id="metric-grid">
-                <article class="metric-card">
-                    <span class="kicker">Reservoir Level</span>
-                    <strong id="water-val">--</strong>
-                    <span id="water-status">18 L base reservoir</span>
-                </article>
-                <article class="metric-card metric-card-expandable" data-metric="temperature">
-                    <div class="metric-card-main">
-                        <div class="metric-card-heading">
-                            <span class="kicker" id="temp-label">Water Temp</span>
-                            <button type="button" class="metric-expand-btn" aria-expanded="false" aria-controls="temp-detail" aria-label="Show water temperature history">
-                                <svg viewBox="0 0 20 20" aria-hidden="true">
-                                    <path d="M5 7.5 L10 12.5 L15 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <strong id="temp-val">--°C</strong>
-                        <svg class="sparkline" id="temp-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
-                        <span id="temp-status">Fetching data...</span>
-                    </div>
-                    <div class="metric-card-detail" id="temp-detail" hidden>
-                        <div class="detail-chart-header">
-                            <div class="detail-chart-stats" id="temp-detail-stats"></div>
-                            <div class="detail-range" role="group" aria-label="Water temperature history range">
-                                <button type="button" class="pill active" data-range="1h">1h</button>
-                                <button type="button" class="pill" data-range="24h">24h</button>
-                                <button type="button" class="pill" data-range="7d">7d</button>
-                            </div>
-                        </div>
-                        <svg class="detail-chart" id="temp-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="Water temperature history chart"></svg>
-                    </div>
-                </article>
-                <article class="metric-card metric-card-expandable" data-metric="ec">
-                    <div class="metric-card-main">
-                        <div class="metric-card-heading">
-                            <span class="kicker" id="ec-label">EC (Nutrients)</span>
-                            <button type="button" class="metric-expand-btn" aria-expanded="false" aria-controls="ec-detail" aria-label="Show EC history">
-                                <svg viewBox="0 0 20 20" aria-hidden="true">
-                                    <path d="M5 7.5 L10 12.5 L15 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <strong id="ec-val">--</strong>
-                        <svg class="sparkline" id="ec-sparkline" viewBox="0 0 120 36" aria-hidden="true"></svg>
-                        <span id="ec-status">Fetching data...</span>
-                    </div>
-                    <div class="metric-card-detail" id="ec-detail" hidden>
-                        <div class="detail-chart-header">
-                            <div class="detail-chart-stats" id="ec-detail-stats"></div>
-                            <div class="detail-range" role="group" aria-label="EC history range">
-                                <button type="button" class="pill active" data-range="1h">1h</button>
-                                <button type="button" class="pill" data-range="24h">24h</button>
-                                <button type="button" class="pill" data-range="7d">7d</button>
-                            </div>
-                        </div>
-                        <svg class="detail-chart" id="ec-detail-chart" viewBox="0 0 560 220" preserveAspectRatio="none" role="img" aria-label="EC history chart"></svg>
-                    </div>
-                </article>
-                <article class="metric-card">
+            <div class="dashboard-metrics is-loading" id="metric-grid">
+                <article class="metric-card metric-card-wide">
                     <span class="kicker">AI Plant Stress</span>
                     <strong id="ai-status">--</strong>
                     <span id="ai-status-detail">Waiting for the first AI review</span>
                 </article>
+
+                <div class="metric-group-heading">
+                    <h2>Reservoir</h2>
+                    <span>Shared water in the hub</span>
+                </div>
+                <div class="metric-grid" id="hub-metrics">
+                    <article class="metric-card">
+                        <span class="kicker">Reservoir Level</span>
+                        <strong id="water-val">--</strong>
+                        <span id="water-status">18 L base reservoir</span>
+                    </article>
+                </div>
+
+                <div class="metric-group-heading">
+                    <h2>Tiles</h2>
+                    <span id="tile-scope">Average across all tiles</span>
+                </div>
+                <div class="eyebrow-row device-selector" id="device-selector">
+                    <button type="button" class="pill active" data-id="hub">All tiles</button>
+                </div>
+                <div class="metric-grid" id="tile-metrics"></div>
             </div>
 
             <div class="card camera-card">

@@ -1,9 +1,10 @@
 import json
+from optparse import Option
 import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, NamedTuple, Optional, Tuple
 
 DB_PATH = Path(os.environ.get("GROWHUB_DB_PATH", Path(__file__).resolve().parent / "growhub.db"))
 MAX_POINTS = 120
@@ -13,6 +14,18 @@ RANGE_SECONDS = {
     "7d": 7 * 24 * 3600,
 }
 RETENTION_SECONDS = max(RANGE_SECONDS.values())
+METRIC_DECIMALS = {
+    "water_temp": 1,
+    "ec": 2,
+    "ph": 2,
+    "air_temp": 1,
+    "humidity": 0,
+    "light": 0,
+    "flow": 2,
+}
+METRICS = tuple[str, ...](METRIC_DECIMALS)
+LEGACY_COLUMNS = {"moisture", "temperature"}
+HUB_ONLY_LEGACY = {"water_temp", "temperature", "ec": "ec", "ph": "ph"}
 
 
 @contextmanager
@@ -25,27 +38,50 @@ def _connection():
         conn.close()
 
 
+def _create_readings_table(conn: sqlite3.Connection, name: str) -> None:
+    metric_columns = ",\n".join(f"{metric} REAL" for metric in METRICS)
+    conn.execute(
+        f"""
+        CREATE TABLE IF NOT EXISTS {name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hub_id TEXT NOT NULL DEFAULT '',
+            device_id TEXT NOT NULL,
+            recorded_at REAL NOT NULL,
+            {metric_columns}
+        )
+        """
+    )
+
+
+def _migrate_legacy_readings(conn: sqlite3.Connection, columns: set) -> None:
+    selects = {}
+    for metric, legacy in HUB_ONLY_LEGACY.items():
+        selects[metric] = f"CASE WHEN device_id = 'hub' THEN {legacy} END" if legacy in columns else "NULL"
+        selects["light"] = "light" if "light" in columns else "NULL"
+        hub_id = "hub_id" if "hub_id" in columns else "''"
+
+        _create_readings_table(conn, "readings_new")
+        targets = ", ".join(selects)
+        values = ", ".join(selects.values())
+        conn.execute(
+            f"INSERT INTO readings_new (id, hub_id, device_id, recorded_at, {targets}) "
+            f"SELECT id, {hub_id}, device_id, recorded_at, {values} FROM readings"
+        )
+        conn.execute("DROP TABLE readings")
+        conn.execute("ALTER TABLE readings_new RENAME TO readings")
+
+
 def init_db() -> None:
     with _connection() as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS readings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                hub_id TEXT NOT NULL DEFAULT '',
-                device_id TEXT NOT NULL,
-                recorded_at REAL NOT NULL,
-                moisture REAL NOT NULL,
-                temperature REAL NOT NULL,
-                ec REAL
-            )
-            """
-        )
+        _create_readings_table(conn, "readings")
 
         columns = {row[1] for row in conn.execute("PRAGMA table_info(readings)")}
-        if "hub_id" not in columns:
-            conn.execute("ALTER TABLE readings ADD COLUMN hub_id TEXT NOT NULL DEFAULT ''")
-        if "ec" not in columns:
-            conn.execute("ALTER TABLE readings ADD COLUMN ec REAL")
+        if columns & LEGACY_COLUMNS:
+            _migrate_legacy_readings(conn, columns)
+        else:
+            for metric in METRICS:
+                if metric not in columns:
+                    conn.execute(f"ALTER TABLE readings ADD COLUMN {metric} REAL")
 
         conn.execute("DROP INDEX IF EXISTS idx_readings_device_time")
         conn.execute(
@@ -81,45 +117,56 @@ def init_db() -> None:
                 conn.execute(f"ALTER TABLE hubs ADD COLUMN {column} {column_type}")
 
 
-def record_readings(
-    hub_id: str,
-    recorded_at: float,
-    rows: Iterable[Tuple[str, float, float, Optional[float]]],
-) -> None:
+class Reading(NamedTuple):
+    device_id: str
+    water_temp: Optional[float] = None
+    ec: Optional[float] = None
+    ph: Optional[float] = None
+    air_temp: Optional[float] = None
+    humidity: Optional[float] = None
+    light: Optional[float] = None
+    flow: Optional[float] = None
+
+
+def record_readings(hub_id: str, recorded_at: float, rows: Iterable[Reading]) -> None:
+    placeholders = ", ".join("?" for _ in METRICS)
     with _connection() as conn:
         conn.executemany(
-            "INSERT INTO readings (hub_id, device_id, recorded_at, moisture, temperature, ec) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            f"INSERT INTO readings (hub_id, device_id, recorded_at, {', '.join(METRICS)}) "
+            f"VALUES (?, ?, ?, {placeholders})",
             [
-                (hub_id, device_id, recorded_at, moisture, temperature, ec)
-                for device_id, moisture, temperature, ec in rows
+                (hub_id, row.device_id, recorded_at, *(getattr(row, metric) for metric in METRICS))
+                for row in rows
             ],
         )
         conn.execute("DELETE FROM readings WHERE recorded_at < ?", (recorded_at - RETENTION_SECONDS,))
 
 
-def get_recent_moisture(hub_id: str, device_id: str, limit: int) -> List[float]:
+def get_recent(hub_id: str, device_id: str, metric: str, limit: int) -> List[Optional[float]]:
+    if metric not in METRIC_DECIMALS:
+        raise ValueError(f"Unknown metric '{metric}'")
     with _connection() as conn:
         rows = conn.execute(
-            "SELECT moisture FROM readings WHERE hub_id = ? AND device_id = ? "
+            f"SELECT {metric} FROM readings WHERE hub_id = ? AND device_id = ? "
             "ORDER BY recorded_at DESC LIMIT ?",
             (hub_id, device_id, limit),
         ).fetchall()
-    return [moisture for (moisture,) in rows]
+    return [value for (value,) in rows]
+
+
+def _round_or_none(value: Optional[float], decimals: int) -> Optional[float]:
+    return round(value, decimals) if value is not None else None
 
 
 def get_history(hub_id: str, device_id: str, range_key: str, now: float) -> List[dict]:
     span = RANGE_SECONDS[range_key]
     bucket_seconds = span / MAX_POINTS
+    averages = ", ".join(f"AVG({metric})" for metric in METRICS)
 
     with _connection() as conn:
         rows = conn.execute(
-            """
-            SELECT CAST(recorded_at / ? AS INTEGER) AS bucket,
-                   AVG(recorded_at),
-                   AVG(moisture),
-                   AVG(temperature),
-                   AVG(ec)
+            f"""
+            SELECT CAST(recorded_at / ? AS INTEGERS) AS bucket, AVG(recorded_at), {averages}
             FROM readings
             WHERE hub_id = ? AND device_id = ? AND recorded_at >= ?
             GROUP BY bucket
@@ -130,12 +177,13 @@ def get_history(hub_id: str, device_id: str, range_key: str, now: float) -> List
 
     return [
         {
-            "at": int(recorded_at * 1000),
-            "moisture": round(moisture, 1),
-            "temperature": round(temperature, 1),
-            "ec": round(ec, 2) if ec is not None else None,
+            "at": int(row[1] * 1000),
+            **{
+                metric: _round_or_none(value, METRIC_DECIMALS[metric])
+                for metric, value in zip[tuple[str, Any]](METRICS, row[2:])
+            }
         }
-        for _, recorded_at, moisture, temperature, ec in rows
+        for row in rows
     ]
 
 

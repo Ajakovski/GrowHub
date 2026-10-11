@@ -5,6 +5,7 @@ import random
 import threading
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Optional
 
 import requests
 
@@ -25,16 +26,38 @@ SIM_SEED = os.environ.get("SIM_SEED")
 
 RESERVOIR_LITRES = 18.0
 LOW_WATER_LITRES = 5.0
-PUMP_MIN_LITRES = 2.5
-ROOT_REACH_LITRES = 2.0
+PUMP_STARVED_LITRES = 1.8
+PUMP_FULL_FLOW_LITRES = 2.8
+ROOT_REACH_LITRES = 1.5
 TARGET_EC = 1.6
 NUTRIENT_TO_WATER_UPTAKE = 0.75
-REFILL_DELAY_HOURS = (2.0, 14.0)
+TARGET_PH = 5.8
+PH_RISE_PER_LITRE = 0.04
+PH_CORRECT_ABOVE = 6.4
+GROWER_DELAY_HOURS = (2.0, 14.0)
 RESERVOIR_CHANGE_DAYS = 7
 
 LIGHTS_ON_HOUR = 6
 LIGHTS_OFF_HOUR = 22
-PUMP_MINUTES_PER_HOUR = 15
+LED_LUX = (17000.0, 22000.0)
+LED_CANOPY_HEAT_C = 2.0
+SUNRISE_HOUR = 7
+SUNSET_HOUR = 19
+DAYLIGHT_PEAK_LUX = 600.0
+
+HEATER_SETPOINT_C = 20.0
+HEATER_HYSTERESIS_C = 0.3
+HEATER_C_PER_HOUR = 2.0
+
+ROOM_HUMIDITY = 55.0
+TRANSPIRATION_HUMIDITY = 10.0
+HUMIDITY_TAU_HOURS = 0.5
+
+NOMINAL_FLOW_LPM = (1.8, 2.2)
+LOW_FLOW_LPM = 1.0
+CLOGS_PER_TILE_PER_DAY = 0.1
+CLOG_GROWTH_PER_HOUR = (0.03, 0.08)
+MAX_CLOG = 0.9
 
 DAILY_UPTAKE_LITRES = 2.5
 MAX_GROWTH = 2.0
@@ -43,10 +66,6 @@ GROWTH_PER_DAY = 0.04
 WATER_TEMP_TAU_HOURS = 3.0
 WEATHER_TAU_HOURS = 12.0
 WEATHER_SIGMA = 1.0
-MOISTURE_WET = 85.0
-MOISTURE_DRY = 15.0
-MOISTURE_WET_TAU_HOURS = 0.1
-MOISTURE_DRY_TAU_HOURS = 3.0
 
 try:
     import cv2
@@ -54,14 +73,23 @@ except ImportError:
     cv2 = None
 
 
+def _approach(current: float, target: float, hours: float, tau_hours: float) -> float:
+    return current + (target - current) * (1 - math.exp(-hours / tau_hours))
+
+
 @dataclass
 class Tile:
     tile_id: str
     vigour: float
-    temp_offset: float
-    ec_offset: float
+    air_offset: float
+    led_lux: float
+    nominal_flow: float
+    humidity: float = ROOM_HUMIDITY
     growth: float = 1.0
-    moisture: float = 70.0
+    clog: float = 0.0
+    clog_rate: float = 0.0
+    low_flow_since: Optional[datetime] = None
+    unclog_delay: float = 0.0
 
     def uptake_litres(self, hours: float, air_temp: float, lights_on: bool) -> float:
         demand = 1.0 + 0.06 * (air_temp - 20.0)
@@ -77,39 +105,62 @@ class Greenhouse:
         self.weather = 0.0
         self.volume = RESERVOIR_LITRES
         self.nutrients = RESERVOIR_LITRES * TARGET_EC
+        self.ph = TARGET_PH
+        self.heater_on = False
         self.low_since = None
-        self.refill_delay = rng.uniform(*REFILL_DELAY_HOURS)
+        self.refill_delay = self._grower_delay()
+        self.ph_high_since = None
+        self.ph_delay = self._grower_delay()
         self.last_change = start
         self.tiles = [
             Tile(
                 tile_id=f"tile_{index + 1}",
                 vigour=rng.uniform(0.85, 1.1),
-                temp_offset=rng.uniform(-0.3, 0.4),
-                ec_offset=rng.uniform(-0.05, 0.05),
+                air_offset=rng.uniform(-0.5, 0.8),
+                led_lux=rng.uniform(*LED_LUX),
+                nominal_flow=rng.uniform(*NOMINAL_FLOW_LPM),
             )
             for index in range(tile_count)
         ]
-        self.water_temp = self._water_temp_target()
+        self.water_temp = max(self._passive_water_temp(), HEATER_SETPOINT_C)
+        for tile in self.tiles:
+            tile.humidity = self._humidity_target(tile)
+
+    def _grower_delay(self) -> float:
+        return self.rng.uniform(*GROWER_DELAY_HOURS)
+
+    @property
+    def hour(self) -> float:
+        return self.clock.hour + self.clock.minute / 60
 
     @property
     def lights_on(self) -> bool:
         return LIGHTS_ON_HOUR <= self.clock.hour < LIGHTS_OFF_HOUR
 
     @property
-    def pump_running(self) -> bool:
-        return self.clock.minute < PUMP_MINUTES_PER_HOUR and self.volume > PUMP_MIN_LITRES
-
-    @property
     def ec(self) -> float:
         return self.nutrients / self.volume
 
-    def air_temp(self) -> float:
-        hour = self.clock.hour + self.clock.minute / 60
-        daily = 21.0 + 3.0 * math.sin(2 * math.pi * (hour - 9) / 24)
+    @property
+    def pump_output(self) -> float:
+        span = PUMP_FULL_FLOW_LITRES - PUMP_STARVED_LITRES
+        return min(1.0, max(0.0, (self.volume - PUMP_STARVED_LITRES) / span))
+
+    def room_temp(self) -> float:
+        daily = 21.0 + 3.0 * math.sin(2 * math.pi * (self.hour - 9) / 24)
         return daily + self.weather + (1.0 if self.lights_on else 0.0)
 
-    def _water_temp_target(self) -> float:
-        return self.air_temp() - 0.5 + (0.8 if self.lights_on else 0.0)
+    def tile_air_temp(self, tile: Tile) -> float:
+        return self.room_temp() + tile.air_offset + (LED_CANOPY_HEAT_C if self.lights_on else 0.0)
+
+    def _passive_water_temp(self) -> float:
+        return self.room_temp() - 0.5 + (0.8 if self.lights_on else 0.0)
+
+    def _humidity_target(self, tile: Tile) -> float:
+        roomn = ROOM_HUMIDITY - 1.5 * (self.room_temp() - 21.0)
+        transpiration = TRANSPIRATION_HUMIDITY * tile.growth * tile.vigour * (1.0 if self.lights_on else 0.5)
+        canopy_warming = 2.5 * (self.tile_air_temp(tile) - self.room_temp())
+        return min(98.0, max(25.0, room + transpiration - canopy_warming))
 
     def step(self, hours: float) -> None:
         if hours <= 0:
