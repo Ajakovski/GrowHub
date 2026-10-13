@@ -25,6 +25,17 @@ def _ago(timestamp_ms: Optional[int]) -> Optional[str]:
     return f"{seconds // 86400}d ago"
 
 
+HISTORY_METRICS = (
+    ("water_temp", "water_temperature_c", 1),
+    ("ec", "ec_ms_cm", 2),
+    ("ph", "ph", 2),
+    ("air_temp", "air_temperature_c", 1),
+    ("humidity", "humidity_percent", 0),
+    ("light", "light_lux", 0),
+    ("flow", "water_flow_l_min", 2),
+)
+
+
 def _round(value: Optional[float], decimals: int) -> Optional[float]:
     return round(value, decimals) if value is not None else None
 
@@ -50,8 +61,9 @@ def list_hubs():
 
 @skill(
     "get_hub_status",
-    "Get the latest readings for a hub: reservoir level, each tile's water temperature, EC and moisture, "
-    "active alerts, camera status and the last AI review.",
+    "Get the latest readings for a hub: the shared reservoir's level, water temperature, heater state, EC "
+    "and pH, each tile's air temperature, humidity, light level and water flow, active alerts, camera status "
+    "and the last AI review.",
     HUB_ID_PROPERTY,
 )
 def get_hub_status(hub_id: Optional[str] = None):
@@ -63,13 +75,20 @@ def get_hub_status(hub_id: Optional[str] = None):
         "hub_id": stats["hub_id"],
         "online": stats.get("hub_online", False),
         "last_report": _ago(stats.get("last_telemetry_at")),
-        "reservoir_level_ok": stats.get("water_level_ok"),
+        "reservoir": {
+            "level_ok": stats.get("water_level_ok"),
+            "water_temperature_c": _round(stats.get("water_temperature"), 1),
+            "heater_on": stats.get("heater_on"),
+            "ec_ms_cm": _round(stats.get("ec_level"), 2),
+            "ph": _round(stats.get("ph"), 2),
+        },
         "tiles": [
             {
                 "tile_id": tile["tile_id"],
-                "water_temperature_c": _round(tile.get("temperature"), 1),
-                "ec_ms_cm": _round(tile.get("ec_level"), 2),
-                "moisture_percent": _round(tile.get("moisture_level"), 1),
+                "air_temperature_c": _round(tile.get("air_temperature"), 1),
+                "humidity_percent": _round(tile.get("humidity"), 0),
+                "light_lux": _round(tile.get("light_lux"), 0),
+                "water_flow_l_min": _round(tile.get("flow_lpm"), 2),
             }
             for tile in stats.get("tiles", [])
         ],
@@ -104,13 +123,14 @@ def _summarise(values: List[float], decimals: int) -> Optional[dict]:
 
 @skill(
     "get_history_summary",
-    "Summarise historical readings (min, average, max, first, latest and trend) for water temperature, "
-    "EC and moisture over a time range. Use device 'hub' for the average across all tiles.",
+    "Summarise historical readings (min, average, max, first, latest and trend) over a time range. Device "
+    "'hub' covers the reservoir (water temperature, EC, pH) plus the average of all tiles' air temperature, "
+    "humidity, light and water flow; a tile id covers just that tile's air temperature, humidity, light and flow",
     {
         **HUB_ID_PROPERTY,
         "device": {
             "type": "string",
-            "description": "'hub' for the hub-wide average, or a tile id such as 'tile_1'.",
+            "description": "'hub' for the reservoir and tile averages, or a tile id such as 'tile_1'",
         },
         "range": {
             "type": "string",
@@ -126,14 +146,16 @@ def get_history_summary(hub_id: Optional[str] = None, device: str = "hub", range
     if not points:
         return {"hub_id": history.get("hub"), "device": device, "range": range, "error": "No readings in this range."}
 
-    return {
+    summary {
         "hub_id": history.get("hub"),
         "device": device,
         "range": range,
         "points": len(points),
         "from": _ago(points[0]["at"]),
         "to": _ago(points[-1]["at"]),
-        "water_temperature_c": _summarise([p["temperature"] for p in points], 1),
-        "ec_ms_cm": _summarise([p["ec"] for p in points if p.get("ec") is not None], 2),
-        "moisture_percent": _summarise([p["moisture"] for p in points], 1),
     }
+    for key, label, decimals in HISTORY_METRICS:
+        values = [point[key] for point in points if point.get(key) is not None]
+        if values:
+            summary[label] = _summarise(values, decimals)
+    return summary

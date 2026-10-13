@@ -15,7 +15,10 @@ NEXT_WAKE_MINUTES = 15
 MIN_OFFLINE_SECONDS = 30
 MISSED_REPORTS_BEFORE_OFFLINE = 3
 CAMERA_OFFLINE_SECONDS = 60
-DRY_MOISTURE_PERCENT = 30.0
+PH_MIN = 5.5
+PH_MAX = 6.5
+LOW_FLOW_LPM = 1.0
+COLD_WATER_C = 16.0
 SUSTAINED_READINGS = 3
 NO_AI_ANALYSIS = "Not analysed yet"
 CAMERA_SOURCE_WEBCAM = "webcam"
@@ -39,14 +42,19 @@ router = APIRouter(dependencies=[Depends(require_device_key)])
 
 class TileData(BaseModel):
     tile_id: str
-    moisture_level: float
-    temperature: float
-    ec_level: Optional[float] = None
+    air_temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    light_lux: Optional[float] = None
+    flow_lpm: Optional[float] = None
 
 
 class TelemetryPayload(BaseModel):
     hub_id: str
     water_level_ok: bool
+    water_temperature: Optional[float] = None
+    heater_on: Optional[bool] = None
+    ec_level: Optional[float] = None
+    ph: Optional[float] = None
     active_tiles: int
     tiles: List[TileData]
 
@@ -87,18 +95,59 @@ class Hub:
             "last_telemetry_at": int(self.last_telemetry_at * 1000),
         }
 
+    def _sustained(self, device_id: str, metric: str, condition) -> bool:
+        recent = history.get_recent(self.hub_id, device_id, metric, SUSTAINED_READINGS)
+        return (
+            len(recent) == SUSTAINED_READINGS
+            and None not in recent
+            and all(condition(value) for value in recent)
+        )
+
     def alerts(self) -> List[dict]:
         alerts = []
 
-        for tile in self.state.get("tiles", []):
-            tile_id = tile["tile_id"]
-            recent = history.get_recent_moisture(self.hub_id, tile_id, SUSTAINED_READINGS)
-            if len(recent) == SUSTAINED_READINGS and all(m < DRY_MOISTURE_PERCENT for m in recent):
+        if self._sustained("hub", "ph", lambda ph: ph < PH_MIN):
+            alerts.append({
+                "kind": "ph_out_of_range",
+                "device": "hub",
+                "message": f"Reservoir pH has been below {PH_MIN} for the last {SUSTAINED_READINGS} readings. "
+                            "Add pH up.",
+            })
+        elif self._sustained("hub", "ph", lambda ph: ph > PH_MAX):
+            alerts.append({
+                "kind": "ph_out_of_range",
+                "divce": "hub",
+                "message": f"Reservoir Ph has been above {PH_MAX} for the last {SUSTAINED_READINGS} readings. "
+                            "Add pH down.",
+            })
+
+        if self.state.get("heater_on") and self._sustained("hub", "water_temp", lambda t: t < COLD_WATER_C):
+            alerts.append({
+                "kind": "heater_fault",
+                "device": "hub",
+                "message": f"Water has stayed below {COLD_WATER_C:.0f}°C with the heater on. "
+                            "Check the heater.",
+            })
+
+        tiles = self.state.get("tiles", [])
+        low_flow = [
+            tile["tile_id"] for tile in tiles
+            if self._sustained(tile["tile_id"], "flow", lambda flow: flow < LOW_FLOW_LPM)
+        ]
+        if tiles and len(low_flow) == len(tiles) and len(tiles) > 1:
+            alerts.append({
+                "kind": "no_flow",
+                "device": "hub",
+                "message": f"Water flow has been below {LOW_FLOW_LPM} L/min in every tile. "
+                            "Check the pump and the reservoir level.",
+            })
+        else:
+            for tile_id in low_flow:
                 alerts.append({
-                    "kind": "dry_tile",
+                    "kind": "low_flow",
                     "device": tile_id,
-                    "message": f"{_tile_label(tile_id)} has been below {DRY_MOISTURE_PERCENT:.0f}% moisture "
-                               f"for the last {SUSTAINED_READINGS} readings.",
+                    "message": f"{_tile_label(tile_id)} water flow has been below {LOW_FLOW_LPM} L/min for the "
+                               f"last {SUSTAINED_READINGS} readings. Check its piping for a clog.",
                 })
 
         if self.low_water_streak >= SUSTAINED_READINGS:
@@ -204,21 +253,39 @@ async def receive_telemetry(data: TelemetryPayload):
     hub.low_water_streak = 0 if data.water_level_ok else hub.low_water_streak + 1
     hub.state = data.model_dump()
 
-    if data.tiles:
-        rows = [(tile.tile_id, tile.moisture_level, tile.temperature, tile.ec_level) for tile in data.tiles]
-        rows.append((
-            "hub",
-            _average([tile.moisture_level for tile in data.tiles]),
-            _average([tile.temperature for tile in data.tiles]),
-            _average([tile.ec_level for tile in data.tiles if tile.ec_level is not None]),
-        ))
-        history.record_readings(hub.hub_id, now, rows)
+    def tile_average(attribute: str) -> Optional[float]:
+        return _average([value for tile in data.tiles if (value := getattr(tile, attribute)) is not None])
+
+    rows = [
+        history.Reading(
+            tile.tile_id,
+            air_temp=tile.air_temperature,
+            humidity=tile.humidity,
+            light=tile.light_lux,
+            flow=tile.flow_lpm,
+        )
+        for tile in data.tiles
+    ]
+    rows.append(history.Reading(
+        "hub",
+        water_temp=data.water_temperature,
+        ec=data.ec_level,
+        ph=data.ph,
+        air_temp=tile_average("air_temperature"),
+        humidity=tile_average("humidity"),
+        light=tile_average("light_lux"),
+        flow=tile_average("flow_lpm"),
+    ))
+    history.record_readings(hub.hub_id, now, rows)
 
     history.save_hub(hub.hub_id, hub.state, hub.last_telemetry_at, hub.telemetry_interval, hub.low_water_streak)
 
-    print(f"hub {data.hub_id} reported {data.active_tiles} active tiles.")
+    heater = "on" if data.heater_on else "off" if data.heater_on is not None else "n/a"
+    print(f"hub {data.hub_id}: water {data.water_temperature}°C (heater {heater}) | ec {data.ec_level} "
+          f"| ph {data.ph} | {data.active_tiles} active_tiles")
     for tile in data.tiles:
-        print(f" - {tile.tile_id}: moisture {tile.moisture_level}% | temp {tile.temperature}°C | ec {tile.ec_level}")
+        print(f" - {tile.tile_id}: air {tile.air_temperature}°C | humidity {tile.humidity}% "
+              f"| light {tile.light_lux} lux | flow {tile.flow_lpm} L/min")
 
     return {
         "status": "success",

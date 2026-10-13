@@ -162,6 +162,14 @@ class Greenhouse:
         canopy_warming = 2.5 * (self.tile_air_temp(tile) - self.room_temp())
         return min(98.0, max(25.0, room + transpiration - canopy_warming))
 
+    def _daylight_lux(self) -> float:
+        if not SUNRISE_HOUR <= self.hour < SUNSET_HOUR:
+            return 0.0
+        return DAYLIGHT_PEAK_LUX * math.sin(math.pi * (self.hour - SUNRISE_HOUR) / (SUNSET_HOUR - SUNRISE_HOUR))
+
+    def tile_flow(self, tile: Tile) -> float:
+        return tile.nominal_flow * (1 - tile.clog) * self.pump_output
+
     def step(self, hours: float) -> None:
         if hours <= 0:
             return
@@ -170,55 +178,100 @@ class Greenhouse:
         decay = math.exp(-hours / WEATHER_TAU_HOURS)
         self.weather = self.weather * decay + self.rng.gauss(0, WEATHER_SIGMA * math.sqrt(1 - decay ** 2))
 
-        air = self.air_temp()
-        self.water_temp += (self._water_temp_target() - self.water_temp) * (1 - math.exp(-hours / WATER_TEMP_TAU_HOURS))
+        self._update_water_temp(hours)
 
         for tile in self.tiles:
+            air = self.tile_air_temp(tile)
             drunk = min(tile.uptake_litres(hours, air, self.lights_on), max(0.0, self.volume - ROOT_REACH_LITRES))
             self.nutrients -= drunk * self.ec * NUTRIENT_TO_WATER_UPTAKE
             self.volume -= drunk
+            self.ph += drunk * PH_RISE_PER_LITRE
             tile.growth = min(MAX_GROWTH, tile.growth + GROWTH_PER_DAY * hours / 24 * tile.vigour)
-
-            if self.pump_running:
-                target, tau = MOISTURE_DRY, MOISTURE_DRY_TAU_HOURS / (tile.growth * tile.vigour)
-            tile.moisture += (target - tile.moisture) * (1 - math.exp(-hours / tau))
+            tile.humidity = _approach(tile.humidity, self._humidity_target(tile), hours, HUMIDITY_TAU_HOURS)
+            self._update_clog(tile, hours)
 
         self._maintain_reservoir()
+
+    def _update_water_temp(self, hours: float) -> None:
+        self.water_temp = _approach(self.water_temp, self._passive_water_temp(), hours, WATER_TEMP_TAU_HOURS)
+        if self.heater_on:
+            self.water_temp += HEATER_C_PER_HOUR * hours
+
+        if self.water_temp < HEATER_SETPOINT_C - HEATER_HYSTERESIS_C:
+            self.heater_on = True
+        if self.water_temp > HEATER_SETPOINT_C + HEATER_HYSTERESIS_C:
+            self.heater_on = False
+
+    def _update_clog(self, tile: Tile, hours: float) -> None:
+        if tile.clog_rate == 0.0 and self.rng.random() < 1 - math.exp(-CLOGS_PER_TILE_PER_DAY * hours / 24):
+            tile.clog_rate = self.rng.uniform(*CLOG_GROWTH_PER_HOUR)
+            print(f"[{self.clock:%a %H:%M}] {tile.tile_id}: roots and debris starting to clog the piping")
+        tile.clog = min(MAX_CLOG, tile.clog + tile.clog_rate + hours)
+
+        if tile.clog == 0.0 or self.tile_flow(tile) >= LOW_FLOW_LPM:
+            tile.low_flow_since = None
+        elif tile.low_flow_since is None:
+            tile.low_flow_since = self.clock
+            tile.unclog_delay = self._grower_delay()
+        elif self.clock - tile.low_flow_since >= timedelta(hours=tile.unclog_delay):
+            print(f"[{self.clock:%a %H:%M}] {tile.tile_id}: piping cleared, flow restored")
+            tile.clog = tile.clog_rate = 0.0
+            tile.low_flow_since = None
 
     def _maintain_reservoir(self) -> None:
         if self.clock - self.last_change >= timedelta(days=RESERVOIR_CHANGE_DAYS):
             self.volume = RESERVOIR_LITRES
             self.nutrients = RESERVOIR_LITRES * TARGET_EC
+            self.ph = TARGET_PH
             self.last_change = self.clock
-            self.low_since = None
-            print(f"[{self.clock:%a %H:%M}] weekly reservoir change: fresh {RESERVOIR_LITRES:.of} L at EC {TARGET_EC}")
+            self.low_since = self.ph_high_since = None
+            print(f"[{self.clock:%a %H:%M}] weekly reservoir change: fresh {RESERVOIR_LITRES:.of} L "
+                  f"at EC {TARGET_EC}, pH {TARGET_PH}")
             return
 
         if self.volume >= LOW_WATER_LITRES:
             self.low_since = None
-            return
-        if self.low_since is None:
+        elif self.low_since is None:
             self.low_since = self.clock
         elif self.clock - self.low_since >= timedelta(hours=self.refill_delay):
             added = RESERVOIR_LITRES - self.volume
             self.nutrients += added * TARGET_EC
+            self.ph = (self.ph * self.volume + TARGET_PH * added) / RESERVOIR_LITRES
             self.volume = RESERVOIR_LITRES
             self.low_since = None
-            self.refill_delay = self.rng.uniform(*REFILL_DELAY_HOURS)
-            print(f"[{self.clock:%a %H:%M}] reservoir topped up with {added:.1f} L, EC now {self.ec:.2f}")
+            self.refill_delay = self._grower_delay()
+            print(f"[{self.clock:%a %H:%M}] reservoir topped up with {added:.1f} L, "
+                  f"EC now {self.ec:.2f}, pH {self.ph:.2f}")
+
+        if self.ph <= PH_CORRECT_ABOVE:
+            self.ph_high_since = None
+        elif self.ph_high_since is None:
+            self.ph_high_since = self.clock
+        elif self.clock - self.ph_high_since >= timedelta(hours=self.ph_delay):
+            print(f"[{self.clock:%A %H:%M}] pH down dosed: {self.ph:.2f} -> {TARGET_PH}")
+            self.ph = TARGET_PH
+            self.ph_high_since = None
+            self.ph_delay = self._grower_delay()
 
     def telemetry(self) -> dict:
         noise = self.rng.gauss
+        daylight = self._daylight_lux()
         return {
             "hub_id": HUB_ID,
             "water_level_ok": self.volume >= LOW_WATER_LITRES,
+            "water_temperature": round(self.water_temp + noise(0, 0.05), 1),
+            "heater_on": self.heater_on,
+            "ec_level": round(max(0.0, self.ec + noise(0, 0.02)), 2),
+            "ph": round(self.ph + noise(0, 0.02), 2),
             "active_tiles": len(self.tiles),
             "tiles": [
                 {
                     "tile_id": tile.tile_id,
-                    "moisture_level": round(min(100.0, max(0.0, tile.moisture + noise(0, 1.0))), 1),
-                    "temperature": round(self.water_temp + tile.temp_offset + noise(0, 0.1), 1),
-                    "ec_level": round(max(0.0, self.ec + tile.ec_offset + noise(0, 0.02)), 2),
+                    "air_temperature": round(self.tile_air_temp(tile) + noise(0, 0.15), 1),
+                    "humidity": round(min(100.0, max(0.0, tile.humidity + noise(0, 1.0))), 1),
+                    "light_lux": round(max(0.0, ((tile.led_lux if self.lights_on else 0.0) + daylight)
+                                       * (1 + noise(0, 0.015)))),
+                    "flow_lpm": round(max(0.0, self.tile_flow(tile) + noise(0, 0.04)), 2),
                 }
                 for tile in self.tiles
             ],
@@ -298,12 +351,12 @@ def main():
                 print("fastapi rejected the payload. error details:")
                 print(response.text)
             else:
-                first = payload["tiles"][0]
+                flows = " ".join(f"{tile['flow_lpm']:.1f}" for tile in payload["tiles"])
                 print(
                     f"[{greenhouse.clock:%a %H:%M}] lights {'on ' if greenhouse.lights_on else 'off'} "
-                    f"| pump {'on ' if greenhouse.pump_running else 'off'} "
-                    f"| reservoir {greenhouse.volume:4.1f} L | EC {greenhouse.ec:.2f} "
-                    f"| water {greenhouse.water_temp:.1f}°C | T1 moisture {first['moisture_level']}%"
+                    f"| reservoir {greenhouse.volume:4.1f} L | water {payload['water_temperature']}°C "
+                    f"heater {'on ' if greenhouse.heater_on else 'off'} | EC {payload['ec_level']:.2f} "
+                    f"| pH {payload['ph']:.2f} | flow L/min {flows}"
                 )
         except requests.exceptions.RequestException as error:
             print(f"Failed to reach FastAPI ({error.__class__.__name__}). Is the server running?")
