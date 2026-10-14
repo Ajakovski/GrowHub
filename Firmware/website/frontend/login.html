@@ -52,6 +52,14 @@
 					<p class="auth-error" id="auth-error" role="alert" hidden></p>
 					<button type="submit" class="btn btn-primary" id="auth-submit">Log in</button>
 				</form>
+
+				<div class="auth-sent" id="auth-sent" hidden>
+				    <p>We sent a verifiaction link to <strong id="auth-sent-email"></strong>. Click it to finish setting up your account.</p>
+					<p class="auth-hint">Can't fint it? Check your spam folder or send a new link.</p>
+					<p class="auth-notice" id="auth-sent-status" role="status" hidden></p>
+					<button type="button" class="btn btn-secondary" id="auth-resend">Send a new link</button>
+					<button type="button" class="auth-back" id="auth-back">Back to log in</button>
+				</div>
 			</section>
 		</div>
 	</main>
