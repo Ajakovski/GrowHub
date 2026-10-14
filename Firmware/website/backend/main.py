@@ -1,13 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import device, web, ai, auth
+from routers.auth import WEB_ORIGIN_REGEX
 import accounts
 import history
-import os
 
-WEB_ORIGIN_REGEX = os.environ.get("GROWHUB_WEB_ORIGIN_REGEX") or (
-    r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?"
-)
 
 history.init_db()
 accounts.init_db()

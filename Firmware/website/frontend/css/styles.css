@@ -983,9 +983,61 @@ img {
     font-weight: 600;
 }
 
-.auth-form .btn:disabled {
+.auth-form .btn:disabled,
+.auth-sent .btn:disabled {
     opacity: 0.6;
     cursor: wait;
+}
+
+.auth-form[hidden],
+.auth-tabs[hidden],
+.auth-sent[hidden],
+.auth-notice[hidden] {
+    display: none;
+}
+
+.auth-sent {
+    display: grid;
+    gap: 1rem;
+}
+
+.auth-sent p {
+    margin: 0;
+}
+
+.auth-sent strong {
+    overflow-wrap: anywhere;
+}
+
+.auth-sent .auth-hint {
+    margin: 0;
+}
+
+.auth-notice {
+    padding: 0.7rem 0.9rem;
+    border-radius: 14px;
+    background: var(--green-soft);
+    color: var(--green-dark);
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.auth-sent .btn {
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+}
+
+.auth-back {
+    justify-self: center;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 650;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 .brand-band .section-title,

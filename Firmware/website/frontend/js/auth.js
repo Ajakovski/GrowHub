@@ -17,6 +17,7 @@ const AUTH_MODES = {
 const MIN_PASSWORD_LENGTH = 8;
 
 let authMode = "login";
+let pendingVerificationEmail = "";
 
 function nextPage() {
     const next = new URLSearchParams(window.location.search).get("next");
@@ -93,11 +94,67 @@ async function submitAuthForm(event) {
             }),
         });
         const data = await response.json().catch(() => ({}));
+        if (authMode === "register" && response.ok) {
+            showVerificationSent(data.email, data.email_sent
+                ? ""
+                : "We couldn't send the email just now. Try sending a new link");
+            return;
+        }
+        if (response.status === 403) {
+            showVerifyResult(form.elements.email.value.trim(), errorMessage(data, response.status));
+            return;
+        }
         if (!response.ok) throw new Error(errorMessage(data, response.status));
         window.location.replace(nextPage());
     } catch (error) {
         showAuthError(error instanceof TypeError ? "Could not reach the GrowHub server." : error.message);
+    } finally {
         submit.disabled = false;
+    }
+}
+
+function showSentStatus(message) {
+    const status = document.getElementById("auth-sent-status");
+    status.textContent = message;
+    status.hidden = !message;
+}
+
+function showVerificationSent(email, notice) {
+    pendingVerificationEmail = email;
+    document.getElementById("auth-sent-email").textContent = email;
+    document.getElementById("auth-form").hidden = true;
+    document.querySelector(".auth-tabs").hidden = true;
+    document.getElementById("auth-sent").hidden = false;
+    document.getElementById("auth-title").textContent = "Check your inbox";
+    document.getElementById("auth-lead").textContent = "One more step before you can see your dashboard.";
+    showSentStatus(notice);
+}
+
+function hideVerificationSent() {
+    document.getElementById("auth-sent").hidden = true;
+    document.getElementById("auth-form").hidden = false;
+    document.querySelector(".auth-tabs").hidden = false;
+    document.getElementById("auth-form").elements.password.value = "";
+    setAuthMode("login");
+}
+
+async function resendVerification() {
+    const button = document.getElementById("auth-resend");
+    button.disabled = true;
+    try {
+        const response = await fetch(`${AUTH_URL}/resend-verification`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingVerificationEmail }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(errorMessage(data, response.status));
+        showSentStatus("A new link is on its way. Only the newest link works.");
+    } catch (error) {
+        showSentStatus(error instanceof TypeError ? "Could not reach the GrowHub server." : error.message);
+    } finally {
+        button.disabled = false;
     }
 }
 
@@ -106,6 +163,8 @@ async function initAuthPage() {
     if (!form) return;
 
     form.addEventListener("submit", submitAuthForm);
+    document.getElementById("auth-resend").addEventListener("click", resendVerification);
+    document.getElementById("auth-back").addEventListener("click", hideVerificationSent);
     document.querySelector(".auth-tabs").addEventListener("click", (event) => {
         const button = event.target.closest("button[data-mode]");
         if (button) setAuthMode(button.getAttribute("data-mode"));
