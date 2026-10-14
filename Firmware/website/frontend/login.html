@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>GrowHub | Log in</title>
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="icon" href="assets/img/favicon.svg">
+</head>
+<body>
+	<header class="site-header">
+	    <div class="container header-inner">
+			<a href="index.html" class="brand focus-strip" aria-label="GrowHub home">
+			    <img src="assets/img/growhub.svg" alt="GrowHub logo" />
+			</a>
+			<button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle Menu">Menu</button>
+			<nav class="nav-menu" data-nav-menu aria-label="Primary">
+			    <a href="index.html#products" class="nav-link">Products</a>
+				<a href="shop.html" class="nav-link">Catalog</a>
+				<a href="dashboard.html" class="nav-link active">Dashboard</a>
+				<a href="index.html#contact" class="nav-link navcta">Contact</a>
+			</nav>
+		</div>
+	</header>
+
+	<main class="section auth-page">
+	    <div class="container">
+			<section class="auth-card" aria-labelledby="auth-title">
+			    <span class="kicker">GrowHub Account</span>
+				<h1 class="section-title" id="auth-title">Welcome back</h1>
+				<p class="section-lead" id="auth-lead">Log in to see your hub's live telemetry and camera.</p>
+
+				<div class="auth-tabs" role="tablist" aria-label="Account">
+				    <button type="button" class="pill active" role="tab" data-mode="login" aria-selected="true">Log in</button>
+					<button type="button" class="pill" role="tab" data-mode="register" aria-selected="false">Create account</button>
+				</div>
+
+				<form class="auth-form" id="auth-form" novalidate>
+				    <label>
+						<span>Email</span>
+						<input type="email" name="email" autocomplete="email" maxlength="254" required />
+					</label>
+					<label>
+					    <span>Password</span>
+						<input type="password" name="password" autocomplete="current-password" maxlength="128" required />
+					</label>
+					<label data-register-only hidden>
+					    <span>Confirm password</span>
+						<input type="password" name="confirm" autocomplete="new-password" maxlength="128" />
+					</label>
+					<p class="auth-hint" data-register-only hidden>At least 8 characters.</p>
+					<p class="auth-error" id="auth-error" role="alert" hidden></p>
+					<button type="submit" class="btn btn-primary" id="auth-submit">Log in</button>
+				</form>
+			</section>
+		</div>
+	</main>
+
+	<footer class="site-footer">
+	    <div class="container footer-inner">
+			<p>GrowHub</p>
+			<p>&copy; <span data-year></span> GrowHub. Built to grow better, everywhere.</p>
+		</div>
+	</footer>
+
+	<script src="js/main.js"></script>
+	<script src="js/auth.js"></script>
+</body>
+</html>

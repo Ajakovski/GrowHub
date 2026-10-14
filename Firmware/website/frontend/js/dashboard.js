@@ -24,6 +24,23 @@ let historySeries = { hub: EMPTY_SERIES, tile: EMPTY_SERIES };
 let historyRequestId = 0;
 let cameraSourcePending = false;
 
+async function dashboardFetch(url, options = {}) {
+    const response = await fetch(url, { ...options, credentials: "include" });
+    if (response.status === 401) {
+        redirectToLogin();
+        throw new Error("session expired")
+    }
+    return response;
+}
+
+async function logout() {
+    try {
+        await fetch(`${AUTH_URL}/logout`, { method: "POST", credentials: "include" });
+    } finally {
+        window.location.replace("login.html");
+    }
+}
+
 function clearLegacyStorage() {
     try {
         LEGACY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
@@ -686,7 +703,21 @@ function toggleMetricCard(card) {
     if (willExpand) renderDetailCharts();
 }
 
-function initDashboard() {
+async function initDashboard() {
+    let user = null;
+    try {
+        user = await fetchCurrentUser();
+    } catch (error) {
+        console.error("could not check login state:", error);
+    }
+    if (!user) {
+        redirectToLogin();
+        return;
+    }
+    document.getElementById("account-email").textContent = user.email;
+    document.getElementById("logout-button").addEventListener("click", logout);
+    document.body.classList.remove("auth-pending");
+    
     clearLegacyStorage();
     buildMetricCards();
     setLoading(true);

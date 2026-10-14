@@ -42,6 +42,7 @@ async function sendChatMessage(text) {
     try {
         const response = await fetch(`${GROWHUB_AI_ORIGIN}/chat`, {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 hub_id: typeof currentHubId === "undefined" ? null : currentHubId,
@@ -49,6 +50,7 @@ async function sendChatMessage(text) {
             }),
         });
         const data = await response.json().catch(() => ({}));
+        if (response.status === 401) redirectToLogin();
         if (!response.ok) {
             throw new Error(typeof data.detail === "string" ? data.detail : `AI request failed (${response.status})`);
         }

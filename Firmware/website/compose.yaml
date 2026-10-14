@@ -8,6 +8,8 @@ services:
       GROWHUB_DEVICE_KEY: ${GROWHUB_DEVICE_KEY:-dev-device-key}
       GROWHUB_AI_KEY: ${GROWHUB_AI_KEY:-dev-ai-key}
       GROWHUB_AI_IMAGES_DIR: /stock_images
+      GROWHUB_WEB_ORIGIN_REGEX: ${GROWHUB_WEB_ORIGIN_REGEX:-}
+      GROWHUB_COOKIE_SECURE: ${GROWHUB_COOKIE_SECURE:-0}
     volumes:
       - growhub-data:/data
       - ./stock_images:/stock_images:ro,z
@@ -24,6 +26,7 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-google/gemini-2.5-flash}
       REVIEW_INTERVAL_MINUTES: ${REVIEW_INTERVAL_MINUTES:-30}
+      GROWHUB_WEB_ORIGIN_REGEX: ${GROWHUB_WEB_ORIGIN_REGEX:-}
     depends_on:
       - backend
     restart: unless-stopped

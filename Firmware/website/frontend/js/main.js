@@ -1,5 +1,18 @@
 const GROWHUB_API_ORIGIN = window.GROWHUB_API_ORIGIN
     || `${window.location.protocol === "https:" ? "https:" : "http:"}//${window.location.hostname || "localhost"}:8000`;
+const AUTH_URL = `${GROWHUB_API_ORIGIN}/api/auth`;
+
+async function fetchCurrentUser() {
+    const response = await fetch(`${AUTH_URL}/me`, { credentials: "include" });
+    if (response.status === 401) return null;
+    if (!response.ok) throw new Error(`http error! status: ${response.status}`);
+    return response.json();
+}
+
+function redirectToLogin() {
+    const page = window.location.pathname.split("/").pop() || "dashboard.html";
+    window.location.replace(`login.html?next=${encodeURIComponent(page)}`);
+}
 
 const navToggle = document.querySelector("[data-nav-toggle]");
 const navMenu = document.querySelector("[data-nav-menu]");

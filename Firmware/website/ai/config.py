@@ -7,6 +7,11 @@ LLM_MODEL = os.environ.get("LLM_MODEL", "google/gemini-2.5-flash")
 GROWHUB_API_BASE = os.environ.get("GROWHUB_API_BASE", "http://localhost:8000").rstrip("/")
 GROWHUB_AI_KEY = os.environ.get("GROWHUB_AI_KEY", "")
 
+SESSION_COOKIE = "growhub_session"
+WEB_ORIGIN_REGEX = os.environ.get("GROWHUB_WEB_ORIGIN_REGEX") or (
+    r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?"
+)
+
 REVIEW_INTERVAL_MINUTES = float(os.environ.get("REVIEW_INTERVAL_MINUTES", "30"))
 
 MAX_TOOL_ROUNDS = 5

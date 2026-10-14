@@ -2,15 +2,23 @@ from contextlib import asynccontextmanager
 from typing import List, Literal, Optional
 
 import openai
-from fastapi import FastAPI, HTTPException, Request
+import requests
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import llm
 import prompts
 import reviewer
-from backend_client import BackendError
-from config import CHAT_REQUESTS_PER_MINUTE, LLM_MODEL, MAX_CHAT_MESSAGES, MAX_MESSAGE_CHARS
+from backend_client import BackendError, session_user
+from config import (
+    CHAT_REQUESTS_PER_MINUTE,
+    LLM_MODEL,
+    MAX_CHAT_MESSAGES,
+    MAX_MESSAGE_CHARS,
+    SESSION_COOKIE,
+    WEB_ORIGIN_REGEX,
+)
 from ratelimit import RateLimiter
 from skills import SKILLS
 
@@ -26,7 +34,8 @@ app = FastAPI(title="GrowHub AI", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=WEB_ORIGIN_REGEX,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,9 +53,21 @@ class ChatRequest(BaseModel):
     messages: List[ChatMessage] = Field(min_length=1)
 
 
-def _check_rate_limit(request: Request) -> None:
-    client = request.client.host if request.client else "unknown"
-    if not limiter.allow(client):
+def require_user(request: Request) -> dict:
+    token = request.cookies.get(SESSION_COOKIE)
+    try:
+        user = session_user(token) if token else None
+    except BackendError as error:
+        raise HTTPException(status_code=502, detail=f"Could not check your login ({error.status_code}).")
+    except requests.RequestException:
+        raise HTTPException(status_code=502, detail="Could not reach the GrowHub backend to check your login.")
+    if user is None:
+        raise HTTPException(status_code=401, detail="Log in to use the GrowHub AI.")
+    return user
+
+
+def _check_rate_limit(user: dict) -> None:
+    if not limiter.allow(user["email"]):
         raise HTTPException(status_code=429, detail="Too many AI requests, wait a minute and try again.")
 
 
@@ -74,7 +95,7 @@ def health():
 
 
 @app.post("/chat")
-def chat(body: ChatRequest, request: Request):
+def chat(body: ChatRequest, user: dict = Depends(require_user)):
     messages = body.messages[-MAX_CHAT_MESSAGES:]
     while messages and messages[0].role != "user":
         messages = messages[1:]
@@ -83,7 +104,7 @@ def chat(body: ChatRequest, request: Request):
     if len(messages[-1].content) > MAX_MESSAGE_CHARS:
         raise HTTPException(status_code=400, detail=f"Keep questions under {MAX_MESSAGE_CHARS} characters.")
 
-    _check_rate_limit(request)
+    _check_rate_limit(user)
     conversation = [
         {"role": "system", "content": prompts.chat_system_prompt(body.hub_id)},
         *({"role": m.role, "content": m.content} for m in messages),
@@ -93,8 +114,8 @@ def chat(body: ChatRequest, request: Request):
 
 
 @app.post("/review")
-def review_now(hub_id: str, request: Request):
-    _check_rate_limit(request)
+def review_now(hub_id: str, user: dict = Depends(require_user)):
+    _check_rate_limit(user)
     try:
         review = _call_llm(lambda: reviewer.review_hub(hub_id))
     except BackendError as error:

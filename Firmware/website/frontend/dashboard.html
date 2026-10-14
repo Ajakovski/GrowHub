@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" href="assets/img/favicon.svg">
 </head>
-<body>
+<body class="auth-pending">
     <header class="site-header">
         <div class="container header-inner">
             <a class="brand focus-strip" href="index.html" aria-label="GrowHub home">
@@ -32,7 +32,11 @@
                     <p class="section-lead">Real-time Deep Water Culture (DWC) telemetry and optical camera node streaming.</p>
                     <p class="last-updated" id="last-updated">Waiting for first update...</p>
                 </div>
-                <div class="pill" id="system-status">Connecting...</div>
+                <div class="dashboard-account">
+                    <span class="account-email" id="account-email"></span>
+                    <button type="button" class="pill" id="logout-button">Log out</button>
+                    <div class="pill" id="system-status">Connecting...</div>
+                </div>
             </div>
 
             <div class="alert-list" id="alert-list" hidden></div>

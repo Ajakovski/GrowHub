@@ -11,10 +11,14 @@ from routers.device import get_hub
 AI_KEY = os.environ.get("GROWHUB_AI_KEY")
 
 
+def ai_key_matches(x_ai_key: Optional[str]) -> bool:
+    return bool(AI_KEY) and x_ai_key is not None and secrets.compare_digest(x_ai_key.encode(), AI_KEY.encode())
+
+
 def require_ai_key(x_ai_key: Optional[str] = Header(default=None)) -> None:
     if not AI_KEY:
         raise HTTPException(status_code=503, detail="AI status updates are disabled: set GROWHUB_AI_KEY")
-    if x_ai_key is None or not secrets.compare_digest(x_ai_key.encode(), AI_KEY.encode()):
+    if not ai_key_matches(x_ai_key):
         raise HTTPException(status_code=401, detail="Invalid or missing AI key")
 
 

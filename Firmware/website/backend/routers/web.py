@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 from typing import Literal, Optional
@@ -6,9 +6,11 @@ import asyncio
 import time
 
 import history
+from routers.auth import require_viewer
 from routers.device import CAMERA_SOURCE_STOCK, Hub, get_hub, hubs
 
 router = APIRouter()
+dashboard = [Depends(require_viewer)]
 
 
 class CameraSourceUpdate(BaseModel):
@@ -44,13 +46,13 @@ async def get_hardware_catalog():
     ]
 
 
-@router.get("/hubs")
+@router.get("/hubs", dependencies=dashboard)
 async def list_hubs():
     now = time.time()
     return [{"hub_id": hub.hub_id, **hub.status(now)} for hub in sorted(hubs.values(), key=lambda h: h.hub_id)]
 
 
-@router.get("/plant-stats")
+@router.get("/plant-stats", dependencies=dashboard)
 async def get_plant_stats(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
@@ -58,7 +60,7 @@ async def get_plant_stats(hub: Optional[str] = None):
     return record.snapshot(time.time())
 
 
-@router.get("/history")
+@router.get("/history", dependencies=dashboard)
 async def get_history(
     hub: Optional[str] = None,
     device: str = "hub",
@@ -73,7 +75,7 @@ async def get_history(
     }
 
 
-@router.put("/camera-source")
+@router.put("/camera-source", dependencies=dashboard)
 async def set_camera_source(update: CameraSourceUpdate, hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
@@ -84,7 +86,7 @@ async def set_camera_source(update: CameraSourceUpdate, hub: Optional[str] = Non
     return {"hub_id": record.hub_id, "camera_source": record.camera_source}
 
 
-@router.get("/camera")
+@router.get("/camera", dependencies=dashboard)
 async def get_camera_still(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     frame = record.current_frame(time.time()) if record else None
@@ -102,7 +104,7 @@ async def get_camera_still(hub: Optional[str] = None):
     )
 
 
-@router.get("/camera/stream")
+@router.get("/camera/stream", dependencies=dashboard)
 async def get_camera_stream(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
