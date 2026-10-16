@@ -2,6 +2,8 @@
 
 - Author: ajakovski07
 
+---
+
 ## 18. Timelapse 16.10.2026
 
 Im lowkey writting this while im outside at my grandparents house cuz i want to get 5 hrs of timelapse today and im running llow on time xDDD
@@ -36,8 +38,8 @@ And mid work i realise that i forgot to turn on timelapse so RIP 30 minutes....
 - Make a clear border on the main PCB for signal integrity
 
 ![Image41](./Documentation/Pictures/Journal_AJ/Image41.png)
-![Image41](./Documentation/Pictures/Journal_AJ/Image41.png)
-![Image41](./Documentation/Pictures/Journal_AJ/Image41.png)
+![Image42](./Documentation/Pictures/Journal_AJ/Image42.png)
+![Image43](./Documentation/Pictures/Journal_AJ/Image43.png)
 
 ---
 
