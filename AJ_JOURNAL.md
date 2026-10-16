@@ -2,6 +2,45 @@
 
 - Author: ajakovski07
 
+## 18. Timelapse 16.10.2026
+
+Im lowkey writting this while im outside at my grandparents house cuz i want to get 5 hrs of timelapse today and im running llow on time xDDD
+
+I also timelapsed yesterday but after having a break my laptop went asleep, booted it up again and when it loaded up i came to the information that my wifi module stopped working. I wasted an hour trying to fix that and today i am back on track for this week.
+
+Today I revised once again the schematic due to an experienced friend of mine who reviewed my schematic before starting the PCB. A lot of it got fixed and honestly without his help it wouldnt even been possible to make a functional PCB. He studies on University of St. Kiryl and Metodii so that is his speciality.
+
+And mid work i realise that i forgot to turn on timelapse so RIP 30 minutes....
+
+**What I did:**
+
+- Revised the schematic
+- Fixed errors
+- Grouped modules
+- Sorted the schematics
+- Added another sheet for utilities on the PCB
+
+---
+
+**Problems that i had:**
+
+- A lot of numbers my eyes started twitching
+- A lot of mistakes :(((
+
+---
+
+**Next step:**
+
+- ERC Check
+- Start the PCB
+- Make a clear border on the main PCB for signal integrity
+
+![Image41](./Documentation/Pictures/Journal_AJ/Image41.png)
+![Image41](./Documentation/Pictures/Journal_AJ/Image41.png)
+![Image41](./Documentation/Pictures/Journal_AJ/Image41.png)
+
+---
+
 ## 17. Timelapse - 11.10.2026
 
 I FKIN HATE MYSELFF
@@ -30,6 +69,8 @@ So basically i was doing my work as per usual and i decided to write in the READ
 
 ![Image39](./Documentation/Pictures/Journal_AJ/Image39.png)
 ![Image40](./Documentation/Pictures/Journal_AJ/Image40.png)
+
+---
 
 ## 16. Timelapse - 10.10.2026
 
