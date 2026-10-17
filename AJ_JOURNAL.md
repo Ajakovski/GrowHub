@@ -4,6 +4,44 @@
 
 ---
 
+## 19. Timelapse 17.10.2026
+
+Grindy day!
+
+I finally started the PCB!!!
+
+After commiting the schematics i started the PCB and it is a headache...
+
+850 PADS!!! That need to be connected will take a while.
+
+---
+
+**What I did:**
+
+- Commit the schematic
+- Started placing components on the PCB
+- Occasionally assigned .step components
+- Applied net classes and restrictions
+
+---
+
+**Problems that appeared:**
+
+- The cost of producing the PCB increases a lot after 100x100mm but it is impossible to fit everything and keep signal integrity
+- A lot of components that i need to place around
+
+---
+
+**Next step:**
+
+-Continue with the PCB trenches
+
+![Image44](./Documentation/Pictures/Journal_AJ/Image44.png)
+![Image45](./Documentation/Pictures/Journal_AJ/Image45.png)
+![Image46](./Documentation/Pictures/Journal_AJ/Image46.png)
+
+---
+
 ## 18. Timelapse 16.10.2026
 
 Im lowkey writting this while im outside at my grandparents house cuz i want to get 5 hrs of timelapse today and im running llow on time xDDD
@@ -13,6 +51,8 @@ I also timelapsed yesterday but after having a break my laptop went asleep, boot
 Today I revised once again the schematic due to an experienced friend of mine who reviewed my schematic before starting the PCB. A lot of it got fixed and honestly without his help it wouldnt even been possible to make a functional PCB. He studies on University of St. Kiryl and Metodii so that is his speciality.
 
 And mid work i realise that i forgot to turn on timelapse so RIP 30 minutes....
+
+---
 
 **What I did:**
 
@@ -48,6 +88,8 @@ And mid work i realise that i forgot to turn on timelapse so RIP 30 minutes....
 I FKIN HATE MYSELFF
 
 So basically i was doing my work as per usual and i decided to write in the README for a bit just so that i can update it. But i opened 2 github windows and not realising i closed the one in which i was writing it.... I LOST MY WORK WITHOUT COMMITING. It wasnt a lot of work but that is such a tedious work and i dont wanna think of doing it again.
+
+---
 
 **What i did:**
 
