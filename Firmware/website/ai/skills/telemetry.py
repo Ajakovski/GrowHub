@@ -71,10 +71,19 @@ def get_hub_status(hub_id: Optional[str] = None):
     if not stats.get("hub_id"):
         return {"error": "No hub has reported yet."}
 
+    crops = stats.get("crops") or {}
+    tile_plants = crops.get("tile_plants") or {}
     return {
         "hub_id": stats["hub_id"],
         "online": stats.get("hub_online", False),
         "last_report": _ago(stats.get("last_telemetry_at")),
+        "crops": {
+            "configured": bool(crops.get("configured")),
+            "plants": [plant.get("name") for plant in crops.get("plants") or []],
+            "plant_ids": crops.get("plant_ids") or [],
+            "ec_range": crops.get("ec_range"),
+            "ec_conflict": bool(crops.get("ec_conflict")),
+        },
         "reservoir": {
             "level_ok": stats.get("water_level_ok"),
             "water_temperature_c": _round(stats.get("water_temperature"), 1),
@@ -85,6 +94,7 @@ def get_hub_status(hub_id: Optional[str] = None):
         "tiles": [
             {
                 "tile_id": tile["tile_id"],
+                "plants": tile_plants.get(tile["tile_id"]) or crops.get("plant_ids") or [],
                 "air_temperature_c": _round(tile.get("air_temperature"), 1),
                 "humidity_percent": _round(tile.get("humidity"), 0),
                 "light_lux": _round(tile.get("light_lux"), 0),

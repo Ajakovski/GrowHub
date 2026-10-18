@@ -9,6 +9,7 @@ import secrets
 import time
 
 import history
+import plants
 import stock_images
 
 NEXT_WAKE_MINUTES = 15
@@ -80,6 +81,7 @@ class Hub:
     ai_summary: Optional[str] = None
     ai_updated_at: Optional[float] = None
     camera_source: str = CAMERA_SOURCE_WEBCAM
+    plants: dict = field(default_factory=dict)
     latest_frame: Optional[bytes] = None
     latest_frame_at: float = 0.0
     frame_event: asyncio.Event = field(default_factory=asyncio.Event)
@@ -184,6 +186,7 @@ class Hub:
             "stock_image_count": stock_image_count,
             "camera_online": camera_online,
             "camera_feed_url": f"/api/web/camera?hub={quote(self.hub_id)}" if has_frame else None,
+            "crops": plants.plants_payload(self.plants),
             **self.status(now),
             "alerts": self.alerts(),
         }
@@ -222,6 +225,7 @@ def load_hubs() -> None:
             ai_summary=row["ai_summary"],
             ai_updated_at=row["ai_updated_at"],
             camera_source=row["camera_source"] if row["camera_source"] in CAMERA_SOURCES else CAMERA_SOURCE_WEBCAM,
+            plants=row.get("plants") or {},
         )
 
 

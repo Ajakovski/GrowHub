@@ -9,7 +9,8 @@ water flow trough its piping. Some hubs have a camera.
 
 You have skills (tools) that read live data from the GrowHub server. Rules:
 - Always fetch data with a skill before talking about readings. Never invent or guess numbers.
-- Call get_target_ranges before judging whether a reading is good or bad.
+- Call get_target_ranges (with the hub id when you have one) before judging whether a reading is good or bad. \
+Use the grower's selected crops for EC targets when they are configured.
 - For questions about how plants look, use get_latest_photo when the camera is online.
 - If a hub is offline, data is missing or a photo is stale, say so plainly.
 - Be concise and practical: a few short sentences or a short list, with one clear next step when \

@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response, StreamingResponse
-from pydantic import BaseModel
-from typing import Literal, Optional
+from pydantic import BaseModel, Field
+from typing import Literal, Optional, Dict, List
 import asyncio
 import time
 
+from starlette import status
+
 import history
+import plants
 from routers.auth import require_viewer
 from routers.device import CAMERA_SOURCE_STOCK, Hub, get_hub, hubs
 
@@ -15,6 +18,11 @@ dashboard = [Depends(require_viewer)]
 
 class CameraSourceUpdate(BaseModel):
     source: Literal["webcam", "stock"]
+
+
+class HubPlantsUpdate(BaseModel):
+    plant_ids: List[str] = Field(default_factory=list, max_length=20)
+    tile_plants: Dict[str, List[str]] = Field(default_factory=dict)
 
 
 def _resolve_hub(hub_id: Optional[str]) -> Optional[Hub]:
@@ -46,6 +54,11 @@ async def get_hardware_catalog():
     ]
 
 
+@router.get("/plant-catalog", dependencies=dashboard)
+async def get_plants_catalog():
+    return {"plants": plants.catalog()}
+    
+
 @router.get("/hubs", dependencies=dashboard)
 async def list_hubs():
     now = time.time()
@@ -56,8 +69,46 @@ async def list_hubs():
 async def get_plant_stats(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
-        return {"hub_id": None, "hub_online": False, "last_telemetry_at": None, "tiles": [], "alerts": []}
+        return {
+            "hub_id": None,
+            "hub_online": False,
+            "last_telemetry_at": None,
+            "tiles": [],
+            "alerts": [],
+            "crops": plants.plants_payload({}),
+        }
     return record.snapshot(time.time())
+
+
+@router.put("/plants", dependencies=dashboard)
+async def set_hub_plants(update: HubPlantsUpdate, hub: Optional[str] = None):
+    record = _resolve_hub(hub)
+    if record is None:
+        raise HTTPException(status_code=404, detail="No hub has reported yet")
+
+    plant_ids = plants.normalise_plant_ids(update.plant_ids)
+    if not plant_ids:
+        raise HTTPException(status_code=400, detail="Pick at least one plant")
+
+    known_tiles = {tile.get("tile_id") for tile in record.state.get("tiles", []) if tile.get("tile_id")}
+    tile_plants = {}
+    for tile_id, tile_ids in update.tile_plants.items():
+        if known_tiles and tile_id not in known_tiles:
+            continue
+        cleaned = plants.normalise_plant_ids(tile_ids)
+        if cleaned:
+            tile_plants[tile_id] = cleaned
+
+    if not tile_plants and known_tiles:
+        tile_plants = {tile_id: list[str](plant_ids) for tile_id in sorted(known_tiles)}
+
+    record.plants = {
+        "configured": True,
+        "plant_ids": plant_ids,
+        "tile_plants": tile_plants,
+    }
+    history.save_hub_plants(record.hub_id, record.plants)
+    return {"hub_id": record.hub_id, "crops": plants.plants_payload(record.plants)}
 
 
 @router.get("/history", dependencies=dashboard)

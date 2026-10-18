@@ -33,6 +33,7 @@
                     <p class="last-updated" id="last-updated">Waiting for first update...</p>
                 </div>
                 <div class="dashboard-account">
+                    <button type="button" class="pill" id="crops-button" hidden>Set plants</button>
                     <span class="account-email" id="account-email"></span>
                     <button type="button" class="pill" id="logout-button">Log out</button>
                     <div class="pill" id="system-status">Connecting...</div>
@@ -106,6 +107,28 @@
             </div>
         </div>
     </main>
+
+    <div class="plant-modal" id="plant-modal" hidden>
+        <div class="plant-modal-card" role="dialog" aria-modal="true" aria-labelledby="plant-modal-title">
+            <span class="kicker">Your GrowHub</span>
+            <h2 class="section-title" id="plant-modal-title">What are you growing?</h2>
+            <p class="section-lead" id="plant-modal-lead">
+                Pick the plants in this hub so nutrient targets, alerts and the AI match your crop mix.
+            </p>
+            <div class="plant-grid" id="plant-grid" role="group" aria-label="Plant types"></div>
+            <p class="plant-conflict" id="plant-conflict" hidden></p>
+            <div class="plant-tile-step" id="plant-tile-step" hidden>
+                <h3>Assign plants to tiles</h3>
+                <p class="section-lead">Optional. Leave a tile empty to grow the full mix there.</p>
+                <div id="plant-tile-assign"></div>
+            </div>
+            <p class="auth-error" id="plant-modal-error" role="alert" hidden></p>
+            <div class="button-group plant-modal-actions">
+                <button type="button" class="btn btn-secondary" id="plant-modal-cancel" hidden>Cancel</button>
+                <button type="button" class="btn btn-primary" id="plant-modal-save">Save and continue</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="site-footer">
         <div class="container footer-inner">

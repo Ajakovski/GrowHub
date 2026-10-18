@@ -112,6 +112,7 @@ def init_db() -> None:
             ("ai_summary", "TEXT"),
             ("ai_updated_at", "REAL"),
             ("camera_source", "TEXT"),
+            ("plants", "TEXT"),
         ):
             if column not in hub_columns:
                 conn.execute(f"ALTER TABLE hubs ADD COLUMN {column} {column_type}")
@@ -228,11 +229,32 @@ def save_hub_camera_source(hub_id: str, camera_source: str) -> None:
         )
 
 
+def save_hub_plants(hub_id: str, plants: dict) -> None:
+    with _connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO hubs (hub_id, state, plants) VALUES (?, '{}', ?)
+            ON CONFLICT (hub_id) DO UPDATE SET plants = excluded.plants
+            """,
+            (hub_id, json.dumps(plants))
+        )
+
+
+def _parse_plants(raw: Optional[str]) -> dict:
+    if not raw:
+        return {}
+    try:
+        value = json.loads(raw)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
 def load_hubs() -> List[dict]:
     with _connection() as conn:
         rows = conn.execute(
             "SELECT hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak, "
-            "ai_status, ai_summary, ai_updated_at, camera_source FROM hubs"
+            "ai_status, ai_summary, ai_updated_at, camera_source, plants FROM hubs"
         ).fetchall()
     return [
         {
@@ -245,9 +267,10 @@ def load_hubs() -> List[dict]:
             "ai_summary": ai_summary,
             "ai_updated_at": ai_updated_at,
             "camera_source": camera_source,
+            "plants": _parse_plants(plants),
         }
         for (
             hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak,
-            ai_status, ai_summary, ai_updated_at, camera_source,
+            ai_status, ai_summary, ai_updated_at, camera_source, plants,
         ) in rows
     ]

@@ -66,11 +66,23 @@ function headerStatusText() {
     return heaterOn ? "heater on" : "heater off";
 }
 
+function ecRange() {
+    const range = globalTelemetry?.crops?.ec_range;
+    if (Array.isArray(range) && range.length === 2) return range;
+    return [0.8, 2.5];
+}
+
 function ecStatusText(value) {
     if (value == null) return "No EC sensor reading";
-    if (value < 0.8) return "Low nutrients: dose reservoir";
-    if (value > 2.5) return "High nutrients: dilute reservoir";
-    return "Nutrients in range";
+    const [low, high] = ecRange();
+    const crops = globalTelemetry?.crops;
+    const cropNote = crops?.configured && crops.plants?.length
+        ? ` for ${crops.plants.map((plant) => plant.name).join(", ")}`
+        : "";
+    if (crops?.ec_conflict) return "Crop mix has conflicting EC targets";
+    if (value < low) return `Low nutrients${cropNote}: dose reservoir`;
+    if (value > high) return `High nutrients${cropNote}: dilute reservoir`;
+    return `Nutrients in range${cropNote}`;
 }
 
 function phStatusText(value) {
@@ -343,6 +355,7 @@ async function fetchPlantStats() {
         if (!lastUpdatedAt) {
             setOfflineState("Waiting for hub");
             renderAlerts();
+            updateCropsButton(globalTelemetry.crops);
             return;
         }
 
@@ -350,6 +363,7 @@ async function fetchPlantStats() {
         renderStats();
         renderAlerts();
         refreshHistory();
+        if (typeof ensurePlantSetup === "function") ensurePlantSetup(globalTelemetry.crops);
     } catch (error) {
         console.error("failed to load plant telemetry:", error);
         setLoading(false);

@@ -1,3 +1,8 @@
+from typing import Optional
+
+from Firmware.website.ai.skills.telemetry import HUB_ID_PROPERTY
+from Firmware.website.backend.esp32_simulator import HUB_ID
+from backend_client import get_json
 from skills.registry import skill
 
 TARGET_RANGES = {
@@ -13,15 +18,16 @@ TARGET_RANGES = {
     "ec_ms_cm": {
         "general": [0.8, 2.5],
         "by_crop": {
-            "lettuce_and_leafy_greens": [0.8, 1.2],
-            "herbs_such_as_basil": [1.0, 1.6],
-            "strawberries": [1.0, 1.5],
-            "peppers": [1.8, 2.8],
-            "tomatoes": [2.0, 3.5],
+            "lettuce": [0.8, 1.2],
+            "basil": [1.0, 1.6],
+            "strawberry": [1.0, 1.5],
+            "pepper": [1.8, 2.8],
+            "tomato": [2.0, 3.5],
         },
         "notes": "Low EC means nutrients are depleted (dose the reservoir); high EC means too concentrated "
                  "(top up with plain water). EC rising while the water level drops usually means plants "
-                 "are drinking water faster than nutrients.",
+                 "are drinking water faster than nutrients. When several crops share one reservoir, aim"
+                 "for the overlapping window if there is one.",
     },
     "ph": {
         "ideal": [5.5, 6.5],
@@ -59,12 +65,57 @@ TARGET_RANGES = {
     },
 }
 
+HUB_ID_PROPERTY = {
+    "hub_id": {
+        "type": "string",
+        "description":  "Hub to load crop targets for. Omit to use the hub that reported most recently."
+    }
+}
+
+def _ranges_for_crops(crops: dict) -> dict:
+    ranges = {key: (dict[Any, Any](value) if isinstance(value, dict) else value) for key, value in TARGET_RANGES.items()}
+    plant_ids = crops.get("plant_ids") or []
+    plants = crops.get("plants") or []
+    if not plant_ids:
+        ranges["selected_crops"] = []
+        ranges["crop_targets_note"] = (
+            "The grower has not chosen plants for this hub yet. Use the general EC range."
+        )
+        return ranges
+
+    by_crop = TARGET_RANGES["ec_ms_cm"]["by_crop"]
+    selected = {plant_id: by_crop[plant_id] for plant_id in plant_ids if plant_id in by_crop}
+    ranges["selected_crops"] = [
+        {"id": plant["id"], "name": plant["name"], "ec": plant["ec"]} for plant in plants
+    ]
+    ranges["ec_ms_cm"] = {
+        **ranges["ec_ms_cm"],
+        "for_this_hub": crops.get("ec_range") or TARGET_RANGES["ec_ms_cm"]["general"],
+        "by_selected_crop": selected,
+        "shared_reservoir_conflict": bool(crops.get("ec_conflict")),
+    }
+    if crops.get("ec_conflict"):
+        ranges["crop_targets_note"] = (
+            "These crops have non-overlapping EC windows. Warn the grower that one shared "
+            "reservoir cannot stay ideal for all of them at once."
+        )
+    else:
+        ranges["crop_targets_note"] = (
+            "Judge EC against for_this_hub first; mention individual crop windows when helpful."
+        )
+    if crops.get("tile_points"):
+        ranges["plants_by_tile"] = crops["tile_plants"]
+    return ranges
+
 
 @skill(
     "get_target_ranges",
     "Get the recommended ranges for water temperature, EC, pH air temperature, humidity, water flow and "
-    "light in a GrowHub DWC system, including "
-    "EC ranges for common crops. Use this before judging whether a reading is good or bad.",
+    "light in a GrowHub DWC system, When a hub_id is given, the EC targets are narrowed to the crops "
+    "the grower selected for that hub.",
+    HUB_ID_PROPERTY,
 )
-def get_target_ranges():
-    return TARGET_RANGES
+def get_target_ranges(hub_id: Optional[str] = None):
+    params = {"hub": hub_id} if hub_id else {}
+    stats = get_json("/api/web/plant-stats", params)
+    return _ranges_for_crops(stats.get("crops") or {})

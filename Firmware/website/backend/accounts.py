@@ -141,7 +141,18 @@ def create_verification_token(user_id: int) -> str:
     return token
 
 
-
+def verify_email(token: str) -> Optional[User]:
+    with _connection() as conn:
+        row = conn.execute(
+            "SELECT user_id FROM email_tokens WHERE token_hash = ? AND expires_at > ?",
+            (_hash_token(token), time.time()),
+        ).fetchone()
+        if row is None:
+            return None
+        conn.execute("UPDATE users SET email_verified = 1 WHERE id = ?", (row[0],))
+        conn.execute("DELETE FROM email_tokens WHERE user_id = ?", (row[0],))
+        user = conn.execute(f"SELECT {USER_COLUMNS} FROM users WHERE id = ?", (row[0],)).fetchone()
+    return _user(user)
 
 
 def create_session(user_id: int) -> str:
@@ -159,14 +170,14 @@ def create_session(user_id: int) -> str:
 def user_for_session(token: str) -> Optional[User]:
     with _connection() as conn:
         row = conn.execute(
-            """
-            SELECT users.id, users.email, users.created_at
+            f"""
+            SELECT {USER_COLUMNS}
             FROM sessions JOIN users ON users.id = sessions.user_id
             WHERE sessions.token_hash = ? AND sessions.expires_at > ?
             """,
             (_hash_token(token), time.time()),
         ).fetchone()
-    return User(*row) if row else None
+    return _user(row) if row else None
 
 
 def delete_session(token: str) -> None:
