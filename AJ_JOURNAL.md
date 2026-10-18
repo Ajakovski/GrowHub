@@ -4,6 +4,30 @@
 
 ---
 
+## 20. Timelapse 18.10.2026
+
+Quick one. My laptop crashed due to only having 8GB of ram and a lot of stuff running.....
+
+That's why im participating in this ysws tho!!! Can't wait to see my Thinkpad X1 Gen 7 :)))
+
+---
+
+**What i did:**
+
+- Component placement
+- Established the USB-C wiring
+- A little of 3D .step file imports
+
+--- 
+
+**Next step:**
+
+- Continue the PCB around the MCU
+
+![Image47](./Documentation/Pictures/Journal_AJ/Image47.png)
+
+---
+
 ## 19. Timelapse 17.10.2026
 
 Grindy day!
