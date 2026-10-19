@@ -1,5 +1,5 @@
 const PLANT_CATALOG_URL = `${API_BASE}/plant-catalog`;
-const PLANTS_URL = `${API_BASE}/plants`
+const PLANTS_URL = `${API_BASE}/plants`;
 
 let plantCatalog = [];
 let selectedPlantIds = new Set();
@@ -50,10 +50,10 @@ async function loadPlantCatalog() {
 function plantCardHtml(plant, selected) {
     const [low, high] = plant.ec;
     return `
-        <button type="button" class="plant-cards${selected ? " is-selected" : ""}" data-plant-id="${plant.id}" aria-pressed="${selected}">
+        <button type="button" class="plant-card${selected ? " is-selected" : ""}" data-plant-id="${plant.id}" aria-pressed="${selected}">
             <strong>${plant.name}</strong>
             <span>${plant.blurb}</span>
-            <span class="plant-card-meta">EC ${low.toFixed(1)}-${high.toFixed(1)} mS/cm</span>
+            <span class="plant-card-meta">EC ${low.toFixed(1)}–${high.toFixed(1)} mS/cm</span>
         </button>
     `;
 }
@@ -70,7 +70,7 @@ function renderPlantGrid() {
 function updatePlantConflict() {
     const notice = document.getElementById("plant-conflict");
     const selected = plantCatalog.filter((plant) => selectedPlantIds.has(plant.id));
-    if (selcted.length < 2) {
+    if (selected.length < 2) {
         notice.hidden = true;
         return;
     }
@@ -79,9 +79,9 @@ function updatePlantConflict() {
     if (low > high) {
         notice.textContent = "These crops need different nutrient strengths. One shared reservoir can't stay ideal for all of them.";
         notice.hidden = false;
-        reurn;
+        return;
     }
-    notice.textContent = `Shared reservoir target: EC ${low.toFixed(1)}-${high.toFixed(1)} mS/cm.`;
+    notice.textContent = `Shared reservoir target: EC ${low.toFixed(1)}–${high.toFixed(1)} mS/cm.`;
     notice.hidden = false;
 }
 
@@ -101,12 +101,12 @@ function renderTileAssigner() {
     container.innerHTML = tiles.map((tileId) => {
         const chosen = new Set(tilePlantDraft[tileId] || []);
         const chips = selected.map((plant) => `
-            <button type="button" class="pill${chosen.has(plant.id) ? " active" : ""}" data-tile-id="${plant.id}">
+            <button type="button" class="pill${chosen.has(plant.id) ? " active" : ""}" data-tile-id="${tileId}" data-plant-id="${plant.id}">
                 ${plant.name}
             </button>
         `).join("");
         return `
-            <div class="plant-tile-row"
+            <div class="plant-tile-row">
                 <strong>${tileLabel(tileId)}</strong>
                 <div class="eyebrow-row">${chips}</div>
             </div>
@@ -125,7 +125,7 @@ function openPlantModal({ editing = false } = {}) {
 
     document.getElementById("plant-modal-title").textContent = editing
         ? "Update your plants"
-        : "What are you growing";
+        : "What are you growing?";
     document.getElementById("plant-modal-lead").textContent = editing
         ? "Change the crop mix any time. Nutrient targets and the AI will follow."
         : "Pick the plants in this hub so nutrient targets, alerts and the AI match your crop mix.";
@@ -133,7 +133,7 @@ function openPlantModal({ editing = false } = {}) {
     document.getElementById("plant-modal-save").textContent = editing ? "Save plants" : "Save and continue";
     showPlantError("");
     renderPlantGrid();
-    document.getElementById("plant-modal").hidden = true;
+    document.getElementById("plant-modal").hidden = false;
     document.body.classList.add("plant-modal-open");
 }
 

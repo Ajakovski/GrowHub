@@ -1,10 +1,9 @@
 import json
-from optparse import Option
 import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterable, List, NamedTuple, Optional, Tuple
+from typing import Iterable, List, NamedTuple, Optional
 
 DB_PATH = Path(os.environ.get("GROWHUB_DB_PATH", Path(__file__).resolve().parent / "growhub.db"))
 MAX_POINTS = 120
@@ -23,9 +22,9 @@ METRIC_DECIMALS = {
     "light": 0,
     "flow": 2,
 }
-METRICS = tuple[str, ...](METRIC_DECIMALS)
+METRICS = tuple(METRIC_DECIMALS)
 LEGACY_COLUMNS = {"moisture", "temperature"}
-HUB_ONLY_LEGACY = {"water_temp", "temperature", "ec": "ec", "ph": "ph"}
+HUB_ONLY_LEGACY = {"water_temp": "temperature", "ec": "ec", "ph": "ph"}
 
 
 @contextmanager
@@ -57,18 +56,18 @@ def _migrate_legacy_readings(conn: sqlite3.Connection, columns: set) -> None:
     selects = {}
     for metric, legacy in HUB_ONLY_LEGACY.items():
         selects[metric] = f"CASE WHEN device_id = 'hub' THEN {legacy} END" if legacy in columns else "NULL"
-        selects["light"] = "light" if "light" in columns else "NULL"
-        hub_id = "hub_id" if "hub_id" in columns else "''"
+    selects["light"] = "light" if "light" in columns else "NULL"
+    hub_id = "hub_id" if "hub_id" in columns else "''"
 
-        _create_readings_table(conn, "readings_new")
-        targets = ", ".join(selects)
-        values = ", ".join(selects.values())
-        conn.execute(
-            f"INSERT INTO readings_new (id, hub_id, device_id, recorded_at, {targets}) "
-            f"SELECT id, {hub_id}, device_id, recorded_at, {values} FROM readings"
-        )
-        conn.execute("DROP TABLE readings")
-        conn.execute("ALTER TABLE readings_new RENAME TO readings")
+    _create_readings_table(conn, "readings_new")
+    targets = ", ".join(selects)
+    values = ", ".join(selects.values())
+    conn.execute(
+        f"INSERT INTO readings_new (id, hub_id, device_id, recorded_at, {targets}) "
+        f"SELECT id, {hub_id}, device_id, recorded_at, {values} FROM readings"
+    )
+    conn.execute("DROP TABLE readings")
+    conn.execute("ALTER TABLE readings_new RENAME TO readings")
 
 
 def init_db() -> None:
@@ -167,7 +166,7 @@ def get_history(hub_id: str, device_id: str, range_key: str, now: float) -> List
     with _connection() as conn:
         rows = conn.execute(
             f"""
-            SELECT CAST(recorded_at / ? AS INTEGERS) AS bucket, AVG(recorded_at), {averages}
+            SELECT CAST(recorded_at / ? AS INTEGER) AS bucket, AVG(recorded_at), {averages}
             FROM readings
             WHERE hub_id = ? AND device_id = ? AND recorded_at >= ?
             GROUP BY bucket
@@ -181,8 +180,8 @@ def get_history(hub_id: str, device_id: str, range_key: str, now: float) -> List
             "at": int(row[1] * 1000),
             **{
                 metric: _round_or_none(value, METRIC_DECIMALS[metric])
-                for metric, value in zip[tuple[str, Any]](METRICS, row[2:])
-            }
+                for metric, value in zip(METRICS, row[2:])
+            },
         }
         for row in rows
     ]
@@ -221,7 +220,7 @@ def save_hub_ai(hub_id: str, status: str, summary: str, updated_at: float) -> No
 def save_hub_camera_source(hub_id: str, camera_source: str) -> None:
     with _connection() as conn:
         conn.execute(
-            f"""
+            """
             INSERT INTO hubs (hub_id, state, camera_source) VALUES (?, '{}', ?)
             ON CONFLICT (hub_id) DO UPDATE SET camera_source = excluded.camera_source
             """,
@@ -236,7 +235,7 @@ def save_hub_plants(hub_id: str, plants: dict) -> None:
             INSERT INTO hubs (hub_id, state, plants) VALUES (?, '{}', ?)
             ON CONFLICT (hub_id) DO UPDATE SET plants = excluded.plants
             """,
-            (hub_id, json.dumps(plants))
+            (hub_id, json.dumps(plants)),
         )
 
 

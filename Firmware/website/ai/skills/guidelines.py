@@ -1,7 +1,5 @@
 from typing import Optional
 
-from Firmware.website.ai.skills.telemetry import HUB_ID_PROPERTY
-from Firmware.website.backend.esp32_simulator import HUB_ID
 from backend_client import get_json
 from skills.registry import skill
 
@@ -11,9 +9,9 @@ TARGET_RANGES = {
         "ideal": [18, 22],
         "acceptable": [16, 24],
         "notes": "Measured in the hub's shared reservoir. Above 24 C dissolved oxygen drops and root rot "
-        "risk rises; below 16 C growth slows. The hub's water heater switches on below about 20 C; "
-        "it can only warm the water so high temperatures need cooling or shade. Cold water while "
-        "the heater is on suggests a faulty or undersized heater.",
+                 "risk rises; below 16 C growth slows. The hub's water heater switches on below about 20 C; "
+                 "it can only warm the water, so high temperatures need cooling or shade. Cold water while "
+                 "the heater is on suggests a faulty or undersized heater.",
     },
     "ec_ms_cm": {
         "general": [0.8, 2.5],
@@ -26,20 +24,20 @@ TARGET_RANGES = {
         },
         "notes": "Low EC means nutrients are depleted (dose the reservoir); high EC means too concentrated "
                  "(top up with plain water). EC rising while the water level drops usually means plants "
-                 "are drinking water faster than nutrients. When several crops share one reservoir, aim"
+                 "are drinking water faster than nutrients. When several crops share one reservoir, aim "
                  "for the overlapping window if there is one.",
     },
     "ph": {
         "ideal": [5.5, 6.5],
         "target_after_mixing": 5.8,
-        "notes": "pH ussualy drifts upward as plants feed. Outside 5.5-6.5 some nutrients become "
+        "notes": "pH usually drifts upward as plants feed. Outside 5.5-6.5 some nutrients become "
                  "unavailable even when EC is fine. Correct with pH down or pH up in small doses.",
     },
     "air_temperature_c": {
         "ideal": [18, 27],
         "acceptable": [15, 30],
         "notes": "Measured under each tile's LED canopy, which runs a couple of degrees warmer than the room "
-                 "while the lights are on. Above 30 C plants suffer heat stress."
+                 "while the lights are on. Above 30 C plants suffer heat stress.",
     },
     "humidity_percent": {
         "ideal": [50, 70],
@@ -50,7 +48,7 @@ TARGET_RANGES = {
     "water_flow_l_min": {
         "normal": [1.6, 2.4],
         "low_below": 1.0,
-        "notes": "Measured per tile. Low flow in on tile points to a clog in that tiles piping, often "
+        "notes": "Measured per tile. Low flow in one tile points to a clog in that tile's piping, often "
                  "roots or debris. Low flow in every tile at once points to the pump or a reservoir that is "
                  "nearly empty.",
     },
@@ -68,12 +66,13 @@ TARGET_RANGES = {
 HUB_ID_PROPERTY = {
     "hub_id": {
         "type": "string",
-        "description":  "Hub to load crop targets for. Omit to use the hub that reported most recently."
+        "description": "Hub to load crop targets for. Omit to use the hub that reported most recently.",
     }
 }
 
+
 def _ranges_for_crops(crops: dict) -> dict:
-    ranges = {key: (dict[Any, Any](value) if isinstance(value, dict) else value) for key, value in TARGET_RANGES.items()}
+    ranges = {key: (dict(value) if isinstance(value, dict) else value) for key, value in TARGET_RANGES.items()}
     plant_ids = crops.get("plant_ids") or []
     plants = crops.get("plants") or []
     if not plant_ids:
@@ -103,15 +102,15 @@ def _ranges_for_crops(crops: dict) -> dict:
         ranges["crop_targets_note"] = (
             "Judge EC against for_this_hub first; mention individual crop windows when helpful."
         )
-    if crops.get("tile_points"):
+    if crops.get("tile_plants"):
         ranges["plants_by_tile"] = crops["tile_plants"]
     return ranges
 
 
 @skill(
     "get_target_ranges",
-    "Get the recommended ranges for water temperature, EC, pH air temperature, humidity, water flow and "
-    "light in a GrowHub DWC system, When a hub_id is given, the EC targets are narrowed to the crops "
+    "Get the recommended ranges for water temperature, EC, pH, air temperature, humidity, water flow and "
+    "light in a GrowHub DWC system. When a hub_id is given, the EC targets are narrowed to the crops "
     "the grower selected for that hub.",
     HUB_ID_PROPERTY,
 )

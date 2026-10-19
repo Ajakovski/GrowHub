@@ -3,15 +3,15 @@ const AUTH_MODES = {
         title: "Welcome back",
         lead: "Log in to see your hub's live telemetry and camera.",
         submit: "Log in",
-        endpoit: "login",
-        passwprdAutocomplete: "current-password",
+        endpoint: "login",
+        passwordAutocomplete: "current-password",
     },
     register: {
         title: "Create your account",
         lead: "Sign up to monitor your GrowHub from anywhere on your network.",
         submit: "Create account",
         endpoint: "register",
-        passwprdAutocomplete: "new-password",
+        passwordAutocomplete: "new-password",
     },
 };
 const MIN_PASSWORD_LENGTH = 8;
@@ -32,7 +32,7 @@ function showAuthError(message) {
 
 function setAuthMode(mode) {
     if (!AUTH_MODES[mode]) return;
-    authMode = node;
+    authMode = mode;
     const config = AUTH_MODES[mode];
     const form = document.getElementById("auth-form");
 
@@ -48,7 +48,7 @@ function setAuthMode(mode) {
     document.getElementById("auth-title").textContent = config.title;
     document.getElementById("auth-lead").textContent = config.lead;
     document.getElementById("auth-submit").textContent = config.submit;
-    form.elements.password.autocomplete = config.passwprdAutocomplete;
+    form.elements.password.autocomplete = config.passwordAutocomplete;
     showAuthError("");
 }
 
@@ -97,11 +97,11 @@ async function submitAuthForm(event) {
         if (authMode === "register" && response.ok) {
             showVerificationSent(data.email, data.email_sent
                 ? ""
-                : "We couldn't send the email just now. Try sending a new link");
+                : "We couldn't send the email just now. Try sending a new link.");
             return;
         }
         if (response.status === 403) {
-            showVerifyResult(form.elements.email.value.trim(), errorMessage(data, response.status));
+            showVerificationSent(form.elements.email.value.trim(), errorMessage(data, response.status));
             return;
         }
         if (!response.ok) throw new Error(errorMessage(data, response.status));

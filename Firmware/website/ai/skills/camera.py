@@ -8,11 +8,12 @@ from skills.registry import SkillResult, skill
 STALE_PHOTO_SECONDS = 120
 
 
-def fetch_latest_frame(hub_id: Optional[str]) -> tuple[bytes, float]:
+def fetch_latest_frame(hub_id: Optional[str]) -> tuple[bytes, float, str]:
     params = {"hub": hub_id} if hub_id else {}
     frame, headers = get_bytes("/api/web/camera", params)
     captured_at = float(headers.get("X-Frame-Captured-At") or 0)
-    return frame, captured_at
+    media_type = headers.get("Content-Type", "image/jpeg").split(";")[0].strip()
+    return frame, captured_at, media_type
 
 
 @skill(
@@ -28,7 +29,7 @@ def fetch_latest_frame(hub_id: Optional[str]) -> tuple[bytes, float]:
 )
 def get_latest_photo(hub_id: Optional[str] = None):
     try:
-        frame, captured_at = fetch_latest_frame(hub_id)
+        frame, captured_at, media_type = fetch_latest_frame(hub_id)
     except BackendError as error:
         if error.status_code == 503:
             return {"error": "This hub has not sent a camera photo yet."}
@@ -42,5 +43,5 @@ def get_latest_photo(hub_id: Optional[str] = None):
             "age_seconds": age_seconds,
             "stale": age_seconds is not None and age_seconds > STALE_PHOTO_SECONDS,
         },
-        image_data_url=f"data:image/jpeg;base64,{encoded}",
+        image_data_url=f"data:{media_type};base64,{encoded}",
     )

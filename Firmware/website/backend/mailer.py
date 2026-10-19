@@ -3,9 +3,6 @@ import logging
 import os
 
 import requests
-from urllib3.exceptions import HTTPError
-
-from Firmware.website.ai.backend_client import TIMEOUT_SECONDS
 
 RESEND_API_URL = "https://api.resend.com/emails"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
@@ -43,19 +40,18 @@ def send_email(to: str, subject: str, html_body: str, text_body: str) -> None:
 def send_verification_email(to: str, link: str) -> None:
     safe_link = html.escape(link, quote=True)
     html_body = f"""\
-    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #17313b;">
-      <h1 style="color: #004b2d; font-size: 24px;">Confirm your GrowHub account</h1>
-      <p>Click the button below to verify your email and start monitoring your plants.</p>
-      <p style="margin: 28px 0;">
-        <a href="{safe_link}" style="background: #004b2d; color: #ffffff; padding: 12px 22px; border-radius: 999px; text-decoration: none; font-weight: bold;">Verify email</a>
-      </p>
-      <p style="color: #617178; font-size: 14px;">Or paste this link into your browser:<br><a href="{safe_link}" style="color: #004b2d;">{safe_link}</a></p>
-      <p style="color: #617178; font-size: 14px;">The link expires in 24 hours. If you didn't create a GrowHub account, you can ignore this email.</p>
-    </div>"""
+<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #17313b;">
+  <h1 style="color: #004b2d; font-size: 24px;">Confirm your GrowHub account</h1>
+  <p>Click the button below to verify your email and start monitoring your plants.</p>
+  <p style="margin: 28px 0;">
+    <a href="{safe_link}" style="background: #004b2d; color: #ffffff; padding: 12px 22px; border-radius: 999px; text-decoration: none; font-weight: bold;">Verify email</a>
+  </p>
+  <p style="color: #617178; font-size: 14px;">Or paste this link into your browser:<br><a href="{safe_link}" style="color: #004b2d;">{safe_link}</a></p>
+  <p style="color: #617178; font-size: 14px;">The link expires in 24 hours. If you didn't create a GrowHub account, you can ignore this email.</p>
+</div>"""
     text_body = (
         "Confirm your GrowHub account\n\n"
-        f"Open this link to verify your email:\n(link)\n\n"
+        f"Open this link to verify your email:\n{link}\n\n"
         "The link expires in 24 hours. If you didn't create a GrowHub account, you can ignore this email."
     )
     send_email(to, "Verify your GrowHub email", html_body, text_body)
-    

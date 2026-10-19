@@ -113,14 +113,14 @@ class Hub:
                 "kind": "ph_out_of_range",
                 "device": "hub",
                 "message": f"Reservoir pH has been below {PH_MIN} for the last {SUSTAINED_READINGS} readings. "
-                            "Add pH up.",
+                           "Add pH up.",
             })
         elif self._sustained("hub", "ph", lambda ph: ph > PH_MAX):
             alerts.append({
                 "kind": "ph_out_of_range",
-                "divce": "hub",
-                "message": f"Reservoir Ph has been above {PH_MAX} for the last {SUSTAINED_READINGS} readings. "
-                            "Add pH down.",
+                "device": "hub",
+                "message": f"Reservoir pH has been above {PH_MAX} for the last {SUSTAINED_READINGS} readings. "
+                           "Add pH down.",
             })
 
         if self.state.get("heater_on") and self._sustained("hub", "water_temp", lambda t: t < COLD_WATER_C):
@@ -128,7 +128,7 @@ class Hub:
                 "kind": "heater_fault",
                 "device": "hub",
                 "message": f"Water has stayed below {COLD_WATER_C:.0f}°C with the heater on. "
-                            "Check the heater.",
+                           "Check the heater.",
             })
 
         tiles = self.state.get("tiles", [])
@@ -140,8 +140,8 @@ class Hub:
             alerts.append({
                 "kind": "no_flow",
                 "device": "hub",
-                "message": f"Water flow has been below {LOW_FLOW_LPM} L/min in every tile. "
-                            "Check the pump and the reservoir level.",
+                "message": f"Water flow is below {LOW_FLOW_LPM} L/min in every tile. "
+                           "Check the pump and the reservoir level.",
             })
         else:
             for tile_id in low_flow:
@@ -286,7 +286,7 @@ async def receive_telemetry(data: TelemetryPayload):
 
     heater = "on" if data.heater_on else "off" if data.heater_on is not None else "n/a"
     print(f"hub {data.hub_id}: water {data.water_temperature}°C (heater {heater}) | ec {data.ec_level} "
-          f"| ph {data.ph} | {data.active_tiles} active_tiles")
+          f"| ph {data.ph} | {data.active_tiles} active tiles")
     for tile in data.tiles:
         print(f" - {tile.tile_id}: air {tile.air_temperature}°C | humidity {tile.humidity}% "
               f"| light {tile.light_lux} lux | flow {tile.flow_lpm} L/min")

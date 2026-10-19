@@ -135,12 +135,12 @@ def _summarise(values: List[float], decimals: int) -> Optional[dict]:
     "get_history_summary",
     "Summarise historical readings (min, average, max, first, latest and trend) over a time range. Device "
     "'hub' covers the reservoir (water temperature, EC, pH) plus the average of all tiles' air temperature, "
-    "humidity, light and water flow; a tile id covers just that tile's air temperature, humidity, light and flow",
+    "humidity, light and water flow; a tile id covers just that tile's air temperature, humidity, light and flow.",
     {
         **HUB_ID_PROPERTY,
         "device": {
             "type": "string",
-            "description": "'hub' for the reservoir and tile averages, or a tile id such as 'tile_1'",
+            "description": "'hub' for the reservoir and tile averages, or a tile id such as 'tile_1'.",
         },
         "range": {
             "type": "string",
@@ -156,7 +156,7 @@ def get_history_summary(hub_id: Optional[str] = None, device: str = "hub", range
     if not points:
         return {"hub_id": history.get("hub"), "device": device, "range": range, "error": "No readings in this range."}
 
-    summary {
+    summary = {
         "hub_id": history.get("hub"),
         "device": device,
         "range": range,

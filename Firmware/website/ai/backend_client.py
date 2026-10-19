@@ -25,7 +25,7 @@ def _raise_for_status(response: requests.Response) -> None:
 
 
 def _ai_headers() -> dict:
-    return {"X-Ai-Key": GROWHUB_AI_KEY} if GROWHUB_AI_KEY else {}
+    return {"X-AI-Key": GROWHUB_AI_KEY} if GROWHUB_AI_KEY else {}
 
 
 def get_json(path: str, params: Optional[dict] = None) -> Any:

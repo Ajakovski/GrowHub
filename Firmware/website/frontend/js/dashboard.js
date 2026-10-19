@@ -28,7 +28,7 @@ async function dashboardFetch(url, options = {}) {
     const response = await fetch(url, { ...options, credentials: "include" });
     if (response.status === 401) {
         redirectToLogin();
-        throw new Error("session expired")
+        throw new Error("session expired");
     }
     return response;
 }
@@ -50,7 +50,7 @@ function clearLegacyStorage() {
 }
 
 function tileLabel(tileId) {
-    return tileId.replace("_", "").replace(/^\w/, (letter) => letter.toUpperCase());
+    return tileId.replace("_", " ").replace(/^\w/, (letter) => letter.toUpperCase());
 }
 
 function waterTempStatusText(value) {
@@ -60,7 +60,7 @@ function waterTempStatusText(value) {
     return "Ideal DWC water temperature";
 }
 
-function headerStatusText() {
+function heaterStatusText() {
     const heaterOn = globalTelemetry?.heater_on;
     if (typeof heaterOn !== "boolean") return "";
     return heaterOn ? "heater on" : "heater off";
@@ -125,19 +125,19 @@ function flowStatusText(value, tiles) {
 }
 
 function formatLux(value) {
-    return value >= 1000 ? `${(value / 1000).toFixed(1)}k lux` : `${Math.round(value)} lux`
+    return value >= 1000 ? `${(value / 1000).toFixed(1)}k lux` : `${Math.round(value)} lux`;
 }
 
 const METRICS = [
     {
         key: "water_temp", scope: "hub", field: "water_temperature", label: "Water Temp", unit: "°C", decimals: 1,
-        status: (value) => [waterTempStatusText(value), headerStatusText()].filter(Boolean).join(" · "),
+        status: (value) => [waterTempStatusText(value), heaterStatusText()].filter(Boolean).join(" · "),
     },
     { key: "ec", scope: "hub", field: "ec_level", label: "EC (Nutrients)", unit: " mS/cm", decimals: 2, status: ecStatusText },
-    { key: "ph", scope: "hub", field: "ph", label: "pH", unit: "", decimals: 2, stats: phStatusText },
+    { key: "ph", scope: "hub", field: "ph", label: "pH", unit: "", decimals: 2, status: phStatusText },
     { key: "air_temp", scope: "tile", field: "air_temperature", label: "Air Temp", unit: "°C", decimals: 1, status: airTempStatusText },
     { key: "humidity", scope: "tile", field: "humidity", label: "Humidity", unit: "%", decimals: 0, status: humidityStatusText },
-    { key: "light", scope: "tile", field: "light_lux", label: "Light", unit: " lux", decimals: 0, status: lightStatusText },
+    { key: "light", scope: "tile", field: "light_lux", label: "Light", unit: " lux", decimals: 0, status: lightStatusText, format: formatLux },
     { key: "flow", scope: "tile", field: "flow_lpm", label: "Water Flow", unit: " L/min", decimals: 2, status: flowStatusText },
 ];
 
@@ -184,7 +184,7 @@ function buildMetricCards() {
     };
     METRICS.forEach((metric) => {
         containers[metric.scope]?.insertAdjacentHTML("beforeend", metricCardHtml(metric));
-    })
+    });
 }
 
 function average(values) {
@@ -261,7 +261,7 @@ async function fetchHistorySeries(deviceId, range) {
     url.searchParams.set("device", deviceId);
     url.searchParams.set("range", range);
 
-    const response = await fetch(url);
+    const response = await dashboardFetch(url);
     if (!response.ok) throw new Error(`http error! status: ${response.status}`);
 
     const data = await response.json();
@@ -269,7 +269,7 @@ async function fetchHistorySeries(deviceId, range) {
 }
 
 async function loadSeries(deviceId, range) {
-    const sparkline = fetchHistorySeries(deviceId, SPARKLINE_RANGE);
+    const sparkline = await fetchHistorySeries(deviceId, SPARKLINE_RANGE);
     const detail = range === SPARKLINE_RANGE ? sparkline : await fetchHistorySeries(deviceId, range);
     return { sparkline, detail };
 }
@@ -339,7 +339,7 @@ async function fetchPlantStats() {
         const url = new URL(API_URL);
         if (currentHubId) url.searchParams.set("hub", currentHubId);
 
-        const response = await fetch(url);
+        const response = await dashboardFetch(url);
         if (response.status === 404 && currentHubId) {
             currentHubId = null;
             return fetchPlantStats();
@@ -414,13 +414,13 @@ function selectDevice(deviceId) {
 
 function selectedTiles() {
     const tiles = globalTelemetry?.tiles || [];
-    return currentSelection === "hub" ? tiles.filter((tile) => tile.tile_id === currentSelection);
+    return currentSelection === "hub" ? tiles : tiles.filter((tile) => tile.tile_id === currentSelection);
 }
 
 function metricValue(metric) {
     if (metric.scope === "hub") {
-        const value = globa.globalTelemetry[metric.field];
-        retrun Number.isFinite(value) ? value : null;
+        const value = globalTelemetry[metric.field];
+        return Number.isFinite(value) ? value : null;
     }
     return average(selectedTiles().map((tile) => tile[metric.field]).filter(Number.isFinite));
 }
@@ -486,11 +486,11 @@ function renderAiCard() {
 function cameraStatusText() {
     if (globalTelemetry.camera_source === "stock") {
         const count = globalTelemetry.stock_image_count || 0;
-        if (!count) return "No stock images affed";
-        return `Stock images ${count} ${count === 1 ? "photo" : "photos"}`;
+        if (!count) return "No stock images added";
+        return `Stock images · ${count} ${count === 1 ? "photo" : "photos"}`;
     }
     if (globalTelemetry.camera_online) return "Live webcam";
-    return globalTelemetry.camera_feed_url ? "Webcam offline last frame" : "No webcam frames yet";
+    return globalTelemetry.camera_feed_url ? "Webcam offline · last frame" : "No webcam frames yet";
 }
 
 function renderCamera() {
@@ -504,7 +504,7 @@ function renderCamera() {
     const pill = document.getElementById("camera-node-pill");
     if (pill) pill.textContent = cameraStatusText();
 
-    updateCameraFeed(globalTelemetry.camera_feed_url, globalTelemetry.hubId);
+    updateCameraFeed(globalTelemetry.camera_feed_url, globalTelemetry.hub_id);
 }
 
 async function selectCameraSource(source) {
@@ -521,7 +521,7 @@ async function selectCameraSource(source) {
     try {
         const url = new URL(CAMERA_SOURCE_URL);
         url.searchParams.set("hub", currentHubId);
-        const response = await fetch(url, {
+        const response = await dashboardFetch(url, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ source }),
@@ -531,7 +531,7 @@ async function selectCameraSource(source) {
         console.error("failed to switch camera source:", error);
     } finally {
         cameraSourcePending = false;
-        button.forEach((button) => {
+        buttons.forEach((button) => {
             button.disabled = false;
         });
         await fetchPlantStats();
@@ -731,7 +731,7 @@ async function initDashboard() {
     document.getElementById("account-email").textContent = user.email;
     document.getElementById("logout-button").addEventListener("click", logout);
     document.body.classList.remove("auth-pending");
-    
+
     clearLegacyStorage();
     buildMetricCards();
     setLoading(true);

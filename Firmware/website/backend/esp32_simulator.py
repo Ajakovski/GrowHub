@@ -1,8 +1,8 @@
 import math
 import os
-import time
 import random
 import threading
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional
@@ -20,7 +20,7 @@ CAMERA_INTERVAL_SEC = 5
 JPEG_QUALITY = 70
 
 REPORT_INTERVAL_SEC = float(os.environ.get("SIM_REPORT_INTERVAL_SEC", "5"))
-SIM_SPEED = float(os.environ.get(f"SIM_SPEED", "60"))
+SIM_SPEED = float(os.environ.get("SIM_SPEED", "60"))
 SIM_TILES = int(os.environ.get("SIM_TILES", "2"))
 SIM_SEED = os.environ.get("SIM_SEED")
 
@@ -35,7 +35,7 @@ TARGET_PH = 5.8
 PH_RISE_PER_LITRE = 0.04
 PH_CORRECT_ABOVE = 6.4
 GROWER_DELAY_HOURS = (2.0, 14.0)
-RESERVOIR_CHANGE_DAYS = 7
+RESERVOIR_CHANGE_DAYS = 7.0
 
 LIGHTS_ON_HOUR = 6
 LIGHTS_OFF_HOUR = 22
@@ -94,7 +94,7 @@ class Tile:
     def uptake_litres(self, hours: float, air_temp: float, lights_on: bool) -> float:
         demand = 1.0 + 0.06 * (air_temp - 20.0)
         if not lights_on:
-            demand *= 0.03
+            demand *= 0.3
         return max(0.0, DAILY_UPTAKE_LITRES / 24.0 * hours * self.growth * self.vigour * demand)
 
 
@@ -157,12 +157,12 @@ class Greenhouse:
         return self.room_temp() - 0.5 + (0.8 if self.lights_on else 0.0)
 
     def _humidity_target(self, tile: Tile) -> float:
-        roomn = ROOM_HUMIDITY - 1.5 * (self.room_temp() - 21.0)
+        room = ROOM_HUMIDITY - 1.5 * (self.room_temp() - 21.0)
         transpiration = TRANSPIRATION_HUMIDITY * tile.growth * tile.vigour * (1.0 if self.lights_on else 0.5)
         canopy_warming = 2.5 * (self.tile_air_temp(tile) - self.room_temp())
         return min(98.0, max(25.0, room + transpiration - canopy_warming))
 
-    def _daylight_lux(self) -> float:
+    def daylight_lux(self) -> float:
         if not SUNRISE_HOUR <= self.hour < SUNSET_HOUR:
             return 0.0
         return DAYLIGHT_PEAK_LUX * math.sin(math.pi * (self.hour - SUNRISE_HOUR) / (SUNSET_HOUR - SUNRISE_HOUR))
@@ -199,14 +199,14 @@ class Greenhouse:
 
         if self.water_temp < HEATER_SETPOINT_C - HEATER_HYSTERESIS_C:
             self.heater_on = True
-        if self.water_temp > HEATER_SETPOINT_C + HEATER_HYSTERESIS_C:
+        elif self.water_temp > HEATER_SETPOINT_C + HEATER_HYSTERESIS_C:
             self.heater_on = False
 
     def _update_clog(self, tile: Tile, hours: float) -> None:
         if tile.clog_rate == 0.0 and self.rng.random() < 1 - math.exp(-CLOGS_PER_TILE_PER_DAY * hours / 24):
             tile.clog_rate = self.rng.uniform(*CLOG_GROWTH_PER_HOUR)
             print(f"[{self.clock:%a %H:%M}] {tile.tile_id}: roots and debris starting to clog the piping")
-        tile.clog = min(MAX_CLOG, tile.clog + tile.clog_rate + hours)
+        tile.clog = min(MAX_CLOG, tile.clog + tile.clog_rate * hours)
 
         if tile.clog == 0.0 or self.tile_flow(tile) >= LOW_FLOW_LPM:
             tile.low_flow_since = None
@@ -225,7 +225,7 @@ class Greenhouse:
             self.ph = TARGET_PH
             self.last_change = self.clock
             self.low_since = self.ph_high_since = None
-            print(f"[{self.clock:%a %H:%M}] weekly reservoir change: fresh {RESERVOIR_LITRES:.of} L "
+            print(f"[{self.clock:%a %H:%M}] weekly reservoir change: fresh {RESERVOIR_LITRES:.0f} L "
                   f"at EC {TARGET_EC}, pH {TARGET_PH}")
             return
 
@@ -248,14 +248,14 @@ class Greenhouse:
         elif self.ph_high_since is None:
             self.ph_high_since = self.clock
         elif self.clock - self.ph_high_since >= timedelta(hours=self.ph_delay):
-            print(f"[{self.clock:%A %H:%M}] pH down dosed: {self.ph:.2f} -> {TARGET_PH}")
+            print(f"[{self.clock:%a %H:%M}] pH down dosed: {self.ph:.2f} -> {TARGET_PH}")
             self.ph = TARGET_PH
             self.ph_high_since = None
             self.ph_delay = self._grower_delay()
 
     def telemetry(self) -> dict:
         noise = self.rng.gauss
-        daylight = self._daylight_lux()
+        daylight = self.daylight_lux()
         return {
             "hub_id": HUB_ID,
             "water_level_ok": self.volume >= LOW_WATER_LITRES,
@@ -270,13 +270,13 @@ class Greenhouse:
                     "air_temperature": round(self.tile_air_temp(tile) + noise(0, 0.15), 1),
                     "humidity": round(min(100.0, max(0.0, tile.humidity + noise(0, 1.0))), 1),
                     "light_lux": round(max(0.0, ((tile.led_lux if self.lights_on else 0.0) + daylight)
-                                       * (1 + noise(0, 0.015)))),
+                                           * (1 + noise(0, 0.015)))),
                     "flow_lpm": round(max(0.0, self.tile_flow(tile) + noise(0, 0.04)), 2),
                 }
                 for tile in self.tiles
             ],
         }
-        
+
 
 def camera_loop():
     if cv2 is None:
@@ -343,7 +343,7 @@ def main():
 
         payload = greenhouse.telemetry()
         try:
-            response = request.post(API_URL, json=payload, headers=HEADERS, timeour=10)
+            response = requests.post(API_URL, json=payload, headers=HEADERS, timeout=10)
 
             if response.status_code == 401:
                 print("server rejected the device key. Set GROWHUB_DEVICE_KEY to match the backend.")

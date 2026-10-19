@@ -5,7 +5,6 @@ from routers.auth import WEB_ORIGIN_REGEX
 import accounts
 import history
 
-
 history.init_db()
 accounts.init_db()
 device.load_hubs()
@@ -23,7 +22,7 @@ app.add_middleware(
 app.include_router(device.router, prefix="/api/device", tags=["Hardware"])
 app.include_router(web.router, prefix="/api/web", tags=["Frontend"])
 app.include_router(ai.router, prefix="/api/ai", tags=["Intelligence"])
-app.include_router(auth.router, prefix="api/auth", tags=["Accounts"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Accounts"])
 
 @app.get("/")
 def health_check():

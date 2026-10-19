@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel, Field
-from typing import Literal, Optional, Dict, List
+from typing import Dict, List, Literal, Optional
 import asyncio
 import time
-
-from starlette import status
 
 import history
 import plants
@@ -55,9 +53,9 @@ async def get_hardware_catalog():
 
 
 @router.get("/plant-catalog", dependencies=dashboard)
-async def get_plants_catalog():
+async def get_plant_catalog():
     return {"plants": plants.catalog()}
-    
+
 
 @router.get("/hubs", dependencies=dashboard)
 async def list_hubs():
@@ -100,7 +98,7 @@ async def set_hub_plants(update: HubPlantsUpdate, hub: Optional[str] = None):
             tile_plants[tile_id] = cleaned
 
     if not tile_plants and known_tiles:
-        tile_plants = {tile_id: list[str](plant_ids) for tile_id in sorted(known_tiles)}
+        tile_plants = {tile_id: list(plant_ids) for tile_id in sorted(known_tiles)}
 
     record.plants = {
         "configured": True,

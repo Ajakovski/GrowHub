@@ -1,6 +1,5 @@
-from annotated_types import MaxLen
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from urllib.parse import urlencode
 import logging
@@ -81,7 +80,7 @@ def require_viewer(request: Request, x_ai_key: Optional[str] = Header(default=No
 
 
 def _check_rate_limit(request: Request) -> None:
-    client = request.client.host if request.client else "Unknown"
+    client = request.client.host if request.client else "unknown"
     if not limiter.allow(client):
         raise HTTPException(status_code=429, detail="Too many attempts, wait a minute and try again.")
 
@@ -104,7 +103,7 @@ def _send_verification(request: Request, user: accounts.User) -> bool:
     return True
 
 
-def _start_session(response: Response, user: accounts.User) -> User:
+def _start_session(response: Response, user: accounts.User) -> dict:
     response.set_cookie(
         SESSION_COOKIE,
         accounts.create_session(user.id),
@@ -158,7 +157,7 @@ def resend_verification(body: EmailOnly, request: Request):
     return {"status": "If that account still needs verifying, a new link is on its way."}
 
 
-@router.get("/logout")
+@router.post("/logout")
 def logout(request: Request, response: Response):
     token = request.cookies.get(SESSION_COOKIE)
     if token:

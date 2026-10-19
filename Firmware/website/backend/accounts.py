@@ -34,7 +34,7 @@ def init_db() -> None:
     with _connection() as conn:
         conn.execute(
             """
-            CREATE TEABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT NOT NULL UNIQUE COLLATE NOCASE,
                 password_hash TEXT NOT NULL,
@@ -61,7 +61,7 @@ def init_db() -> None:
                 token_hash TEXT PRIMARY KEY,
                 user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                 created_at REAL NOT NULL,
-                expires_at REAL NOT NULL,
+                expires_at REAL NOT NULL
             )
             """
         )
@@ -99,7 +99,7 @@ def _hash_token(token: str) -> str:
 def create_user(email: str, password: str) -> User:
     created_at = time.time()
     try:
-        with _connection as conn:
+        with _connection() as conn:
             cursor = conn.execute(
                 "INSERT INTO users (email, password_hash, created_at, email_verified) VALUES (?, ?, ?, 0)",
                 (email, hash_password(password), created_at),
@@ -118,7 +118,7 @@ def find_user(email: str) -> Optional[User]:
 def authenticate(email: str, password: str) -> Optional[User]:
     with _connection() as conn:
         row = conn.execute(
-            f"SELECT {USER_COLUMNS} users.password_hash FROM users WHERE email = ?",
+            f"SELECT {USER_COLUMNS}, users.password_hash FROM users WHERE email = ?",
             (email,),
         ).fetchone()
     if row is None:
@@ -183,4 +183,3 @@ def user_for_session(token: str) -> Optional[User]:
 def delete_session(token: str) -> None:
     with _connection() as conn:
         conn.execute("DELETE FROM sessions WHERE token_hash = ?", (_hash_token(token),))
-        
