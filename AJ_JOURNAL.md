@@ -4,6 +4,39 @@
 
 ---
 
+## 21. Timelapse 19.10.2026
+
+A fresh start in the new week.
+
+The project is taking a sharp edge and is improving quickly considering of how easy it is to manage a nicely organized schematic into a PCB layout.
+
+---
+
+**What i did:**
+
+- Placed components around the MCU area
+- Defined fill zones in MCU region
+- Connected their peripherals
+- Inserted 3D .step files
+
+---
+
+**Problems that occured:**
+
+- None tbh im just slowly grinding with music
+
+---
+
+**Whats next:**
+
+- Continue with the grind
+- Relocate to a different region on the board
+
+![Image48](./Documentation/Pictures/Journal_AJ/Image48.png)
+![Image49](./Documentation/Pictures/Journal_AJ/Image49.png)
+
+---
+
 ## 20. Timelapse 18.10.2026
 
 Quick one. My laptop crashed due to only having 8GB of ram and a lot of stuff running.....
