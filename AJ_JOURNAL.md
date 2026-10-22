@@ -4,6 +4,40 @@
 
 ---
 
+## 22. Timelapse 22.10.2026
+
+Made some nice progres if you ask me!
+
+Finished the Analog section of the PCB and now i am headed onto the 24V input.
+
+---
+
+**What i did:**
+
+- Implemented .step files
+- Finished the Analog sector
+- Started the VIN sector
+
+---
+
+**Problems that i've had:**
+
+- A lot of wirringgggg
+- A lot of mess has piled up around the MCU
+
+---
+
+**What next:**
+
+-Continue working on the PCB :)
+
+![Image50](./Documentation/Pictures/Journal_AJ/Image50.png)
+![Image51](./Documentation/Pictures/Journal_AJ/Image51.png)
+![Image52](./Documentation/Pictures/Journal_AJ/Image52.png)
+
+
+---
+
 ## 21. Timelapse 19.10.2026
 
 A fresh start in the new week.
