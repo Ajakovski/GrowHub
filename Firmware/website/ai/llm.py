@@ -41,6 +41,7 @@ def _assistant_message(message) -> dict:
             for call in message.tool_calls
         ],
     }
+    # Some OpenRouter models (e.g. Gemini) need their reasoning echoed back to continue a tool call.
     reasoning = (message.model_extra or {}).get("reasoning_details")
     if reasoning:
         entry["reasoning_details"] = reasoning
@@ -56,6 +57,7 @@ def _parse_arguments(raw: str) -> dict:
 
 
 def run(messages: List[dict]) -> str:
+    """Answer the conversation, letting the model call skills for up to MAX_TOOL_ROUNDS rounds."""
     client = _client()
     conversation = list(messages)
     tools = tool_definitions()
@@ -78,6 +80,7 @@ def run(messages: List[dict]) -> str:
             if result.image_data_url:
                 images.append(result.image_data_url)
 
+        # Tool results must be text, so photos go in a follow-up user message.
         if images:
             conversation.append({
                 "role": "user",

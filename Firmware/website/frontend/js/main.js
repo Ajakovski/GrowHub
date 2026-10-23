@@ -1,3 +1,4 @@
+// The backend runs on port 8000 of whatever host served this page; set window.GROWHUB_API_ORIGIN to override.
 const GROWHUB_API_ORIGIN = window.GROWHUB_API_ORIGIN
     || `${window.location.protocol === "https:" ? "https:" : "http:"}//${window.location.hostname || "localhost"}:8000`;
 const AUTH_URL = `${GROWHUB_API_ORIGIN}/api/auth`;

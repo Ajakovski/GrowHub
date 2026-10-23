@@ -53,6 +53,7 @@ def _create_readings_table(conn: sqlite3.Connection, name: str) -> None:
 
 
 def _migrate_legacy_readings(conn: sqlite3.Connection, columns: set) -> None:
+    # Water readings used to be reported per tile; only the hub rows map onto the new hub-level sensors.
     selects = {}
     for metric, legacy in HUB_ONLY_LEGACY.items():
         selects[metric] = f"CASE WHEN device_id = 'hub' THEN {legacy} END" if legacy in columns else "NULL"

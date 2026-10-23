@@ -25,7 +25,7 @@
     
     <main class="section dashboard-page">
         <div class="container">
-            <div class="dashboard-header">
+            <div class="dashboard-header" id="dashboard-header">
                 <div>
                     <span class="kicker">Live Telemetry</span>
                     <h1 class="section-title">Plant Health & Stats</h1>
@@ -43,13 +43,13 @@
             <div class="alert-list" id="alert-list" hidden></div>
 
             <div class="dashboard-metrics is-loading" id="metric-grid">
-                <article class="metric-card metric-card-wide">
+                <article class="metric-card metric-card-wide" id="ai-status-card">
                     <span class="kicker">AI Plant Stress</span>
                     <strong id="ai-status">--</strong>
                     <span id="ai-status-detail">Waiting for the first AI review</span>
                 </article>
 
-                <div class="metric-group-heading">
+                <div class="metric-group-heading" id="reservoir-heading">
                     <h2>Reservoir</h2>
                     <span>Shared water in the hub</span>
                 </div>
@@ -61,7 +61,7 @@
                     </article>
                 </div>
 
-                <div class="metric-group-heading">
+                <div class="metric-group-heading" id="tiles-heading">
                     <h2>Tiles</h2>
                     <span id="tile-scope">Average across all tiles</span>
                 </div>
@@ -71,7 +71,7 @@
                 <div class="metric-grid" id="tile-metrics"></div>
             </div>
 
-            <div class="card camera-card">
+            <div class="card camera-card" id="camera-card">
                 <div class="camera-card-header">
                     <h3>Optical node stream</h3>
                     <div class="camera-controls">
@@ -108,6 +108,34 @@
         </div>
     </main>
 
+    <div class="onboard-modal" id="onboard-modal" hidden>
+        <div class="onboard-card" role="dialog" aria-modal="true" aria-labelledby="onboard-title">
+            <div class="onboard-progress" id="onboard-progress" aria-hidden="true"></div>
+            <span class="kicker" id="onboard-kicker">GrowHub setup</span>
+            <h2 class="section-title" id="onboard-title">Let's build your grow</h2>
+            <p class="section-lead" id="onboard-lead">A few quick picks — no typing required.</p>
+            <div id="onboard-body"></div>
+            <p class="auth-error" id="onboard-error" role="alert" hidden></p>
+            <div class="button-group onboard-actions" id="onboard-actions">
+                <button type="button" class="btn btn-secondary" id="onboard-back" hidden>Back</button>
+                <button type="button" class="btn btn-primary" id="onboard-next">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tour-overlay" id="tour-overlay" hidden>
+        <div class="tour-spotlight" id="tour-spotlight"></div>
+        <div class="tour-bubble" id="tour-bubble" role="dialog" aria-live="polite">
+            <span class="kicker" id="tour-kicker">Quick tour</span>
+            <strong id="tour-title">Welcome aboard</strong>
+            <p id="tour-text"></p>
+            <div class="button-group tour-actions">
+                <button type="button" class="btn btn-secondary" id="tour-skip">Skip</button>
+                <button type="button" class="btn btn-primary" id="tour-next">Next</button>
+            </div>
+        </div>
+    </div>
+
     <div class="plant-modal" id="plant-modal" hidden>
         <div class="plant-modal-card" role="dialog" aria-modal="true" aria-labelledby="plant-modal-title">
             <span class="kicker">Your GrowHub</span>
@@ -140,6 +168,7 @@
     <script src="js/main.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/plants.js"></script>
+    <script src="js/onboarding.js"></script>
     <script src="js/ai-chat.js"></script>
 </body>
 </html>

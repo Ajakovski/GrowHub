@@ -21,6 +21,7 @@ let pendingVerificationEmail = "";
 
 function nextPage() {
     const next = new URLSearchParams(window.location.search).get("next");
+    // Only same-site page names, so the login can't be used to bounce visitors to another site.
     return next && /^[\w-]+\.html$/.test(next) ? next : "dashboard.html";
 }
 

@@ -283,6 +283,7 @@ async function refreshHistory() {
         const hub = await loadSeries("hub", range);
         const tile = deviceId === "hub" ? hub : await loadSeries(deviceId, range);
 
+        // A newer request (device or range switch) may have started while this one was in flight.
         if (requestId !== historyRequestId) return;
 
         historySeries = { hub, tile };
@@ -341,6 +342,7 @@ async function fetchPlantStats() {
 
         const response = await dashboardFetch(url);
         if (response.status === 404 && currentHubId) {
+            // The pinned hub no longer exists on the server; fall back to the most recent one.
             currentHubId = null;
             return fetchPlantStats();
         }
@@ -557,6 +559,7 @@ function updateCameraFeed(cameraFeedUrl, hubId) {
                 cameraFeed.src = nextUrl.href;
             }
         } else {
+            // Bust cache so the still image reloads on each telemetry refresh.
             nextUrl.searchParams.set("t", String(Date.now()));
             cameraFeed.src = nextUrl.href;
         }

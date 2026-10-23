@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import urlencode
 import logging
 import os
 import re
+import time
 
 import accounts
 import mailer
+import onboarding
+import plants
 from ratelimit import RateLimiter
 from routers.ai import ai_key_matches
 
@@ -15,6 +18,7 @@ SESSION_COOKIE = "growhub_session"
 COOKIE_SECURE = os.environ.get("GROWHUB_COOKIE_SECURE", "0") == "1"
 AUTH_ATTEMPTS_PER_MINUTE = int(os.environ.get("GROWHUB_AUTH_ATTEMPTS_PER_MINUTE", "10"))
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+# Login cookies need exact origins, so "*" is not allowed. The default covers localhost and home-network IPs.
 WEB_ORIGIN_REGEX = os.environ.get("GROWHUB_WEB_ORIGIN_REGEX") or (
     r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?"
 )
@@ -59,6 +63,15 @@ class EmailOnly(BaseModel):
 
 class VerificationToken(BaseModel):
     token: str = Field(min_length=1, max_length=200)
+
+
+class OnboardingAnswers(BaseModel):
+    goal: str
+    harvest: str
+    plant_ids: List[str] = Field(min_length=1, max_length=20)
+    time: str
+    experience: str
+    space: str
 
 
 def current_user(request: Request) -> Optional[accounts.User]:
@@ -154,6 +167,7 @@ def resend_verification(body: EmailOnly, request: Request):
     user = accounts.find_user(body.email)
     if user is not None and not user.email_verified:
         _send_verification(request, user)
+    # Same answer either way so this can't be used to find out which emails have accounts.
     return {"status": "If that account still needs verifying, a new link is on its way."}
 
 
@@ -169,3 +183,55 @@ def logout(request: Request, response: Response):
 @router.get("/me")
 def me(user: accounts.User = Depends(require_user)):
     return {"email": user.email}
+
+
+def _onboarding_payload(user: accounts.User) -> dict:
+    state = onboarding.parse_state(accounts.get_onboarding(user.id))
+    return {
+        "completed": state["completed"],
+        "answers": state["answers"],
+        "recommendation": state["recommendation"],
+        "completed_at": state["completed_at"],
+        "tour_seen_at": state["tour_seen_at"],
+        "quiz": onboarding.quiz_options(),
+        "plants": plants.catalog(),
+    }
+
+
+@router.get("/onboarding")
+def get_onboarding(user: accounts.User = Depends(require_user)):
+    return _onboarding_payload(user)
+
+
+@router.put("/onboarding")
+def save_onboarding_answers(body: OnboardingAnswers, user: accounts.User = Depends(require_user)):
+    try:
+        answers = onboarding.validate_answers(body.model_dump())
+        recommendation = onboarding.recommend(answers)
+    except onboarding.InvalidAnswers as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+    accounts.merge_onboarding(
+        user.id,
+        completed=False,
+        answers=answers,
+        recommendation=recommendation,
+        completed_at=None,
+        tour_seen_at=None,
+    )
+    return _onboarding_payload(user)
+
+
+@router.post("/onboarding/complete")
+def complete_onboarding(user: accounts.User = Depends(require_user)):
+    state = onboarding.parse_state(accounts.get_onboarding(user.id))
+    now = time.time()
+    accounts.merge_onboarding(
+        user.id,
+        completed=True,
+        answers=state["answers"],
+        recommendation=state["recommendation"],
+        completed_at=state["completed_at"] or now,
+        tour_seen_at=now,
+    )
+    return _onboarding_payload(user)

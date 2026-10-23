@@ -1,8 +1,9 @@
 import hashlib
+import json
 import secrets
 import sqlite3
 import time
-from typing import NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 
 from history import _connection
 
@@ -45,7 +46,10 @@ def init_db() -> None:
         )
         columns = {row[1] for row in conn.execute("PRAGMA table_info(users)")}
         if "email_verified" not in columns:
+            # Accounts made before verification existed keep working, so they start out verified.
             conn.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1")
+        if "onboarding" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN onboarding TEXT")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS email_tokens (
@@ -89,6 +93,7 @@ def verify_password(password: str, stored: str) -> bool:
     return secrets.compare_digest(actual, bytes.fromhex(digest))
 
 
+# Compared against when the email is unknown so a login takes the same time either way.
 _DUMMY_HASH = hash_password(secrets.token_hex(16))
 
 
@@ -183,3 +188,30 @@ def user_for_session(token: str) -> Optional[User]:
 def delete_session(token: str) -> None:
     with _connection() as conn:
         conn.execute("DELETE FROM sessions WHERE token_hash = ?", (_hash_token(token),))
+
+
+def get_onboarding(user_id: int) -> dict:
+    with _connection() as conn:
+        row = conn.execute("SELECT onboarding FROM users WHERE id = ?", (user_id,)).fetchone()
+    if not row or not row[0]:
+        return {}
+    try:
+        value = json.loads(row[0])
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def save_onboarding(user_id: int, state: dict) -> dict:
+    with _connection() as conn:
+        conn.execute(
+            "UPDATE users SET onboarding = ? WHERE id = ?",
+            (json.dumps(state), user_id),
+        )
+    return state
+
+
+def merge_onboarding(user_id: int, **fields: Any) -> dict:
+    state = get_onboarding(user_id)
+    state.update(fields)
+    return save_onboarding(user_id, state)

@@ -13,6 +13,7 @@ function showVerifyResult(title, message, action) {
 
 async function verifyEmail() {
     const token = new URLSearchParams(window.location.search).get("token");
+    // Keep the one-time token out of the address bar and browser history.
     window.history.replaceState(null, "", window.location.pathname);
 
     if (!token) {

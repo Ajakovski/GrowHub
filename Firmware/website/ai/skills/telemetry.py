@@ -118,6 +118,7 @@ def _summarise(values: List[float], decimals: int) -> Optional[dict]:
 
     low, high = min(values), max(values)
     change = values[-1] - values[0]
+    # Ignore drift smaller than a tenth of the observed spread.
     threshold = max((high - low) * 0.1, 10 ** -decimals)
     trend = "steady" if abs(change) < threshold else ("rising" if change > 0 else "falling")
 

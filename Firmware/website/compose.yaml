@@ -5,6 +5,7 @@ services:
       - "8000:8000"
     environment:
       GROWHUB_DB_PATH: /data/growhub.db
+      # Override with real secrets in .env for anything beyond local testing.
       GROWHUB_DEVICE_KEY: ${GROWHUB_DEVICE_KEY:-dev-device-key}
       GROWHUB_AI_KEY: ${GROWHUB_AI_KEY:-dev-ai-key}
       GROWHUB_STOCK_IMAGES_DIR: /stock_images
@@ -39,6 +40,7 @@ services:
     ports:
       - "5000:80"
     volumes:
+      # :z relabels the folder so SELinux (Fedora) lets nginx read it.
       - ./frontend:/usr/share/nginx/html:ro,z
     restart: unless-stopped
 

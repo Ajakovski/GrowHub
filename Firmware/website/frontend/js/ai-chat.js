@@ -1,3 +1,4 @@
+// The AI service runs on port 8001 of whatever host served this page; set window.GROWHUB_AI_ORIGIN to override.
 const GROWHUB_AI_ORIGIN = window.GROWHUB_AI_ORIGIN
     || `${window.location.protocol === "https:" ? "https:" : "http:"}//${window.location.hostname || "localhost"}:8001`;
 const MAX_CHAT_HISTORY = 20;
@@ -59,6 +60,7 @@ async function sendChatMessage(text) {
         pending.className = "chat-message from-assistant";
         pending.textContent = data.reply;
     } catch (error) {
+        // Drop the unanswered question so the history keeps alternating user/assistant turns.
         chatHistory.pop();
         pending.className = "chat-message is-error";
         pending.textContent = error instanceof TypeError

@@ -143,16 +143,8 @@ function closePlantModal() {
 }
 
 async function ensurePlantSetup(crops) {
+    // Onboarding owns first-visit setup; the plant picker opens from the tour or the crops button.
     updateCropsButton(crops);
-    if (!currentHubId) return;
-    if (crops?.configured) return;
-    if (!document.getElementById("plant-modal").hidden) return;
-    try {
-        await loadPlantCatalog();
-        openPlantModal({ editing: false });
-    } catch (error) {
-        console.warn("could not open plant selector:", error);
-    }
 }
 
 async function savePlantSelection() {

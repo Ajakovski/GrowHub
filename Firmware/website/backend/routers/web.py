@@ -97,6 +97,7 @@ async def set_hub_plants(update: HubPlantsUpdate, hub: Optional[str] = None):
         if cleaned:
             tile_plants[tile_id] = cleaned
 
+    # When the UI only picks hub-level plants, every known tile grows the same mix.
     if not tile_plants and known_tiles:
         tile_plants = {tile_id: list(plant_ids) for tile_id in sorted(known_tiles)}
 

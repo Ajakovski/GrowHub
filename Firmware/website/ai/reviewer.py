@@ -41,6 +41,7 @@ def review_hub(hub_id: str) -> dict:
 
 
 def review_pending_hubs() -> None:
+    """Review each hub that has sent telemetry since its last review."""
     for hub in get_json("/api/web/hubs"):
         hub_id, reported_at = hub["hub_id"], hub["last_telemetry_at"]
         if not reported_at or _last_reviewed.get(hub_id) == reported_at:

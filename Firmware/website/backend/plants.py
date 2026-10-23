@@ -1,5 +1,7 @@
 from typing import List, Optional, Sequence
 
+# Shared nutrient targets for a Deep Water Culture reservoir. Keep ids stable; they are stored in the DB.
+# size + grid_cups drive onboarding hardware recommendations (4 large / 18 medium / 36 small cups).
 PLANT_CATALOG = [
     {
         "id": "lettuce",
@@ -8,6 +10,8 @@ PLANT_CATALOG = [
         "ec": [0.8, 1.2],
         "ph": [5.5, 6.5],
         "light_hours": 14,
+        "size": "small",
+        "grid_cups": 36,
     },
     {
         "id": "basil",
@@ -16,6 +20,8 @@ PLANT_CATALOG = [
         "ec": [1.0, 1.6],
         "ph": [5.5, 6.5],
         "light_hours": 14,
+        "size": "small",
+        "grid_cups": 36,
     },
     {
         "id": "strawberry",
@@ -24,6 +30,8 @@ PLANT_CATALOG = [
         "ec": [1.0, 1.5],
         "ph": [5.5, 6.5],
         "light_hours": 14,
+        "size": "medium",
+        "grid_cups": 18,
     },
     {
         "id": "pepper",
@@ -32,6 +40,8 @@ PLANT_CATALOG = [
         "ec": [1.8, 2.8],
         "ph": [5.5, 6.5],
         "light_hours": 16,
+        "size": "large",
+        "grid_cups": 4,
     },
     {
         "id": "tomato",
@@ -40,6 +50,8 @@ PLANT_CATALOG = [
         "ec": [2.0, 3.5],
         "ph": [5.5, 6.5],
         "light_hours": 16,
+        "size": "large",
+        "grid_cups": 4,
     },
 ]
 
@@ -68,6 +80,7 @@ def plants_for_ids(ids: Sequence[str]) -> List[dict]:
 
 
 def combined_ec_range(ids: Sequence[str]) -> Optional[List[float]]:
+    """Union of the selected crops' EC windows so one shared reservoir can feed all of them."""
     plants = plants_for_ids(ids)
     if not plants:
         return None
@@ -75,6 +88,7 @@ def combined_ec_range(ids: Sequence[str]) -> Optional[List[float]]:
 
 
 def plants_conflict(ids: Sequence[str]) -> bool:
+    """True when the selected crops have no overlapping EC window (hard to share one reservoir)."""
     plants = plants_for_ids(ids)
     if len(plants) < 2:
         return False

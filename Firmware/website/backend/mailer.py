@@ -6,6 +6,8 @@ import requests
 
 RESEND_API_URL = "https://api.resend.com/emails"
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+# Resend only sends from domains verified in your account; onboarding@resend.dev works for testing
+# but can only deliver to the email address you signed up to Resend with.
 EMAIL_FROM = os.environ.get("GROWHUB_EMAIL_FROM") or "GrowHub <onboarding@resend.dev>"
 TIMEOUT_SECONDS = 10
 

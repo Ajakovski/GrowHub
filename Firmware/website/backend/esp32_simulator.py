@@ -20,6 +20,7 @@ CAMERA_INTERVAL_SEC = 5
 JPEG_QUALITY = 70
 
 REPORT_INTERVAL_SEC = float(os.environ.get("SIM_REPORT_INTERVAL_SEC", "5"))
+# Simulated seconds per real second; 60 plays a full day in 24 minutes.
 SIM_SPEED = float(os.environ.get("SIM_SPEED", "60"))
 SIM_TILES = int(os.environ.get("SIM_TILES", "2"))
 SIM_SEED = os.environ.get("SIM_SEED")
@@ -288,6 +289,7 @@ def camera_loop():
         print(f"could not open webcam index {CAMERA_INDEX} — camera feed disabled")
         return
 
+    # Prefer a modest resolution for faster uploads
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 

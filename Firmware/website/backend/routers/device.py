@@ -90,6 +90,7 @@ class Hub:
         if self.last_telemetry_at is None:
             return {"hub_online": False, "last_telemetry_at": None}
 
+        # Until a second report arrives, assume the hub follows the sleep schedule we hand it.
         interval = self.telemetry_interval or NEXT_WAKE_MINUTES * 60
         offline_after = max(MIN_OFFLINE_SECONDS, MISSED_REPORTS_BEFORE_OFFLINE * interval)
         return {
@@ -230,6 +231,7 @@ def load_hubs() -> None:
 
 
 def get_hub(hub_id: Optional[str] = None) -> Optional[Hub]:
+    """Return the named hub, or the most recently reporting one when no id is given."""
     if hub_id is not None:
         return hubs.get(hub_id)
     reporting = [hub for hub in hubs.values() if hub.last_telemetry_at is not None]
@@ -252,6 +254,7 @@ async def receive_telemetry(data: TelemetryPayload):
     hub = _get_or_create_hub(data.hub_id)
 
     if hub.last_telemetry_at is not None:
+        # A gap longer than the sleep we hand out is an outage, not the device's reporting interval.
         hub.telemetry_interval = min(now - hub.last_telemetry_at, NEXT_WAKE_MINUTES * 60)
     hub.last_telemetry_at = now
     hub.low_water_streak = 0 if data.water_level_ok else hub.low_water_streak + 1
