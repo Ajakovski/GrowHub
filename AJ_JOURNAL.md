@@ -4,6 +4,46 @@
 
 ---
 
+## 23. Timelapse 23.10.2026
+
+HOLLY LOCK IN... I had to stretch out before starting to write the journal xDDD
+
+I had to grind out the remaining hours for this week because i wont be able to do them on the weekend and thats why i grinde out almost 5:30 hours in one day and it was hella productive.
+
+I  am almost done with the PCB also!!! I just need to finish off the floor connector section in the middle and its done!
+
+At the end tho it really started to get messy and i had to start doing some rookie mistakes because room around the MCU is really running low like i am going insane from connecting tracks. I'VE CONNECTED 1022 TRACKS SO FAR AND IM STILL NOT DONE.
+
+**What i did:**
+
+- Finished +24V Sector
+- Finished +5V/+3V3 Sector
+- Finished Actuator Sector
+- Finished Analog Sector
+- Started Floor Connector and Bus
+
+---
+
+**Problems that i faced:**
+
+- Im lacking free space around the MCU. I made a mistake by putting the LEDs and Switches too close which resulted into the lack of space for wiring and passive components which makes the upper part of the MCU a signal madness.
+- The 24V sector is a bit scary also
+
+---
+
+**What's next:**
+
+- Finish off the PCB. Considering that this is the first week of making the PCB im super excited that by next week i will finish the PCB and move on to firmware :))))
+- Double check everything and DRC CHECKKKK. That will probably take 3-4 hours also but it is what it is i hope i am doing a good job for my future self.
+
+![Image53](./Documentation/Pictures/Journal_AJ/Image53.png)
+![Image54](./Documentation/Pictures/Journal_AJ/Image54.png)
+![Image55](./Documentation/Pictures/Journal_AJ/Image55.png)
+![Image56](./Documentation/Pictures/Journal_AJ/Image56.png)
+ 
+
+---
+
 ## 22. Timelapse 22.10.2026
 
 Made some nice progres if you ask me!
