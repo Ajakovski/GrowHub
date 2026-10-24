@@ -1050,9 +1050,20 @@ body.plant-modal-open {
     display: none;
 }
 
-body.onboard-open,
-body.tour-open {
+body.onboard-open {
     overflow: hidden;
+}
+
+body.tour-open {
+    overscroll-behavior: none;
+}
+
+.tour-section {
+    display: block;
+}
+
+.tour-section .metric-group-heading:first-child {
+    margin-top: 2rem;
 }
 
 .onboard-card {
@@ -1210,7 +1221,6 @@ body.tour-open {
     box-shadow: 0 0 0 9999px rgba(8, 18, 14, 0.55);
     border: 2px solid var(--green);
     pointer-events: none;
-    transition: top 180ms ease, left 180ms ease, width 180ms ease, height 180ms ease;
 }
 
 .tour-bubble {

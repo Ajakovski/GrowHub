@@ -53,25 +53,29 @@ const TOUR_STEPS = [
         text: "The AI peeks at sensors (and photos when it can) and leaves a short Healthy / Watch / Action needed note here.",
     },
     {
-        selector: "#reservoir-heading, #hub-metrics",
+        selector: "#tour-reservoir",
+        focus: "#reservoir-heading",
         kicker: "The shared bath",
         title: "One reservoir for every floor",
         text: "Water temp, nutrients (EC) and pH live in the hub base. Every floor drinks from this same tank.",
     },
     {
-        selector: "#tiles-heading, #device-selector, #tile-metrics",
+        selector: "#tour-tiles",
+        focus: "#tiles-heading, #device-selector",
         kicker: "Per-floor vibes",
         title: "Each floor has its own climate",
         text: "Air temp, humidity, light and flow are measured per floor. Flip the pills to zoom into one floor or see the average.",
     },
     {
         selector: "#camera-card",
+        focus: "#camera-card > .camera-card-header",
         kicker: "Eyes on leaves",
         title: "Peek without opening the lid",
         text: "The optical node streams live when a camera is up. Stock images are handy when you're demoing without a webcam.",
     },
     {
         selector: "#ai-chat",
+        focus: "#ai-chat > .camera-card-header",
         kicker: "Ask anything",
         title: "Your grow buddy with tools",
         text: "Chat reads live data and photos. Ask “is my EC okay?” and it checks the real numbers before answering.",
@@ -85,6 +89,13 @@ const TOUR_STEPS = [
     },
 ];
 
+const TOUR_MARGIN = 16;
+const TOUR_BUBBLE_GAP = 14;
+const TOUR_SPOT_PAD = 10;
+const TOUR_MAX_SPOT_VH = 0.42;
+const TOUR_BUBBLE_ROOM = 210;
+
+let tourLayoutGen = 0;
 let onboardPayload = null;
 let quizIndex = 0;
 let quizAnswers = {
@@ -291,61 +302,128 @@ function handleOnboardBack() {
     }
 }
 
-function placeTourBubble(target) {
-    const bubble = document.getElementById("tour-bubble");
-    const rect = target.getBoundingClientRect();
-    const margin = 16;
-    const bubbleWidth = Math.min(360, window.innerWidth - margin * 2);
-    let left = rect.left + rect.width / 2 - bubbleWidth / 2;
-    left = Math.max(margin, Math.min(left, window.innerWidth - bubbleWidth - margin));
-
-    let top = rect.bottom + 14;
-    bubble.style.width = `${bubbleWidth}px`;
-    bubble.style.left = `${left}px`;
-    // Measure after setting width so we know if it fits below.
-    bubble.style.top = `${top}px`;
-    const bubbleHeight = bubble.getBoundingClientRect().height;
-    if (top + bubbleHeight > window.innerHeight - margin) {
-        top = Math.max(margin, rect.top - bubbleHeight - 14);
+function resolveTourElements(step) {
+    if (step.focus) {
+        const focused = step.focus
+            .split(",")
+            .map((part) => part.trim())
+            .map((part) => document.querySelector(part))
+            .filter(Boolean);
+        if (focused.length) return focused;
     }
-    bubble.style.top = `${top}px`;
+    const root = document.querySelector(step.selector);
+    return root ? [root] : [];
 }
 
-function highlightTourTarget(selector) {
-    const spotlight = document.getElementById("tour-spotlight");
-    const parts = selector.split(",").map((part) => part.trim());
+function unionTourRect(elements) {
     let top = Infinity;
     let left = Infinity;
-    let right = 0;
-    let bottom = 0;
-    let first = null;
-
-    parts.forEach((part) => {
-        const el = document.querySelector(part);
-        if (!el) return;
-        if (!first) first = el;
+    let right = -Infinity;
+    let bottom = -Infinity;
+    elements.forEach((el) => {
         const rect = el.getBoundingClientRect();
+        if (rect.width <= 0 && rect.height <= 0) return;
         top = Math.min(top, rect.top);
         left = Math.min(left, rect.left);
         right = Math.max(right, rect.right);
         bottom = Math.max(bottom, rect.bottom);
     });
-
-    if (!first || !Number.isFinite(top)) {
-        spotlight.style.display = "none";
-        return document.body;
-    }
-
-    const pad = 10;
-    spotlight.style.display = "block";
-    spotlight.style.top = `${Math.max(0, top - pad)}px`;
-    spotlight.style.left = `${Math.max(0, left - pad)}px`;
-    spotlight.style.width = `${right - left + pad * 2}px`;
-    spotlight.style.height = `${bottom - top + pad * 2}px`;
-    first.scrollIntoView({ behavior: "smooth", block: "center" });
-    return first;
+    if (!Number.isFinite(top)) return null;
+    return { top, left, right, bottom, width: right - left, height: bottom - top };
 }
 
+function scrollTourRectIntoView(rect) {
+    if (!rect) return;
+    const viewH = window.innerHeight;
+    const desiredTop = Math.max(TOUR_MARGIN + 8, (viewH - TOUR_BUBBLE_ROOM) * 0.22);
+    const delta = rect.top - desiredtop;
+    if (Math.abs(delta) < 8) return;
+    window.scrollBy({ top: delta, left: 0, behavior: "auto" });
+}
+
+function clampTourSpotlight(rect) {
+    const viewW = window.innerWidth;
+    const viewH = window.innerHeight;
+    const maxH = Math.min(rect.height + TOUR_SPOT_PAD * 2, viewH * TOUR_MAX_SPOT_VH);
+    let top = rect.top - TOUR_SPOT_PAD;
+    let left = rect.left - TOUR_SPOT_PAD;
+    let width = rect.width + TOUR_SPOT_PAD * 2;
+    let height = Math.min(rect.height + TOUR_SPOT_PAD * 2, maxH);
+
+    top = Math.min(Math.max(TOUR_MARGIN, top), viewH - height - TOUR_MARGIN);
+    left = Math.min(Math.max(TOUR_MARGIN, left), viewW - width - TOUR_MARGIN);
+    width = Math.max(48, Math.min(width, viewW - left - TOUR_MARGIN));
+    height = Math.max(48, Math.min(height, viewH - top - TOUR_MARGIN));
+    return { top, left, width, height, bottom: top + height, right: left + width };
+}
+
+function placeTourBubble(spot) {
+    const bubble = document.getElementById("tour-bubble");
+    const bubbleWidth = Math.min(360, window.innerWidth - TOUR_MARGIN * 2);
+    bubble.style.width = `${bubbleWidth}px`;
+    bubble.style.left = `${TOUR_MARGIN}px`;
+    bubble.style.top = `${TOUR_MARGIN}px`;
+    const bubbleHeight = bubble.getBoundingClientRect().height;
+
+    let left = spot.left + spot.width / 2 - bubbleWidth / 2;
+    left = Math.max(TOUR_MARGIN, Math.min(left, window.innerWidth - bubbleWidth - TOUR_MARGIN));
+
+    const spaceBelow = window.innerHeight - spot.bottom - TOUR_MARGIN;
+    const spaceAbove = spot.top - TOUR_MARGIN;
+    let top;
+    if (spaceBelow >= bubbleHeight + TOUR_BUBBLE_GAP) {
+        top = spot.bottom + TOUR_BUBBLE_GAP;
+    } else if (spaceAbove >= bubbleHeight + TOUR_BUBBLE_GAP) {
+        top = spot.top - bubbleHeight - TOUR_BUBBLE_GAP;
+    } else if (spaceBelow >= spaceAbove) {
+        top = Math.max(TOUR_MARGIN, window.innerHeight - bubbleHeight - TOUR_MARGIN);
+    } else {
+        top = TOUR_MARGIN;
+    }
+
+    bubble.style.left = `${left}px`;
+    bubble.style.top = `${top}px`;
+}
+
+function paintTourStep(step) {
+    const spotlight = document.getElementById("tour-spotlight");
+    const elements = resolveTourElements(step);
+    if (!elements.length) {
+        spotlight.style.display = "none";
+        placeTourBubble({
+            top: TOUR_MARGIN,
+            left: TOUR_MARGIN,
+            width: window.innerWidth - TOUR_MARGIN * 2,
+            height: 80,
+            bottom: TOUR_MARGIN + 80,
+            right: window.innerWidth - TOUR_MARGIN,
+        });
+        return;
+    }
+
+    const measured = unionTourRect(elements);
+    if (!measured) {
+        spotlight.style.display = "none";
+        return;
+    }
+
+    const spot = clampTourSpotlight(measured);
+    spotlight.style.display = "block";
+    spotlight.style.top = `${spot.top}px`;
+    spotlight.style.left = `${spot.left}px`;
+    spotlight.style.width = `${spot.width}px`;
+    spotlight.style.height = `${spot.height}px`;
+    placeTourBubble(spot);
+}
+
+function layoutTourStep(step, { scroll = true } = {}) {
+    if (scroll) {
+        const scrollRect = unionTourRect(resolveTourElements(step));
+        scrollTourRectIntoView(scrollRect);
+    }
+    paintTourStep(step);
+}
+ 
 function renderTourStep() {
     const step = TOUR_STEPS[tourIndex];
     const overlay = document.getElementById("tour-overlay");
@@ -358,10 +436,15 @@ function renderTourStep() {
     document.getElementById("tour-next").textContent =
         tourIndex === TOUR_STEPS.length - 1 ? "Open plant picker" : "Next";
 
-    // Wait a tick so layout settles after scroll.
-    requestAnimationFrame(() => {
-        const target = highlightTourTarget(step.selector);
-        placeTourBubble(target);
+    const gen = ++tourLayoutGen;
+    layoutTourStep(step, { scroll: true });
+    reqyestAnimationFrame(() => {
+        if (gen !== tourLayoutGen) return;
+        paintTourStep(step);
+        requestAnimationFrame(() => {
+            if (gen !== tourLayoutGen) return;
+            paintTourStep(step);
+        });
     });
 }
 
@@ -474,14 +557,13 @@ function initOnboarding() {
     document.getElementById("onboard-back").addEventListener("click", handleOnboardBack);
     document.getElementById("tour-next").addEventListener("click", handleTourNext);
     document.getElementById("tour-skip").addEventListener("click", () => finishOnboarding({ openPlants: false }));
-    window.addEventListener("resize", () => {
+    const relayoutTour = () => {
         if (document.getElementById("tour-overlay")?.hidden) return;
         const step = TOUR_STEPS[tourIndex];
-        if (step) {
-            const target = highlightTourTarget(step.selector);
-            placeTourBubble(target);
-        }
-    });
+        if (step) paintTourStep(step);
+    };
+    window.addEventListener("resize", relayoutTour);
+    window.addEventListener("scroll", relayoutTour, { passive: true });
 
     ensureOnboarding();
 }
