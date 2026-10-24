@@ -61,6 +61,7 @@ const TOUR_STEPS = [
     },
     {
         selector: "#tour-tiles",
+        // Spotlight the heading + floor pills — the copy is about flipping those.
         focus: "#tiles-heading, #device-selector",
         kicker: "Per-floor vibes",
         title: "Each floor has its own climate",
@@ -95,7 +96,6 @@ const TOUR_SPOT_PAD = 10;
 const TOUR_MAX_SPOT_VH = 0.42;
 const TOUR_BUBBLE_ROOM = 210;
 
-let tourLayoutGen = 0;
 let onboardPayload = null;
 let quizIndex = 0;
 let quizAnswers = {
@@ -109,6 +109,7 @@ let quizAnswers = {
 let recommendation = null;
 let tourIndex = 0;
 let onboardPhase = "quiz"; // quiz | rec | tour
+let tourLayoutGen = 0;
 
 function showOnboardError(message) {
     const error = document.getElementById("onboard-error");
@@ -335,8 +336,9 @@ function unionTourRect(elements) {
 function scrollTourRectIntoView(rect) {
     if (!rect) return;
     const viewH = window.innerHeight;
+    // Park the target in the upper band so the bubble can sit underneath.
     const desiredTop = Math.max(TOUR_MARGIN + 8, (viewH - TOUR_BUBBLE_ROOM) * 0.22);
-    const delta = rect.top - desiredtop;
+    const delta = rect.top - desiredTop;
     if (Math.abs(delta) < 8) return;
     window.scrollBy({ top: delta, left: 0, behavior: "auto" });
 }
@@ -350,6 +352,7 @@ function clampTourSpotlight(rect) {
     let width = rect.width + TOUR_SPOT_PAD * 2;
     let height = Math.min(rect.height + TOUR_SPOT_PAD * 2, maxH);
 
+    // Keep the hole fully inside the viewport so the dimmer never looks clipped.
     top = Math.min(Math.max(TOUR_MARGIN, top), viewH - height - TOUR_MARGIN);
     left = Math.min(Math.max(TOUR_MARGIN, left), viewW - width - TOUR_MARGIN);
     width = Math.max(48, Math.min(width, viewW - left - TOUR_MARGIN));
@@ -423,7 +426,7 @@ function layoutTourStep(step, { scroll = true } = {}) {
     }
     paintTourStep(step);
 }
- 
+
 function renderTourStep() {
     const step = TOUR_STEPS[tourIndex];
     const overlay = document.getElementById("tour-overlay");
@@ -437,8 +440,9 @@ function renderTourStep() {
         tourIndex === TOUR_STEPS.length - 1 ? "Open plant picker" : "Next";
 
     const gen = ++tourLayoutGen;
+    // Scroll synchronously, then paint twice after layout so fixed coords match.
     layoutTourStep(step, { scroll: true });
-    reqyestAnimationFrame(() => {
+    requestAnimationFrame(() => {
         if (gen !== tourLayoutGen) return;
         paintTourStep(step);
         requestAnimationFrame(() => {

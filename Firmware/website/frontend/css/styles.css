@@ -1054,6 +1054,7 @@ body.onboard-open {
     overflow: hidden;
 }
 
+/* Tour must be able to scroll targets into view; only the bubble captures clicks. */
 body.tour-open {
     overscroll-behavior: none;
 }
@@ -1221,6 +1222,7 @@ body.tour-open {
     box-shadow: 0 0 0 9999px rgba(8, 18, 14, 0.55);
     border: 2px solid var(--green);
     pointer-events: none;
+    /* No position transition — scrolling + animating the hole makes it drift mid-step. */
 }
 
 .tour-bubble {

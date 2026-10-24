@@ -49,26 +49,30 @@
                     <span id="ai-status-detail">Waiting for the first AI review</span>
                 </article>
 
-                <div class="metric-group-heading" id="reservoir-heading">
-                    <h2>Reservoir</h2>
-                    <span>Shared water in the hub</span>
-                </div>
-                <div class="metric-grid" id="hub-metrics">
-                    <article class="metric-card">
-                        <span class="kicker">Reservoir Level</span>
-                        <strong id="water-val">--</strong>
-                        <span id="water-status">18 L base reservoir</span>
-                    </article>
-                </div>
+                <section class="tour-section" id="tour-reservoir" aria-labelledby="reservoir-heading">
+                    <div class="metric-group-heading" id="reservoir-heading">
+                        <h2>Reservoir</h2>
+                        <span>Shared water in the hub</span>
+                    </div>
+                    <div class="metric-grid" id="hub-metrics">
+                        <article class="metric-card">
+                            <span class="kicker">Reservoir Level</span>
+                            <strong id="water-val">--</strong>
+                            <span id="water-status">18 L base reservoir</span>
+                        </article>
+                    </div>
+                </section>
 
-                <div class="metric-group-heading" id="tiles-heading">
-                    <h2>Tiles</h2>
-                    <span id="tile-scope">Average across all tiles</span>
-                </div>
-                <div class="eyebrow-row device-selector" id="device-selector">
-                    <button type="button" class="pill active" data-id="hub">All tiles</button>
-                </div>
-                <div class="metric-grid" id="tile-metrics"></div>
+                <section class="tour-section" id="tour-tiles" aria-labelledby="tiles-heading">
+                    <div class="metric-group-heading" id="tiles-heading">
+                        <h2>Tiles</h2>
+                        <span id="tile-scope">Average across all tiles</span>
+                    </div>
+                    <div class="eyebrow-row device-selector" id="device-selector">
+                        <button type="button" class="pill active" data-id="hub">All tiles</button>
+                    </div>
+                    <div class="metric-grid" id="tile-metrics"></div>
+                </section>
             </div>
 
             <div class="card camera-card" id="camera-card">
