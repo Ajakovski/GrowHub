@@ -1,6 +1,7 @@
 import math
 import os
 import random
+from sqlite3.dbapi2 import Time
 import threading
 import time
 from dataclasses import dataclass
@@ -108,6 +109,9 @@ class Greenhouse:
         self.nutrients = RESERVOIR_LITRES * TARGET_EC
         self.ph = TARGET_PH
         self.heater_on = False
+        self.control_lights = "auto"
+        self.control_pump = "auto"
+        self.control_heater = "auto"
         self.low_since = None
         self.refill_delay = self._grower_delay()
         self.ph_high_since = None
@@ -130,12 +134,28 @@ class Greenhouse:
     def _grower_delay(self) -> float:
         return self.rng.uniform(*GROWER_DELAY_HOURS)
 
+    def apply_controls(self, payload: Optional[dict]) -> None:
+        if not isinstance(payload: dict):
+            return
+        for name, attr in (
+            ("lights", "control_lights"),
+            ("pump", "control_pump"),
+            ("heater", "control_heater"),
+        ):
+            value = payload.get(name)
+            if value in ("auto", "on", "off"):
+                setattr(self, attr, value)
+
     @property
     def hour(self) -> float:
         return self.clock.hour + self.clock.minute / 60
 
     @property
     def lights_on(self) -> bool:
+        if self.control_lights == "on":
+            return True
+        if self.control_lights == "off":
+            return False
         return LIGHTS_ON_HOUR <= self.clock.hour < LIGHTS_OFF_HOUR
 
     @property
@@ -144,8 +164,13 @@ class Greenhouse:
 
     @property
     def pump_output(self) -> float:
+        if self.control_pump == "off":
+            return 0.0
         span = PUMP_FULL_FLOW_LITRES - PUMP_STARVED_LITRES
-        return min(1.0, max(0.0, (self.volume - PUMP_STARVED_LITRES) / span))
+        auto = min(1.0, max(0.0, (self.volume - PUMP_STARVED_LITRES) / span))
+        if self.control_pump == "on":
+            return 1.0 if self.volume > ROOT_REACH_LITRES else auto
+        return auto
 
     def room_temp(self) -> float:
         daily = 21.0 + 3.0 * math.sin(2 * math.pi * (self.hour - 9) / 24)
@@ -195,13 +220,17 @@ class Greenhouse:
 
     def _update_water_temp(self, hours: float) -> None:
         self.water_temp = _approach(self.water_temp, self._passive_water_temp(), hours, WATER_TEMP_TAU_HOURS)
-        if self.heater_on:
-            self.water_temp += HEATER_C_PER_HOUR * hours
-
-        if self.water_temp < HEATER_SETPOINT_C - HEATER_HYSTERESIS_C:
+        if self.control_heater == "on":
+            self.heater_on = True
+        elif self.control_heater == "off":
+            self.heater_on = False
+        elif self.water_temp < HEATER_SETPOINT_C - HEATER_HYSTERESIS_C:
             self.heater_on = True
         elif self.water_temp > HEATER_SETPOINT_C + HEATER_HYSTERESIS_C:
             self.heater_on = False
+
+        if self.heater_on:
+            self.water_temp += HEATER_C_PER_HOUR + hours
 
     def _update_clog(self, tile: Tile, hours: float) -> None:
         if tile.clog_rate == 0.0 and self.rng.random() < 1 - math.exp(-CLOGS_PER_TILE_PER_DAY * hours / 24):
@@ -353,6 +382,10 @@ def main():
                 print("fastapi rejected the payload. error details:")
                 print(response.text)
             else:
+                try:
+                    greenhouse.apply_controls(response.json().get("controls"))
+                except ValueError:
+                    pass
                 flows = " ".join(f"{tile['flow_lpm']:.1f}" for tile in payload["tiles"])
                 print(
                     f"[{greenhouse.clock:%a %H:%M}] lights {'on ' if greenhouse.lights_on else 'off'} "

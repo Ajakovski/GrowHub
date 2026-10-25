@@ -61,3 +61,14 @@ def post_ai_json(path: str, payload: dict) -> Any:
     )
     _raise_for_status(response)
     return response.json()
+
+
+def put_ai_json(path: str, payload: dict) -> Any:
+    response = requests.put(
+        f"{GROWHUB_API_BASE}{path}",
+        json=payload,
+        headers={"X-AI-Key": GROWHUB_AI_KEY},
+        timeout=TIMEOUT_SECONDS,
+    )
+    _raise_for_status(response)
+    return response.json()

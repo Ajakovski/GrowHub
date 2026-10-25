@@ -8,6 +8,8 @@ import os
 import secrets
 import time
 
+from Firmware.website.ai.skills import control
+import controls
 import history
 import plants
 import stock_images
@@ -82,6 +84,8 @@ class Hub:
     ai_updated_at: Optional[float] = None
     camera_source: str = CAMERA_SOURCE_WEBCAM
     plants: dict = field(default_factory=dict)
+    controls: dict = field(default_factory=lambda: dict[str, str](controls.DEFAULT_CONTROLS))
+    controls_updated_at: Optional[bytes] = None
     latest_frame: Optional[bytes] = None
     latest_frame_at: float = 0.0
     frame_event: asyncio.Event = field(default_factory=asyncio.Event)
@@ -188,8 +192,26 @@ class Hub:
             "camera_online": camera_online,
             "camera_feed_url": f"/api/web/camera?hub={quote(self.hub_id)}" if has_frame else None,
             "crops": plants.plants_payload(self.plants),
+            "controls": controls.normalise(self.controls),
+            "controls_updated_at": (
+                int(self.controls_updated_at * 1000) if self.controls_updated_at else None
+            ),
             **self.status(now),
             "alerts": self.alerts(),
+        }
+
+    def set_controls(self, updates: dict) -> dict:
+        before = controls.normalise(self.controls)
+        self.controls = controls.merge(before, updates)
+        self.controls_updated_at = time.time()
+        history.save_hub_controls(self.hub_id, self.controls)
+        changed = list[str](controls.changed_keys(before, self.controls))
+        print(f"Hub {self.hub_id}: controls updated { {key: self.controls[key] for key in changed} }")
+        return {
+            "hub_id": self.hub_id,
+            "controls": dict[Any, Any](self.controls),
+            "changed": changed,
+            "controls_updated_at": int(self.controls_updated_at * 1000),
         }
 
     def set_latest_frame(self, frame_bytes: bytes) -> None:
@@ -298,6 +320,7 @@ async def receive_telemetry(data: TelemetryPayload):
         "status": "success",
         "action": "sleep",
         "next_wake_minutes": NEXT_WAKE_MINUTES,
+        "controls": controls.normalise(hub.controls),
     }
 
 

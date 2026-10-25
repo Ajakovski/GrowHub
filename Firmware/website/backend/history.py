@@ -113,6 +113,7 @@ def init_db() -> None:
             ("ai_updated_at", "REAL"),
             ("camera_source", "TEXT"),
             ("plants", "TEXT"),
+            ("controls", "TEXT"),
         ):
             if column not in hub_columns:
                 conn.execute(f"ALTER TABLE hubs ADD COLUMN {column} {column_type}")
@@ -237,6 +238,17 @@ def save_hub_plants(hub_id: str, plants: dict) -> None:
             ON CONFLICT (hub_id) DO UPDATE SET plants = excluded.plants
             """,
             (hub_id, json.dumps(plants)),
+        )
+
+
+def save_hub_controls(hub_id: str, controls: dict) -> None:
+    with _connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO hubs (hub_id, state, controls) VALUES (?, '{}', ?)
+            ON CONFLICT (hub_id) DO UPDATE SET controls = excluded.controls
+            """,
+            (hub_id, json.dumps(controls))
         )
 
 

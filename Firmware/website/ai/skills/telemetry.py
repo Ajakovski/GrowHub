@@ -91,6 +91,7 @@ def get_hub_status(hub_id: Optional[str] = None):
             "ec_ms_cm": _round(stats.get("ec_level"), 2),
             "ph": _round(stats.get("ph"), 2),
         },
+        "controls": stats.get("controls") or {"lights": "auto", "pump": "auto", "heater": "auto"},
         "tiles": [
             {
                 "tile_id": tile["tile_id"],
