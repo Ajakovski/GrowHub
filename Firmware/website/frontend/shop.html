@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GrowHub hardware catalog: Hub base, DWC planter tiles, and stackable grow floors.">
     <title>GrowHub | Hardware Catalog</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" href="assets/img/favicon.svg">
 </head>
-<body>
+<body class="catalog-page">
     <header class="site-header">
         <div class="container header-inner">
             <a href="index.html" class="brand focus-strip" aria-label="GrowHub home">
                 <img src="assets/img/growhub.svg" alt="GrowHub logo" />
             </a>
             <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle menu">Menu</button>
-
             <nav class="nav-menu" data-nav-menu aria-label="Primary">
                 <a href="index.html#products" class="nav-link">Products</a>
                 <a href="shop.html" class="nav-link active">Catalog</a>
@@ -25,26 +25,84 @@
     </header>
 
     <main>
-        <section class="section bg-soft" id="showcase">
+        <section class="catalog-hero" aria-labelledby="catalog-brand">
+            <div class="catalog-hero-media" aria-hidden="true">
+                <img src="assets/img/growhub_stack_poster.jpg" alt="" />
+            </div>
+            <div class="catalog-hero-veil" aria-hidden="true"></div>
+            <div class="container catalog-hero-copy">
+                <p class="catalog-brand" id="catalog-brand">GrowHub</p>
+                <h1 class="catalog-hero-title">Hardware that scales with your harvest</h1>
+                <p class="catalog-hero-lead">
+                    One Hub runs the water loop and brains. Daisy-chain planter tiles — or stack them —
+                    when you want more cups without a bigger footprint.
+                </p>
+                <div class="button-group">
+                    <a class="btn btn-primary" href="#lineup">See the lineup</a>
+                    <a class="btn btn-secondary" href="index.html#contact">Ask about pricing</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section catalog-system" aria-labelledby="catalog-system-title">
             <div class="container">
-                <div class="showcase-header">
+                <span class="kicker">How it fits</span>
+                <h2 class="section-title" id="catalog-system-title">Hub first. Tiles as you grow.</h2>
+                <p class="section-lead">
+                    Buy the base once. Every floor after that is the same 40 × 70 cm DWC tile —
+                    power and water from the Hub, sensors and canopy on the tile.
+                </p>
+                <ol class="catalog-steps">
+                    <li>
+                        <strong>1 · Hub</strong>
+                        <span>18 L reservoir, pump, heater, and controllers for the whole stack.</span>
+                    </li>
+                    <li>
+                        <strong>2 · Tile</strong>
+                        <span>18-cup clay-pebble grid under a smart LED canopy — one full grow floor.</span>
+                    </li>
+                    <li>
+                        <strong>3 · Expand</strong>
+                        <span>Daisy-chain sideways or stack up to three floors on the same pad.</span>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="section catalog-lineup" id="lineup" aria-labelledby="catalog-lineup-title">
+            <div class="container">
+                <div class="catalog-lineup-header">
                     <div>
-                        <span class="kicker">The Ecosystem</span>
-                        <h1 class="section-title">One Hub. As many tiles as you need.</h1>
+                        <span class="kicker">Lineup</span>
+                        <h2 class="section-title" id="catalog-lineup-title">What you can order</h2>
                         <p class="section-lead">
-                            Start with the GrowHub Hub and daisy-chain 40x70 cm planter tiles to it. Every tile runs Deep Water Culture (DWC)
-                            with continuous loop water circulation, an 18-cup clay-pebble grid and a smart LED canopy.
+                            Specs and starting prices below. For kits, volume, or partner terms, send a note —
+                            we quote against your layout.
                         </p>
                     </div>
-
-                    <div class="showcase-filters" id="showcase-filters">
-                        <button class="filter-btn active" data-filter="all">All</button>
-                        <button class="filter-btn" data-filter="modules">Planter Tiles</button>
-                        <button class="filter-btn" data-filter="tech">Hub & Electronics</button>
+                    <div class="showcase-filters" id="showcase-filters" role="group" aria-label="Filter catalog">
+                        <button type="button" class="filter-btn active" data-filter="all">All</button>
+                        <button type="button" class="filter-btn" data-filter="modules">Planter tiles</button>
+                        <button type="button" class="filter-btn" data-filter="tech">Hub &amp; electronics</button>
                     </div>
                 </div>
 
-                <div class="showcase-grid" id="showcase-grid"></div>
+                <p class="catalog-status" id="catalog-status" hidden></p>
+                <div class="catalog-list" id="showcase-grid" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <section class="section catalog-cta" aria-labelledby="catalog-cta-title">
+            <div class="container catalog-cta-inner">
+                <div>
+                    <span class="kicker">Next step</span>
+                    <h2 class="section-title" id="catalog-cta-title">Tell us what you're building</h2>
+                    <p class="section-lead">
+                        Home stack, greenhouse aisle, or a pilot row — same hardware language.
+                        We'll help size hubs and floors for your space.
+                    </p>
+                </div>
+                <a class="btn btn-primary" href="index.html#contact">Contact GrowHub</a>
             </div>
         </section>
     </main>
@@ -57,6 +115,6 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script src="js/shop.js"></script>
 </body>
-</html>
 </html>

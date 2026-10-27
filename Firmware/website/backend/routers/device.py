@@ -8,7 +8,6 @@ import os
 import secrets
 import time
 
-from Firmware.website.ai.skills import control
 import controls
 import history
 import plants
@@ -84,8 +83,8 @@ class Hub:
     ai_updated_at: Optional[float] = None
     camera_source: str = CAMERA_SOURCE_WEBCAM
     plants: dict = field(default_factory=dict)
-    controls: dict = field(default_factory=lambda: dict[str, str](controls.DEFAULT_CONTROLS))
-    controls_updated_at: Optional[bytes] = None
+    controls: dict = field(default_factory=lambda: dict(controls.DEFAULT_CONTROLS))
+    controls_updated_at: Optional[float] = None
     latest_frame: Optional[bytes] = None
     latest_frame_at: float = 0.0
     frame_event: asyncio.Event = field(default_factory=asyncio.Event)
@@ -205,11 +204,11 @@ class Hub:
         self.controls = controls.merge(before, updates)
         self.controls_updated_at = time.time()
         history.save_hub_controls(self.hub_id, self.controls)
-        changed = list[str](controls.changed_keys(before, self.controls))
-        print(f"Hub {self.hub_id}: controls updated { {key: self.controls[key] for key in changed} }")
+        changed = list(controls.changed_keys(before, self.controls))
+        print(f"hub {self.hub_id}: controls updated { {key: self.controls[key] for key in changed} }")
         return {
             "hub_id": self.hub_id,
-            "controls": dict[Any, Any](self.controls),
+            "controls": dict(self.controls),
             "changed": changed,
             "controls_updated_at": int(self.controls_updated_at * 1000),
         }
@@ -249,6 +248,7 @@ def load_hubs() -> None:
             ai_updated_at=row["ai_updated_at"],
             camera_source=row["camera_source"] if row["camera_source"] in CAMERA_SOURCES else CAMERA_SOURCE_WEBCAM,
             plants=row.get("plants") or {},
+            controls=controls.normalise(row.get("controls")),
         )
 
 
@@ -320,6 +320,7 @@ async def receive_telemetry(data: TelemetryPayload):
         "status": "success",
         "action": "sleep",
         "next_wake_minutes": NEXT_WAKE_MINUTES,
+        # Device firmware / simulator should apply these on the next cycle.
         "controls": controls.normalise(hub.controls),
     }
 

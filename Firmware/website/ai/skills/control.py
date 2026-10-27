@@ -14,7 +14,7 @@ MODE_PROPERTY = {
 @skill(
     "get_controls",
     "Read the current GrowHub actuator modes for lights, the circulation pump and the water heater. "
-    "Each actuator is auto (device decides), on (forced on) or off (foced off).",
+    "Each actuator is auto (device decides), on (forced on) or off (forced off).",
     {
         "hub_id": {
             "type": "string",
@@ -62,7 +62,7 @@ def set_controls(
         hub_id = current.get("hub_id")
         if not hub_id:
             return {"error": "No hub has reported yet."}
-    payload = {"hub_id": hub_it}
+    payload = {"hub_id": hub_id}
     if lights is not None:
         payload["lights"] = lights
     if pump is not None:
@@ -70,5 +70,5 @@ def set_controls(
     if heater is not None:
         payload["heater"] = heater
     if len(payload) == 1:
-        return {"error": "set at least one of lights, pump, or heater."}
+        return {"error": "Set at least one of lights, pump, or heater."}
     return put_ai_json("/api/ai/controls", payload)

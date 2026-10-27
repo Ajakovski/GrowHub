@@ -248,7 +248,7 @@ def save_hub_controls(hub_id: str, controls: dict) -> None:
             INSERT INTO hubs (hub_id, state, controls) VALUES (?, '{}', ?)
             ON CONFLICT (hub_id) DO UPDATE SET controls = excluded.controls
             """,
-            (hub_id, json.dumps(controls))
+            (hub_id, json.dumps(controls)),
         )
 
 
@@ -262,11 +262,21 @@ def _parse_plants(raw: Optional[str]) -> dict:
     return value if isinstance(value, dict) else {}
 
 
+def _parse_controls(raw: Optional[str]) -> dict:
+    if not raw:
+        return {}
+    try:
+        value = json.loads(raw)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
 def load_hubs() -> List[dict]:
     with _connection() as conn:
         rows = conn.execute(
             "SELECT hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak, "
-            "ai_status, ai_summary, ai_updated_at, camera_source, plants FROM hubs"
+            "ai_status, ai_summary, ai_updated_at, camera_source, plants, controls FROM hubs"
         ).fetchall()
     return [
         {
@@ -280,9 +290,10 @@ def load_hubs() -> List[dict]:
             "ai_updated_at": ai_updated_at,
             "camera_source": camera_source,
             "plants": _parse_plants(plants),
+            "controls": _parse_controls(controls),
         }
         for (
             hub_id, state, last_telemetry_at, telemetry_interval, low_water_streak,
-            ai_status, ai_summary, ai_updated_at, camera_source, plants,
+            ai_status, ai_summary, ai_updated_at, camera_source, plants, controls,
         ) in rows
     ]

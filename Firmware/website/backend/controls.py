@@ -1,12 +1,12 @@
 """Desired actuator modes for a hub: lights, pump, heater.
 
 Modes:
-    auto - device/simulator decides (schedule or thermostat)
-    on - force on
-    off -force off
+  auto — device/simulator decides (schedule or thermostat)
+  on   — force on
+  off  — force off
 """
 
-from typing import Any, Dict, Iterable, Optional, Literal
+from typing import Any, Dict, Iterable, Optional
 
 ACTUATORS = ("lights", "pump", "heater")
 MODES = ("auto", "on", "off")
@@ -15,7 +15,7 @@ DEFAULT_CONTROLS = {name: "auto" for name in ACTUATORS}
 
 
 def normalise(raw: Optional[dict]) -> Dict[str, str]:
-    controls = dict[str, str](DEFAULT_CONTROLS)
+    controls = dict(DEFAULT_CONTROLS)
     if not isinstance(raw, dict):
         return controls
     for name in ACTUATORS:
@@ -40,9 +40,9 @@ def describe(controls: dict) -> Dict[str, Any]:
     normalised = normalise(controls)
     return {
         "actuators": normalised,
-        "modes": list[Literal['auto', 'on', 'off']](MODES),
+        "modes": list(MODES),
         "notes": {
-            "lights": "auto follows the daytime schedule (on ~06:00-22:00).",
+            "lights": "auto follows the daytime schedule (on ~06:00–22:00).",
             "pump": "auto runs the circulation pump whenever the reservoir has water.",
             "heater": "auto uses the water-temp thermostat (~20°C).",
         },

@@ -36,18 +36,77 @@ async def get_hardware_catalog():
         {
             "id": "growhub_hub",
             "name": "GrowHub Hub",
+            "tagline": "The base that runs everything",
             "category": "tech",
-            "description": "The central power and water unit. Runs the continuous loop water circulation and smart "
-                           "controllers for every 40x70 cm tile daisy-chained to it.",
+            "category_label": "Hub & electronics",
+            "description": (
+                "The central power and water unit. It runs continuous-loop circulation, nutrient and climate "
+                "control, and feeds every planter tile daisy-chained to it."
+            ),
             "price": "Under $300",
+            "image": "growhub_render_v2.png",
+            "badge": "Core",
+            "specs": [
+                {"label": "Reservoir", "value": "18 L"},
+                {"label": "Footprint", "value": "40 × 70 cm"},
+                {"label": "Role", "value": "Power, water, AI"},
+            ],
+            "features": [
+                "Shared reservoir with water heater",
+                "EC, pH, level and temp sensing",
+                "Drives the continuous water loop",
+                "Talks to the GrowHub dashboard and AI",
+            ],
         },
         {
             "id": "planter_tile_40x70",
-            "name": "40x70 cm DWC Planter Tile",
+            "name": "40 × 70 cm DWC Planter Tile",
+            "tagline": "One full grow floor",
             "category": "modules",
-            "description": "A full Deep Water Culture (DWC) floor with 18 clay-pebble planter cups (3x6) under a "
-                           "smart LED canopy. Daisy-chains to the Hub for power and water.",
+            "category_label": "Planter tiles",
+            "description": (
+                "A complete Deep Water Culture floor: 18 clay-pebble cups under a smart LED canopy. "
+                "Stack or daisy-chain tiles to scale harvest without changing the footprint."
+            ),
             "price": "$90",
+            "image": "growhub_tile_render_v1.png",
+            "badge": None,
+            "specs": [
+                {"label": "Cups", "value": "18 (3 × 6)"},
+                {"label": "Footprint", "value": "40 × 70 cm"},
+                {"label": "Canopy", "value": "Smart LED"},
+            ],
+            "features": [
+                "Full DWC basin and planter grid",
+                "Per-tile air, humidity, light and flow sensors",
+                "Daisy-chains to the Hub for power and water",
+                "Stacks vertically on the same footprint",
+            ],
+        },
+        {
+            "id": "growhub_stack",
+            "name": "Stacked GrowHub tower",
+            "tagline": "Grow up, not out",
+            "category": "modules",
+            "category_label": "Planter tiles",
+            "description": (
+                "Add floors on the same 40 × 70 cm pad. Each level keeps its own DWC grid and canopy while "
+                "the Hub below still runs the shared water loop."
+            ),
+            "price": "From $90 / floor",
+            "image": "growhub_stack_poster.jpg",
+            "badge": "Scale",
+            "specs": [
+                {"label": "Per floor", "value": "1 tile"},
+                {"label": "Max floors", "value": "Up to 3 / hub"},
+                {"label": "Footprint", "value": "Still 40 × 70 cm"},
+            ],
+            "features": [
+                "Triple growing area without more floor space",
+                "Each floor stays a complete grow module",
+                "Same dashboard for every level",
+                "Expand one floor at a time",
+            ],
         },
     ]
 

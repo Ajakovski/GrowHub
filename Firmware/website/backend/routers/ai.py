@@ -34,7 +34,7 @@ class AIStatus(BaseModel):
 
 class ControlsUpdate(BaseModel):
     hub_id: str
-    lights: Optional[Literal["auto", "on", 'off']] = None
+    lights: Optional[Literal["auto", "on", "off"]] = None
     pump: Optional[Literal["auto", "on", "off"]] = None
     heater: Optional[Literal["auto", "on", "off"]] = None
 
@@ -57,8 +57,8 @@ def set_ai_status(body: AIStatus):
     return {"status": "success"}
 
 
-@router.get("/controls", dependencies={Depends(require_ai_key)})
-def set_ai_status(hub_id: Optional[str] = Query(default=None)):
+@router.get("/controls", dependencies=[Depends(require_ai_key)])
+def get_controls(hub_id: Optional[str] = Query(default=None)):
     hub = get_hub(hub_id)
     if hub is None:
         raise HTTPException(status_code=404, detail="No hub has reported yet" if hub_id is None else f"Unknown hub '{hub_id}'")
@@ -70,11 +70,11 @@ def set_ai_status(hub_id: Optional[str] = Query(default=None)):
     return payload
 
 
-@router.put("/controls", dependencies=[Depenes(require_ai_key)])
+@router.put("/controls", dependencies=[Depends(require_ai_key)])
 def put_controls(body: ControlsUpdate):
     hub = get_hub(body.hub_id)
     if hub is None:
-        raise HTTPException(status_code=404, detail=f"Unknown hub {body.hub_id}'")
+        raise HTTPException(status_code=404, detail=f"Unknown hub '{body.hub_id}'")
 
     updates = {
         key: value
@@ -82,7 +82,7 @@ def put_controls(body: ControlsUpdate):
         if key != "hub_id" and value is not None
     }
     if not updates:
-        raise HTTPException(status_code=400, detail="Set at least on of lights, pump or heater.")
+        raise HTTPException(status_code=400, detail="Set at least one of lights, pump, or heater.")
 
     try:
         result = hub.set_controls(updates)

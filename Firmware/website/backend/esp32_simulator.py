@@ -1,7 +1,6 @@
 import math
 import os
 import random
-from sqlite3.dbapi2 import Time
 import threading
 import time
 from dataclasses import dataclass
@@ -109,6 +108,7 @@ class Greenhouse:
         self.nutrients = RESERVOIR_LITRES * TARGET_EC
         self.ph = TARGET_PH
         self.heater_on = False
+        # Desired modes from the server: auto | on | off
         self.control_lights = "auto"
         self.control_pump = "auto"
         self.control_heater = "auto"
@@ -135,7 +135,7 @@ class Greenhouse:
         return self.rng.uniform(*GROWER_DELAY_HOURS)
 
     def apply_controls(self, payload: Optional[dict]) -> None:
-        if not isinstance(payload: dict):
+        if not isinstance(payload, dict):
             return
         for name, attr in (
             ("lights", "control_lights"),
@@ -230,7 +230,7 @@ class Greenhouse:
             self.heater_on = False
 
         if self.heater_on:
-            self.water_temp += HEATER_C_PER_HOUR + hours
+            self.water_temp += HEATER_C_PER_HOUR * hours
 
     def _update_clog(self, tile: Tile, hours: float) -> None:
         if tile.clog_rate == 0.0 and self.rng.random() < 1 - math.exp(-CLOGS_PER_TILE_PER_DAY * hours / 24):
@@ -389,8 +389,10 @@ def main():
                 flows = " ".join(f"{tile['flow_lpm']:.1f}" for tile in payload["tiles"])
                 print(
                     f"[{greenhouse.clock:%a %H:%M}] lights {'on ' if greenhouse.lights_on else 'off'} "
-                    f"| reservoir {greenhouse.volume:4.1f} L | water {payload['water_temperature']}°C "
-                    f"heater {'on ' if greenhouse.heater_on else 'off'} | EC {payload['ec_level']:.2f} "
+                    f"({greenhouse.control_lights}) | reservoir {greenhouse.volume:4.1f} L | "
+                    f"water {payload['water_temperature']}°C "
+                    f"heater {'on ' if greenhouse.heater_on else 'off'} ({greenhouse.control_heater}) | "
+                    f"pump {greenhouse.control_pump} | EC {payload['ec_level']:.2f} "
                     f"| pH {payload['ph']:.2f} | flow L/min {flows}"
                 )
         except requests.exceptions.RequestException as error:
