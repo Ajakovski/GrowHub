@@ -4,6 +4,44 @@
 
 ---
 
+## 24. Timelapse 28.10.2026
+
+I might be cooked.
+
+So i continued my work on the PCB and im very close to the finish but i might be far from finishing :(((
+
+The middle section with the controllers got SOOOOO CRAMPED UP. Also the fact that it is so close to the +24V fill is scaring me.
+
+---
+
+**What i did:**
+
+- Fixed USB_D-/USB_D+ wiring
+- Added a couple GND vias for return current
+- Continued workig on the connector sector
+- Moved arounda couple of sectors so that i get more space
+
+---
+
+**Problems that occured:**
+
+- Not enough space on the middle section of the board
+- Possible signal integrity errors
+- Via under pad issues
+
+---
+
+**Next step**
+
+- I hope that i finish the PCB this week so that atleast i can fix DRC
+- Start firmware by next week
+
+![Image57](./Documentation/Pictures/Journal_AJ/Image57.png)
+![Image58](./Documentation/Pictures/Journal_AJ/Image58.png)
+ 
+
+---
+
 ## 23. Timelapse 23.10.2026
 
 HOLLY LOCK IN... I had to stretch out before starting to write the journal xDDD
@@ -13,6 +51,8 @@ I had to grind out the remaining hours for this week because i wont be able to d
 I  am almost done with the PCB also!!! I just need to finish off the floor connector section in the middle and its done!
 
 At the end tho it really started to get messy and i had to start doing some rookie mistakes because room around the MCU is really running low like i am going insane from connecting tracks. I'VE CONNECTED 1022 TRACKS SO FAR AND IM STILL NOT DONE.
+
+---
 
 **What i did:**
 
