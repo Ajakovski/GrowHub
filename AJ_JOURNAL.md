@@ -4,6 +4,46 @@
 
 ---
 
+## 25. Timelapse 30.10.2026
+
+I am cooked...
+
+The middle connection sector is so cramped up that i might not even have a functional PCB anymore...
+
+There is a high chance of a rework on that part because EMF and signal integrity is going crazy rn.
+
+Anyways i have placed 99% of the components.
+
+---
+
+**What i did:**
+
+- Placed every chip on the PCB
+- Finished 99% of the peripheral wiring
+- Realised that i cramped up too much
+
+---
+
+**Problems that i had:**
+
+- Its lowkey so complicated for a highschooler idek if this works
+- TOO MUCH WIRRINGGG
+
+---
+
+**Whats next:**
+
+- Finish off the PCB
+- And fix the connector sector
+- Start the DRC
+
+![Image59](./Documentation/Pictures/Journal_AJ/Image59.png)
+![Image60](./Documentation/Pictures/Journal_AJ/Image60.png)
+![Image61](./Documentation/Pictures/Journal_AJ/Image61.png)
+
+
+---
+
 ## 24. Timelapse 28.10.2026
 
 I might be cooked.
