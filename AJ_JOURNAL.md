@@ -4,6 +4,46 @@
 
 ---
 
+## 26. Timelapse 31.10.2026
+
+Spooky scary skeletons. I grinded a bit today...
+
+Soo i am finally done with the main PCB and SUPRISINGLY I HAD BARELY ANY DRC ERRORS.
+
+There are some that i need to research whether they are crucial or not but we will see.
+
+---
+
+**What i did:**
+
+- Finished the main PCB
+- Enhanced it with return current
+- Fixed DRC 80%
+- Started the Floor PCB
+
+---
+
+**Problems that i had:**
+
+- I barely managed to get myself out with the wiring issues but at the end i did it
+- My eyes hurt
+
+---
+
+**What's next:**
+
+- Finish the Floor PCB
+- Finish DRC for both boards
+- Review them once again
+- Start the Firmware
+
+![Image62](./Documentation/Pictures/Journal_AJ/Image62.png)
+![Image63](./Documentation/Pictures/Journal_AJ/Image63.png)
+![Image64](./Documentation/Pictures/Journal_AJ/Image64.png)
+![Image65](./Documentation/Pictures/Journal_AJ/Image65.png)
+
+---
+
 ## 25. Timelapse 30.10.2026
 
 I am cooked...
