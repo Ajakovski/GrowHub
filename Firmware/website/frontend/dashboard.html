@@ -16,8 +16,9 @@
             <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle Menu">Menu</button>
             <nav class="nav-menu" data-nav-menu aria-label="Primary">
                 <a class="nav-link" href="index.html#products">Products</a>
+                <a href="how-it-works.html" class="nav-link">How it works</a>
                 <a href="shop.html" class="nav-link">Catalog</a>
-                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="demo.html" class="nav-link active" data-nav-dashboard>Live demo</a>
                 <a href="index.html#contact" class="nav-link navcta">Contact</a>
             </nav>
         </div>
@@ -25,6 +26,17 @@
     
     <main class="section dashboard-page">
         <div class="container">
+            <div class="demo-banner" id="demo-banner" hidden>
+                <div>
+                    <strong>Live demo</strong>
+                    <span>You're on a shared sample hub — same UI partners use. Changes here aren't tied to a personal account.</span>
+                </div>
+                <div class="demo-banner-actions">
+                    <a class="btn btn-secondary" href="how-it-works.html">How AI care works</a>
+                    <a class="btn btn-primary" href="login.html?mode=register" id="demo-create-account">Create account</a>
+                </div>
+            </div>
+
             <div class="dashboard-header" id="dashboard-header">
                 <div>
                     <span class="kicker">Live Telemetry</span>
@@ -169,10 +181,30 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/plants.js"></script>
-    <script src="js/onboarding.js"></script>
-    <script src="js/ai-chat.js"></script>
+    <script>
+        if (new URLSearchParams(window.location.search).get("demo") === "1") {
+            try { sessionStorage.setItem("growhub_demo_entry", "1"); } catch (error) {}
+        }
+    </script>
+    <script src="js/main.js?v=demo7"></script>
+    <script>
+        // Start guest auth before onboarding can race a 401 → login.
+        window.growhubDemoBootstrap = (new URLSearchParams(window.location.search).get("demo") === "1")
+            ? fetch(`${AUTH_URL}/demo`, { method: "POST", credentials: "include", cache: "no-store" }).then(async (response) => {
+                const body = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const detail = typeof body.detail === "string"
+                        ? body.detail
+                        : `Could not start demo (${response.status})`;
+                    throw new Error(detail);
+                }
+                return body;
+            })
+            : Promise.resolve(null);
+    </script>
+    <script src="js/dashboard.js?v=demo7"></script>
+    <script src="js/plants.js?v=demo7"></script>
+    <script src="js/onboarding.js?v=demo7"></script>
+    <script src="js/ai-chat.js?v=demo7"></script>
 </body>
 </html>

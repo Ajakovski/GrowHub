@@ -1501,6 +1501,144 @@ button.pill {
     border: 2px solid var(--surface);
 }
 
+.demo-banner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.4rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--green-soft), var(--surface));
+}
+
+.demo-banner[hidden] {
+    display: none;
+}
+
+.demo-banner strong {
+    display: block;
+    color: var(--green-dark);
+    font-size: 0.95rem;
+}
+
+.demo-banner span {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.demo-banner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.auth-demo-link {
+    margin: -0.4rem 0 1.2rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.auth-demo-link a {
+    color: var(--green-dark);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.how-hero {
+    padding-top: 3.4rem;
+}
+
+.how-hero-grid,
+.how-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(1.6rem, 4vw, 3rem);
+    align-items: start;
+}
+
+.how-loop,
+.how-status-card,
+.how-detail-card,
+.how-cta {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.how-loop,
+.how-status-card {
+    padding: clamp(1.2rem, 3vw, 1.7rem);
+}
+
+.how-loop-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+}
+
+.how-loop-steps li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.how-step-index {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--green-dark);
+    color: var(--surface);
+    font-weight: 700;
+}
+
+.how-loop-steps strong {
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.how-loop-steps p,
+.how-status-card p,
+.how-detail-card p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.how-status-card strong {
+    display: block;
+    margin: 0.35rem 0 0.7rem;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    color: #b7791f;
+    letter-spacing: -0.03em;
+}
+
+.how-detail-grid {
+    margin-top: 0.4rem;
+}
+
+.how-detail-card {
+    padding: 1.25rem 1.35rem;
+}
+
+.how-detail-card h3 {
+    margin: 0 0 0.45rem;
+    font-size: 1.15rem;
+}
+
+.how-cta {
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+}
+
 .alert-list {
     display: grid;
     gap: 0.5rem;
@@ -1570,6 +1708,13 @@ button.pill {
     border-block: 1px solid var(--line);
 }
 
+.contact-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(1.8rem, 5vw, 3.2rem);
+    align-items: start;
+}
+
 .contact-list {
     display: grid;
     gap: 0.7rem;
@@ -1586,6 +1731,83 @@ button.pill {
 .contact-list a:hover,
 .contact-list a:focus-visible {
     color: var(--muted);
+}
+
+.contact-form {
+    position: relative;
+    display: grid;
+    gap: 0.95rem;
+    padding: clamp(1.3rem, 3vw, 1.8rem);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.contact-form label {
+    display: grid;
+    gap: 0.4rem;
+    font-weight: 650;
+    color: var(--ink);
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 0.78rem 1rem;
+    font: inherit;
+    color: var(--ink);
+    background: var(--bg);
+    width: 100%;
+}
+
+.contact-form textarea {
+    resize: vertical;
+    min-height: 8rem;
+}
+
+.contact-form input:focus-visible,
+.contact-form select:focus-visible,
+.contact-form textarea:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 1px;
+    background: var(--surface);
+}
+
+.contact-honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.contact-status {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 650;
+}
+
+.contact-status.is-error {
+    color: #c53030;
+}
+
+.contact-status.is-success {
+    color: var(--green-dark);
+}
+
+.contact-form .btn {
+    justify-self: start;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 650;
+}
+
+.contact-form .btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
 }
 
 .site-footer {
@@ -2001,7 +2223,10 @@ button.pill {
     .number-strip,
     .product-grid,
     .business-grid,
-    .metric-grid {
+    .metric-grid,
+    .contact-layout,
+    .how-hero-grid,
+    .how-split {
         grid-template-columns: 1fr;
     }
 

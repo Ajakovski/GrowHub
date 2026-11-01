@@ -1,17 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import Response, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Literal, Optional
 import asyncio
+import re
 import time
 
 import history
+import mailer
 import plants
+import ratelimit
+from logutil import get_logger
 from routers.auth import require_viewer
 from routers.device import CAMERA_SOURCE_STOCK, Hub, get_hub, hubs
 
 router = APIRouter()
 dashboard = [Depends(require_viewer)]
+_contact_limiter = ratelimit.RateLimiter(limit=5, window_seconds=600)
+_EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+web_log = get_logger("web")
 
 
 class CameraSourceUpdate(BaseModel):
@@ -23,11 +30,59 @@ class HubPlantsUpdate(BaseModel):
     tile_plants: Dict[str, List[str]] = Field(default_factory=dict)
 
 
+class ContactMessage(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    email: str = Field(min_length=3, max_length=120)
+    topic: str = Field(min_length=1, max_length=80)
+    message: str = Field(min_length=10, max_length=4000)
+    # Honeypot — bots fill this; humans leave it empty.
+    company: str = Field(default="", max_length=120)
+
+    @field_validator("name", "topic", "message")
+    @classmethod
+    def strip_text(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("This field is required")
+        return cleaned
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not _EMAIL_PATTERN.match(cleaned):
+            raise ValueError("Enter a valid email address")
+        return cleaned
+
+
 def _resolve_hub(hub_id: Optional[str]) -> Optional[Hub]:
     hub = get_hub(hub_id)
     if hub is None and hub_id is not None:
         raise HTTPException(status_code=404, detail=f"Unknown hub '{hub_id}'")
     return hub
+
+
+@router.post("/contact")
+async def submit_contact(body: ContactMessage, request: Request):
+    if body.company.strip():
+        # Pretend success so scrapers don't retry.
+        return {"status": "sent"}
+
+    client = request.client.host if request.client else "unknown"
+    if not _contact_limiter.allow(f"{client}:{body.email.lower()}"):
+        raise HTTPException(status_code=429, detail="Too many messages. Try again in a few minutes.")
+
+    try:
+        mailer.send_contact_email(
+            name=body.name,
+            email=body.email,
+            topic=body.topic,
+            message=body.message,
+        )
+    except mailer.EmailError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+
+    return {"status": "sent"}
 
 
 @router.get("/tiles")
@@ -126,6 +181,7 @@ async def list_hubs():
 async def get_plant_stats(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
+        web_log.info("plant-stats empty requested_hub=%s", hub)
         return {
             "hub_id": None,
             "hub_online": False,
@@ -134,7 +190,16 @@ async def get_plant_stats(hub: Optional[str] = None):
             "alerts": [],
             "crops": plants.plants_payload({}),
         }
-    return record.snapshot(time.time())
+    snapshot = record.snapshot(time.time())
+    # Dashboard polls this every few seconds — keep the happy path quiet.
+    web_log.debug(
+        "plant-stats hub=%s online=%s last_telemetry_at=%s tiles=%s",
+        snapshot.get("hub_id"),
+        snapshot.get("hub_online"),
+        snapshot.get("last_telemetry_at"),
+        len(snapshot.get("tiles") or []),
+    )
+    return snapshot
 
 
 @router.put("/plants", dependencies=dashboard)

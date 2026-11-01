@@ -11,6 +11,7 @@ import accounts
 import mailer
 import onboarding
 import plants
+from logutil import get_logger
 from ratelimit import RateLimiter
 from routers.ai import ai_key_matches
 
@@ -28,7 +29,9 @@ FALLBACK_PUBLIC_URL = "http://localhost:5000"
 router = APIRouter()
 limiter = RateLimiter(AUTH_ATTEMPTS_PER_MINUTE)
 resend_limiter = RateLimiter(3, window_seconds=600)
+demo_limiter = RateLimiter(60, window_seconds=600)
 logger = logging.getLogger("uvicorn.error")
+auth_log = get_logger("auth")
 
 
 def _normalise_email(value: str) -> str:
@@ -82,6 +85,12 @@ def current_user(request: Request) -> Optional[accounts.User]:
 def require_user(request: Request) -> accounts.User:
     user = current_user(request)
     if user is None or not user.email_verified:
+        has_cookie = bool(request.cookies.get(SESSION_COOKIE))
+        auth_log.info(
+            "auth rejected path=%s has_session_cookie=%s",
+            request.url.path,
+            has_cookie,
+        )
         raise HTTPException(status_code=401, detail="Log in to continue")
     return user
 
@@ -116,17 +125,26 @@ def _send_verification(request: Request, user: accounts.User) -> bool:
     return True
 
 
-def _start_session(response: Response, user: accounts.User) -> dict:
+def _user_payload(user: accounts.User) -> dict:
+    return {"email": user.email, "is_demo": accounts.is_demo_user(user)}
+
+
+def _start_session(
+    response: Response,
+    user: accounts.User,
+    *,
+    ttl_seconds: int = accounts.SESSION_TTL_SECONDS,
+) -> dict:
     response.set_cookie(
         SESSION_COOKIE,
-        accounts.create_session(user.id),
-        max_age=accounts.SESSION_TTL_SECONDS,
+        accounts.create_session(user.id, ttl_seconds=ttl_seconds),
+        max_age=ttl_seconds,
         httponly=True,
         secure=COOKIE_SECURE,
         samesite="lax",
         path="/",
     )
-    return {"email": user.email}
+    return _user_payload(user)
 
 
 @router.post("/register", status_code=201)
@@ -135,19 +153,45 @@ def register(body: NewAccount, request: Request):
     try:
         user = accounts.create_user(body.email, body.password)
     except accounts.EmailTaken:
+        auth_log.info("register rejected email_taken=%s", body.email)
         raise HTTPException(status_code=409, detail="An account with this email already exists")
-    return {"email": user.email, "email_sent": _send_verification(request, user)}
+    email_sent = _send_verification(request, user=)
+    auth_log.info("register ok email=%s email_sent=%s", user.email, email_sent)
+    return {"email": user.email, "email_sent": email_sent}
 
 
 @router.post("/login")
 def login(body: Credentials, request: Request, response: Response):
     _check_rate_limit(request)
+    if body.email == accounts.DEMO_EMAIL:
+        auth_log.info("login rejected demo_email=%s", body.email)
+        raise HTTPException(status_code=401, detail="Wrong email or password")
     user = accounts.authenticate(body.email, body.password)
     if user is None:
+        auth_log.info("login rejected unverified email=%s", body.email)
         raise HTTPException(status_code=401, detail="Wrong email or password")
     if not user.email_verified:
         raise HTTPException(status_code=403, detail="Verify your email first. Check your inbox for the link.")
+    auth_log.info("login ok email=%s", user.email)
     return _start_session(response, user)
+
+
+@router.post("/demo")
+def start_demo(request: Request, response: Response):
+    """Guest session for the public live demo."""
+    existing = current_user(request)
+    client = request.client.host if request.client else "unknown"
+    # Already in a demo session — just refresh, don't burn the rate limit.
+    if existing is not None and accounts.is_demo_user(existing) and existing.email_verified:
+        auth_log.info("demo session refreshed client=%s", client)
+        return _start_session(response, existing, ttl_seconds=accounts.DEMO_SESSION_TTL_SECONDS)
+
+    if not demo_limiter.allow(client):
+        auth_log.warning("demo rate-limited client=%s", client)
+        raise HTTPException(status_code=429, detail="Too many demo starts. Wait a few minutes and try again.")
+    user = accounts.ensure_demo_user()
+    auth_log.info("demo session started client=%s user_id=%s", client, user.id)
+    return _start_session(response, user, ttl_seconds=accounts.DEMO_SESSION_TTL_SECONDS)
 
 
 @router.post("/verify")
@@ -155,7 +199,9 @@ def verify(body: VerificationToken, request: Request, response: Response):
     _check_rate_limit(request)
     user = accounts.verify_email(body.token)
     if user is None:
+        auth_log.info("verify rejected invalid_or_expired_token")
         raise HTTPException(status_code=400, detail="This verification link is invalid or has expired.")
+    auth_log.info("verify ok email=%s", user.email)
     return _start_session(response, user)
 
 
@@ -174,15 +220,21 @@ def resend_verification(body: EmailOnly, request: Request):
 @router.post("/logout")
 def logout(request: Request, response: Response):
     token = request.cookies.get(SESSION_COOKIE)
+    user = accounts.user_for_session(token) if token else None
     if token:
         accounts.delete_session(token)
     response.delete_cookie(SESSION_COOKIE, path="/", secure=COOKIE_SECURE, httponly=True, samesite="lax")
+    auth_log.info(
+        "logout email=%s was_demo=%s",
+        user.email if user else None,
+        accounts.is_demo_user(user) if user else False,
+    )
     return {"status": "logged out"}
 
 
 @router.get("/me")
 def me(user: accounts.User = Depends(require_user)):
-    return {"email": user.email}
+    return _user_payload(user)
 
 
 def _onboarding_payload(user: accounts.User) -> dict:

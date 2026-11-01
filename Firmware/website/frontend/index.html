@@ -21,8 +21,9 @@
                 <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle menu">Menu</button>
                 <nav class="nav-menu" data-nav-menu aria-label="Primary">
                     <a class="nav-link" href="#products">Products</a>
+                    <a href="how-it-works.html" class="nav-link">How it works</a>
                     <a href="shop.html" class="nav-link">Catalog</a>
-                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    <a href="demo.html" class="nav-link">Live demo</a>
                     <a class="nav-link navcta" href="#contact">Contact</a>
                 </nav>
             </div>
@@ -44,8 +45,8 @@
                             <span class="pill">Local AI plant care</span>
                         </div>
                         <div class="button-group">
-                            <a class="btn btn-primary" href="#system">Explore the system</a>
-                            <a class="btn btn-secondary" href="#contact">Partner with us</a>
+                            <a class="btn btn-primary" href="demo.html">Try the live demo</a>
+                            <a class="btn btn-secondary" href="how-it-works.html">How AI care works</a>
                         </div>
                     </div>
                     <aside class="product-visual" aria-label="GrowHub prototype render">
@@ -247,20 +248,51 @@
             </section>
 
             <section class="section" id="contact">
-                <div class="container">
+                <div class="container contact-layout">
                     <div>
                         <span class="kicker">Contact</span>
                         <h2 class="section-title">Looking for manufacturing, pilot and scaling partners.</h2>
                         <p class="section-lead">
                             We are open to investors and partners who bring more than capital: we want production knowledge, scaling experience or access to commercial
-                            greenhouse pilots.
+                            greenhouse pilots. Send a note below — it goes straight to us, no email app required.
                         </p>
                         <div class="contact-list">
                             <a href="tel:+38971848656">+389 71 848 656</a>
-                            <a href="mailto:contact@growhub.com">contact@growhub.it.com</a>
+                            <span>contact@growhub.it.com</span>
                             <span>Macedonia</span>
                         </div>
                     </div>
+                    <form class="contact-form" id="contact-form" novalidate>
+                        <label>
+                            Name
+                            <input type="text" name="name" autocomplete="name" maxlength="80" required />
+                        </label>
+                        <label>
+                            Email
+                            <input type="email" name="email" autocomplete="email" maxlength="120" required />
+                        </label>
+                        <label>
+                            Topic
+                            <select name="topic" required>
+                                <option value="" disabled selected>What is this about?</option>
+                                <option value="Partnership">Partnership</option>
+                                <option value="Pilot / hardware">Pilot or hardware</option>
+                                <option value="Investment">Investment</option>
+                                <option value="Support">Support</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </label>
+                        <label>
+                            Message
+                            <textarea name="message" rows="5" maxlength="4000" required placeholder="Tell us what you're building…"></textarea>
+                        </label>
+                        <label class="contact-honeypot" aria-hidden="true">
+                            Company
+                            <input type="text" name="company" tabindex="-1" autocomplete="off" />
+                        </label>
+                        <p class="contact-status" id="contact-status" role="status" hidden></p>
+                        <button type="submit" class="btn btn-primary" id="contact-submit">Send message</button>
+                    </form>
                 </div>
             </section>
         </main>
@@ -272,6 +304,7 @@
             </div>
         </footer>
 
-        <script src="js/main.js"></script>
+        <script src="js/main.js?v=demo6"></script>
+        <script src="js/contact.js"></script>
     </body>
 </html>

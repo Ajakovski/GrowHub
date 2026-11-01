@@ -106,8 +106,10 @@ async function submitAuthForm(event) {
             return;
         }
         if (!response.ok) throw new Error(errorMessage(data, response.status));
+        console.info("[growhub] auth ok", { mode: authMode, next: nextPage() });
         window.location.replace(nextPage());
     } catch (error) {
+        console.warn("[growhub] auth failed", { mode: authMode, message: error?.message || String(error) });
         showAuthError(error instanceof TypeError ? "Could not reach the GrowHub server." : error.message);
     } finally {
         submit.disabled = false;
@@ -173,7 +175,13 @@ async function initAuthPage() {
     if (new URLSearchParams(window.location.search).get("mode") === "register") setAuthMode("register");
 
     try {
-        if (await fetchCurrentUser()) window.location.replace(nextPage());
+        const user = await fetchCurrentUser();
+        // Guest demo sessions shouldn't kick you off the login/register form.
+        if (user?.is_demo) {
+            console.info("[growhub:demo] staying on auth page for guest session");
+            return;
+        }
+        if (user) window.location.replace(nextPage());
     } catch (error) {
         console.warn("could not check login state:", error);
     }

@@ -27,18 +27,114 @@ let cameraSourcePending = false;
 async function dashboardFetch(url, options = {}) {
     const response = await fetch(url, { ...options, credentials: "include" });
     if (response.status === 401) {
+        const duringDemo = isDemoSession || wantsDemoEntry() || sessionStorage.getItem("growhub_demo_entry") === "1";
+        console.warn("[growhub:demo] dashboard 401", {
+            url: String(url),
+            duringDemo,
+            isDemoSession,
+        });
+        if (duringDemo) {
+            throw new Error("session expired");
+        }
         redirectToLogin();
         throw new Error("session expired");
     }
     return response;
 }
 
+let isDemoSession = false;
+
 async function logout() {
     try {
         await fetch(`${AUTH_URL}/logout`, { method: "POST", credentials: "include" });
     } finally {
-        window.location.replace("login.html");
+        window.location.replace(isDemoSession ? "index.html" : "login.html");
     }
+}
+
+function leaveDemoForAccount() {
+    // Fire-and-forget so the normal href navigation isn't blocked.
+    console.info("[growhub:demo] leaving guest session for create account");
+    fetch(`${AUTH_URL}/logout`, { method: "POST", credentials: "include", keepalive: true }).catch((error) => {
+        console.warn("[growhub:demo] logout before create account failed", error);
+    });
+}
+
+function applyDashboardNav(user) {
+    const link = document.querySelector("[data-nav-dashboard]");
+    if (!link) return;
+    if (user?.is_demo) {
+        link.textContent = "Live demo";
+        link.setAttribute("href", "demo.html");
+    } else {
+        link.textContent = "Dashboard";
+        link.setAttribute("href", "dashboard.html");
+    }
+    link.classList.add("active");
+}
+
+function applyDemoChrome(user) {
+    isDemoSession = Boolean(user?.is_demo);
+    const banner = document.getElementById("demo-banner");
+    const email = document.getElementById("account-email");
+    const logoutButton = document.getElementById("logout-button");
+    const createAccount = document.getElementById("demo-create-account");
+    if (banner) banner.hidden = !isDemoSession;
+    applyDashboardNav(user);
+    if (!isDemoSession) return;
+    if (email) email.textContent = "Guest demo";
+    if (logoutButton) logoutButton.textContent = "Exit demo";
+    if (createAccount) createAccount.addEventListener("click", leaveDemoForAccount);
+}
+
+function wantsDemoEntry() {
+    return new URLSearchParams(window.location.search).get("demo") === "1";
+}
+
+function clearDemoQuery() {
+    if (!wantsDemoEntry()) return;
+    window.history.replaceState({}, "", "dashboard.html");
+}
+
+function showDemoEntryError(message) {
+    document.body.classList.remove("auth-pending");
+    const banner = document.getElementById("demo-banner");
+    if (!banner) {
+        window.location.replace(`demo.html?error=${encodeURIComponent(message || "unavailable")}`);
+        return;
+    }
+    banner.hidden = false;
+    banner.innerHTML = `
+        <div>
+            <strong>Demo unavailable</strong>
+            <span>${message || "Could not open the guest session. Try again shortly, or create an account."}</span>
+        </div>
+        <div class="demo-banner-actions">
+            <a class="btn btn-secondary" href="how-it-works.html">How AI care works</a>
+            <a class="btn btn-primary" href="dashboard.html?demo=1">Try again</a>
+            <a class="btn btn-primary" href="login.html">Log in</a>
+        </div>
+    `;
+    const header = document.getElementById("dashboard-header");
+    if (header) header.hidden = true;
+    document.getElementById("metric-grid")?.classList.add("hidden");
+    document.getElementById("camera-card")?.classList.add("hidden");
+}
+
+async function startDemoSession() {
+    const response = await fetch(`${AUTH_URL}/demo`, {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const detail = typeof body.detail === "string"
+            ? body.detail
+            : `Could not start demo (${response.status})`;
+        throw new Error(detail);
+    }
+    return body;
 }
 
 function clearLegacyStorage() {
@@ -367,7 +463,12 @@ async function fetchPlantStats() {
         refreshHistory();
         if (typeof ensurePlantSetup === "function") ensurePlantSetup(globalTelemetry.crops);
     } catch (error) {
-        console.error("failed to load plant telemetry:", error);
+        console.error("[growhub] plant-stats failed", {
+            message: error?.message || String(error),
+            api: API_URL,
+            hub: currentHubId,
+            isDemoSession,
+        });
         setLoading(false);
         setOfflineState();
     }
@@ -721,17 +822,77 @@ function toggleMetricCard(card) {
 }
 
 async function initDashboard() {
-    let user = null;
-    try {
-        user = await fetchCurrentUser();
-    } catch (error) {
-        console.error("could not check login state:", error);
+    const enterDemo = wantsDemoEntry();
+    if (enterDemo) {
+        try {
+            sessionStorage.setItem("growhub_demo_entry", "1");
+        } catch (error) {}
     }
+    let user = null;
+    let demoError = null;
+
+    async function establishUser() {
+        if (enterDemo) {
+            try {
+                if (window.growhubDemoBootstrap) await window.growhubDemoBootstrap;
+                else await startDemoSession();
+            } catch (error) {
+                demoError = error instanceof TypeError
+                    ? "Could not reach the GrowHub server."
+                    : error.message || "Could not start the demo.";
+                console.warn("demo session start failed:", error);
+            }
+        }
+        try {
+            return await fetchCurrentUser();
+        } catch (error) {
+            console.error("could not check login state:", error);
+            return null;
+        }
+    }
+
+    user = await establishUser();
+    // Cookie sometimes isn't readable on the first try after POST /demo.
+    if (enterDemo && !user) {
+        window.growhubDemoBootstrap = null;
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        try {
+            await startDemoSession();
+            demoError = null;
+        } catch (error) {
+            demoError = error instanceof TypeError
+                ? "Could not reach the GrowHub server."
+                : error.message || "Could not start the demo.";
+        }
+        user = await fetchCurrentUser().catch(() => null);
+    }
+
+    if (enterDemo && !user && demoError) {
+        clearDemoQuery();
+        growhubAuth.settle(null);
+        showDemoEntryError(demoError);
+        return;
+    }
+
     if (!user) {
+        growhubAuth.settle(null);
+        if (enterDemo || sessionStorage.getItem("growhub_demo_entry") === "1") {
+            clearDemoQuery();
+            showDemoEntryError(demoError || "Could not start the demo.");
+            return;
+        }
         redirectToLogin();
         return;
     }
+
+    try {
+        sessionStorage.removeItem("growhub_demo_entry");
+    } catch (error) {}
+
+    clearDemoQuery();
+    growhubAuth.settle(user);
     document.getElementById("account-email").textContent = user.email;
+    applyDemoChrome(user);
     document.getElementById("logout-button").addEventListener("click", logout);
     document.body.classList.remove("auth-pending");
 

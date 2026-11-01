@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import device, web, ai, auth
@@ -8,6 +10,9 @@ import history
 history.init_db()
 accounts.init_db()
 device.load_hubs()
+
+# Keep auth/demo/dashboard diagnostics visible under uvicorn without turning on DEBUG globally.
+logging.getLogger("growhub").setLevel(logging.INFO)
 
 app = FastAPI(title="GrowHub core api")
 

@@ -1,7 +1,29 @@
-// The backend runs on port 8000 of whatever host served this page; set window.GROWHUB_API_ORIGIN to override.
-const GROWHUB_API_ORIGIN = window.GROWHUB_API_ORIGIN
-    || `${window.location.protocol === "https:" ? "https:" : "http:"}//${window.location.hostname || "localhost"}:8000`;
+// Hit same-origin /api (nginx → backend). Override with GROWHUB_API_ORIGIN for :8000.
+const GROWHUB_API_ORIGIN = window.GROWHUB_API_ORIGIN != null
+    ? window.GROWHUB_API_ORIGIN
+    : window.location.origin;
 const AUTH_URL = `${GROWHUB_API_ORIGIN}/api/auth`;
+
+// Resolves once the dashboard finishes auth (including guest demo).
+const growhubAuth = (() => {
+    let settledUser = undefined;
+    let resolveReady;
+    const ready = new Promise((resolve) => {
+        resolveReady = resolve;
+    });
+    return {
+        ready,
+        get user() {
+            return settledUser;
+        },
+        settle(user) {
+            if (settledUser !== undefined) return;
+            settledUser = user || null;
+            resolveReady(settledUser);
+        },
+    };
+})();
+window.growhubAuth = growhubAuth;
 
 async function fetchCurrentUser() {
     const response = await fetch(`${AUTH_URL}/me`, { credentials: "include" });
@@ -11,7 +33,15 @@ async function fetchCurrentUser() {
 }
 
 function redirectToLogin() {
+    // Guest demo entry handles its own failure UI.
+    try {
+        if (sessionStorage.getItem("growhub_demo_entry") === "1") {
+            console.warn("[growhub:demo] blocked login redirect during guest entry");
+            return;
+        };
+    } catch (error) {}
     const page = window.location.pathname.split("/").pop() || "dashboard.html";
+    console.info("[growhub] redirect to login", { next: page });
     window.location.replace(`login.html?next=${encodeURIComponent(page)}`);
 }
 

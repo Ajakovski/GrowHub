@@ -8,10 +8,13 @@ from typing import Any, NamedTuple, Optional
 from history import _connection
 
 SESSION_TTL_SECONDS = 30 * 24 * 3600
+DEMO_SESSION_TTL_SECONDS = 4 * 3600
 VERIFICATION_TTL_SECONDS = 24 * 3600
 SCRYPT_N = 2 ** 14
 SCRYPT_R = 8
 SCRYPT_P = 1
+# Shared guest account for the live demo (not a real mailbox).
+DEMO_EMAIL = "demo@growhub.local"
 
 USER_COLUMNS = "users.id, users.email, users.created_at, users.email_verified"
 
@@ -102,6 +105,8 @@ def _hash_token(token: str) -> str:
 
 
 def create_user(email: str, password: str) -> User:
+    if email.strip().lower() == DEMO_EMAIL:
+        raise EmailTaken(email)
     created_at = time.time()
     try:
         with _connection() as conn:
@@ -112,6 +117,43 @@ def create_user(email: str, password: str) -> User:
     except sqlite3.IntegrityError:
         raise EmailTaken(email)
     return User(cursor.lastrowid, email, created_at, False)
+
+
+def is_demo_user(user: User) -> bool:
+    return user.email.lower() == DEMO_EMAIL
+
+
+def ensure_demo_user() -> User:
+    """Create/refresh the guest user; onboarding marked done so the quiz stays out of the way."""
+    now = time.time()
+    with _connection() as conn:
+        row = conn.execute(f"SELECT {USER_COLUMNS} FROM users WHERE email = ?", (DEMO_EMAIL,)).fetchone()
+        if row is None:
+            cursor = conn.execute(
+                "INSERT INTO users (email, password_hash, created_at, email_verified) VALUES (?, ?, ?, 1)",
+                (DEMO_EMAIL, hash_password(secrets.token_urlsafe(32)), now),
+            )
+            user = User(cursor.lastrowid, DEMO_EMAIL, now, True)
+        else:
+            conn.execute("UPDATE users SET email_verified = 1 WHERE id = ?", (row[0],))
+            user = User(row[0], row[1], row[2], True)
+
+    merge_onboarding(
+        user.id,
+        completed=True,
+        answers={
+            "goal": "both",
+            "harvest": "weekly",
+            "plant_ids": ["lettuce"],
+            "time": "medium",
+            "experience": "some",
+            "space": "corner",
+        },
+        recommendation=None,
+        completed_at=now,
+        tour_seen_at=now,
+    )
+    return user
 
 
 def find_user(email: str) -> Optional[User]:
@@ -160,14 +202,14 @@ def verify_email(token: str) -> Optional[User]:
     return _user(user)
 
 
-def create_session(user_id: int) -> str:
+def create_session(user_id: int, ttl_seconds: int = SESSION_TTL_SECONDS) -> str:
     token = secrets.token_urlsafe(32)
     now = time.time()
     with _connection() as conn:
         conn.execute("DELETE FROM sessions WHERE expires_at < ?", (now,))
         conn.execute(
             "INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
-            (_hash_token(token), user_id, now, now + SESSION_TTL_SECONDS),
+            (_hash_token(token), user_id, now, now + ttl_seconds),
         )
     return token
 

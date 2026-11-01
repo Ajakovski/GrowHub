@@ -9,6 +9,7 @@ RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 # Resend only sends from domains verified in your account; onboarding@resend.dev works for testing
 # but can only deliver to the email address you signed up to Resend with.
 EMAIL_FROM = os.environ.get("GROWHUB_EMAIL_FROM") or "GrowHub <onboarding@resend.dev>"
+CONTACT_TO = os.environ.get("GROWHUB_CONTACT_TO") or "contact@growhub.it.com"
 TIMEOUT_SECONDS = 10
 
 logger = logging.getLogger("uvicorn.error")
@@ -22,15 +23,31 @@ def is_configured() -> bool:
     return bool(RESEND_API_KEY)
 
 
-def send_email(to: str, subject: str, html_body: str, text_body: str) -> None:
+def send_email(
+    to: str,
+    subject: str,
+    html_body: str,
+    text_body: str,
+    *,
+    reply_to: str | None = None,
+) -> None:
     if not is_configured():
         logger.warning("RESEND_API_KEY is not set, so this email was not sent.\nTo: %s\n%s", to, text_body)
         return
+    payload = {
+        "from": EMAIL_FROM,
+        "to": [to],
+        "subject": subject,
+        "html": html_body,
+        "text": text_body,
+    }
+    if reply_to:
+        payload["reply_to"] = [reply_to]
     try:
         response = requests.post(
             RESEND_API_URL,
             headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
-            json={"from": EMAIL_FROM, "to": [to], "subject": subject, "html": html_body, "text": text_body},
+            json=payload,
             timeout=TIMEOUT_SECONDS,
         )
     except requests.RequestException as error:
@@ -57,3 +74,26 @@ def send_verification_email(to: str, link: str) -> None:
         "The link expires in 24 hours. If you didn't create a GrowHub account, you can ignore this email."
     )
     send_email(to, "Verify your GrowHub email", html_body, text_body)
+
+
+def send_contact_email(*, name: str, email: str, topic: str, message: str) -> None:
+    safe_name = html.escape(name)
+    safe_email = html.escape(email)
+    safe_topic = html.escape(topic)
+    safe_message = html.escape(message).replace("\n", "<br>")
+    subject = f"GrowHub contact: {topic}"
+    html_body = f"""\
+<div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color: #17313b;">
+  <h1 style="color: #004b2d; font-size: 22px;">New website message</h1>
+  <p><strong>From:</strong> {safe_name} &lt;{safe_email}&gt;</p>
+  <p><strong>Topic:</strong> {safe_topic}</p>
+  <hr style="border: none; border-top: 1px solid #dce7df; margin: 1.2rem 0;" />
+  <p style="white-space: pre-wrap; line-height: 1.5;">{safe_message}</p>
+</div>"""
+    text_body = (
+        f"New website message\n\n"
+        f"From: {name} <{email}>\n"
+        f"Topic: {topic}\n\n"
+        f"{message}\n"
+    )
+    send_email(CONTACT_TO, subject, html_body, text_body, reply_to=email)
