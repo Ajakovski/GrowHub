@@ -4,6 +4,39 @@
 
 ---
 
+## 27. Timelapse 1.11.2026
+
+Crazy multitasking today but i did my +10 hours still...
+
+The Floor PCB is halfway done. Firmware production is getting close and so is the end of this YSWS :((
+
+---
+
+**What i did:**
+
+- Halfway done Floor PCB
+- Added a couple 3D models
+
+---
+
+**Problems that occured:**
+
+- Nothing much except the fact that i was perma disturbed by something irl
+
+---
+
+**Next step:**
+
+- Finish off the PCB
+- Do a full DRC and visual check on both boards
+- Start the firmware
+
+![Image66](./Documentation/Pictures/Journal_AJ/Image66.png)
+![Image67](./Documentation/Pictures/Journal_AJ/Image67.png)
+
+
+---
+
 ## 26. Timelapse 31.10.2026
 
 Spooky scary skeletons. I grinded a bit today...
