@@ -1,4 +1,4 @@
-"""Register / login / verify smoke tests"""
+"""Register / login / verify smoke tests."""
 
 
 def test_health_check(client):
@@ -23,7 +23,7 @@ def test_register_then_unverified_login_blocked(client):
 
     login = client.post(
         "/api/auth/login",
-        json={"email": "grower@example.com", "password": "password123"}
+        json={"email": "grower@example.com", "password": "password123"},
     )
     assert login.status_code == 403
 
@@ -49,7 +49,7 @@ def test_login_rejects_wrong_password(client):
         json={"email": "wrongpass@example.com", "password": "password123"},
     )
     response = client.post(
-        "/api/auth/register",
+        "/api/auth/login",
         json={"email": "wrongpass@example.com", "password": "not-the-password"},
     )
     assert response.status_code == 401

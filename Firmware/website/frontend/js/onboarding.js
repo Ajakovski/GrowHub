@@ -528,16 +528,16 @@ async function ensureOnboarding() {
 
         const response = await fetch(ONBOARDING_URL, { credentials: "include" });
         if (response.status === 401) {
-            console.warn("[growhub] onboarding 401 - leaving redirect to dashboard auth");
+            console.warn("[growhub] onboarding 401 — leaving redirect to dashboard auth");
             return;
-        };
+        }
         if (!response.ok) throw new Error(`http error! status: ${response.status}`);
         const data = await response.json();
         onboardPayload = data;
         if (data.completed) {
             console.info("[growhub] onboarding already complete", { email: user.email, is_demo: user.is_demo });
             return;
-        };
+        }
         // If they already saved answers but never finished the tour, resume at the recommendation.
         if (data.recommendation && data.answers) {
             openQuiz(data);

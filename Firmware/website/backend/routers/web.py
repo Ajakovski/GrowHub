@@ -64,12 +64,14 @@ def _resolve_hub(hub_id: Optional[str]) -> Optional[Hub]:
 
 @router.post("/contact")
 async def submit_contact(body: ContactMessage, request: Request):
+    client = request.client.host if request.client else "unknown"
     if body.company.strip():
         # Pretend success so scrapers don't retry.
+        web_log.info("contact honeypot tripped client=%s", client)
         return {"status": "sent"}
 
-    client = request.client.host if request.client else "unknown"
     if not _contact_limiter.allow(f"{client}:{body.email.lower()}"):
+        web_log.warning("contact rate-limited client=%s email=%s", client, body.email)
         raise HTTPException(status_code=429, detail="Too many messages. Try again in a few minutes.")
 
     try:
@@ -80,8 +82,10 @@ async def submit_contact(body: ContactMessage, request: Request):
             message=body.message,
         )
     except mailer.EmailError as error:
+        web_log.error("contact send failed client=%s email=%s error=%s", client, body.email, error)
         raise HTTPException(status_code=502, detail=str(error)) from error
 
+    web_log.info("contact sent client=%s email=%s topic=%s", client, body.email, body.topic)
     return {"status": "sent"}
 
 

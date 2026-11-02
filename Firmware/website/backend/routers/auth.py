@@ -155,7 +155,7 @@ def register(body: NewAccount, request: Request):
     except accounts.EmailTaken:
         auth_log.info("register rejected email_taken=%s", body.email)
         raise HTTPException(status_code=409, detail="An account with this email already exists")
-    email_sent = _send_verification(request, user=)
+    email_sent = _send_verification(request, user)
     auth_log.info("register ok email=%s email_sent=%s", user.email, email_sent)
     return {"email": user.email, "email_sent": email_sent}
 
@@ -168,9 +168,10 @@ def login(body: Credentials, request: Request, response: Response):
         raise HTTPException(status_code=401, detail="Wrong email or password")
     user = accounts.authenticate(body.email, body.password)
     if user is None:
-        auth_log.info("login rejected unverified email=%s", body.email)
+        auth_log.info("login rejected bad_credentials email=%s", body.email)
         raise HTTPException(status_code=401, detail="Wrong email or password")
     if not user.email_verified:
+        auth_log.info("login rejected unverified email=%s", body.email)
         raise HTTPException(status_code=403, detail="Verify your email first. Check your inbox for the link.")
     auth_log.info("login ok email=%s", user.email)
     return _start_session(response, user)

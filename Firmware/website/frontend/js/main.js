@@ -38,7 +38,7 @@ function redirectToLogin() {
         if (sessionStorage.getItem("growhub_demo_entry") === "1") {
             console.warn("[growhub:demo] blocked login redirect during guest entry");
             return;
-        };
+        }
     } catch (error) {}
     const page = window.location.pathname.split("/").pop() || "dashboard.html";
     console.info("[growhub] redirect to login", { next: page });
