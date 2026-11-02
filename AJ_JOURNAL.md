@@ -4,6 +4,16 @@
 
 ---
 
+## 28. Timelapse 2.11.2026
+
+Bruhh i feel like having a period:////
+
+I tried to work a bit but im having such a horrible stomach ache i might lowkey die.
+
+I lowkey did not do anything significant so i will just let this journal as it is because i really dont have the power if polishing it i gotta drink some medications and go to sleep.
+
+---
+
 ## 27. Timelapse 1.11.2026
 
 Crazy multitasking today but i did my +10 hours still...
