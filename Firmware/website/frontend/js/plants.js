@@ -7,6 +7,14 @@ let tilePlantDraft = {};
 let plantModalEditing = false;
 let plantCatalogPromise = null;
 
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+}
+
 function cropSummary(crops) {
     const plants = crops?.plants || [];
     if (!plants.length) return "Set plants";
@@ -50,9 +58,9 @@ async function loadPlantCatalog() {
 function plantCardHtml(plant, selected) {
     const [low, high] = plant.ec;
     return `
-        <button type="button" class="plant-card${selected ? " is-selected" : ""}" data-plant-id="${plant.id}" aria-pressed="${selected}">
-            <strong>${plant.name}</strong>
-            <span>${plant.blurb}</span>
+        <button type="button" class="plant-card${selected ? " is-selected" : ""}" data-plant-id="${escapeHtml(plant.id)}" aria-pressed="${selected}">
+            <strong>${escapeHtml(plant.name)}</strong>
+            <span>${escapeHtml(plant.blurb)}</span>
             <span class="plant-card-meta">EC ${low.toFixed(1)}–${high.toFixed(1)} mS/cm</span>
         </button>
     `;
@@ -101,13 +109,13 @@ function renderTileAssigner() {
     container.innerHTML = tiles.map((tileId) => {
         const chosen = new Set(tilePlantDraft[tileId] || []);
         const chips = selected.map((plant) => `
-            <button type="button" class="pill${chosen.has(plant.id) ? " active" : ""}" data-tile-id="${tileId}" data-plant-id="${plant.id}">
-                ${plant.name}
+            <button type="button" class="pill${chosen.has(plant.id) ? " active" : ""}" data-tile-id="${escapeHtml(tileId)}" data-plant-id="${escapeHtml(plant.id)}">
+                ${escapeHtml(plant.name)}
             </button>
         `).join("");
         return `
             <div class="plant-tile-row">
-                <strong>${tileLabel(tileId)}</strong>
+                <strong>${escapeHtml(tileLabel(tileId))}</strong>
                 <div class="eyebrow-row">${chips}</div>
             </div>
         `;
@@ -225,6 +233,7 @@ function initPlantSelector() {
         if (plantModalEditing) closePlantModal();
     });
     document.getElementById("crops-button")?.addEventListener("click", async () => {
+        if (typeof isDemoSession !== "undefined" && isDemoSession) return;
         try {
             await loadPlantCatalog();
             openPlantModal({ editing: true });

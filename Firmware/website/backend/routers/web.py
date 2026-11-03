@@ -11,11 +11,13 @@ import mailer
 import plants
 import ratelimit
 from logutil import get_logger
-from routers.auth import require_viewer
+from requestutil import client_ip
+from routers.auth import require_owner, require_viewer
 from routers.device import CAMERA_SOURCE_STOCK, Hub, get_hub, hubs
 
 router = APIRouter()
 dashboard = [Depends(require_viewer)]
+owner_only = [Depends(require_owner)]
 _contact_limiter = ratelimit.RateLimiter(limit=5, window_seconds=600)
 _EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 web_log = get_logger("web")
@@ -64,7 +66,7 @@ def _resolve_hub(hub_id: Optional[str]) -> Optional[Hub]:
 
 @router.post("/contact")
 async def submit_contact(body: ContactMessage, request: Request):
-    client = request.client.host if request.client else "unknown"
+    client = client_ip(request)
     if body.company.strip():
         # Pretend success so scrapers don't retry.
         web_log.info("contact honeypot tripped client=%s", client)
@@ -181,7 +183,7 @@ async def list_hubs():
     return [{"hub_id": hub.hub_id, **hub.status(now)} for hub in sorted(hubs.values(), key=lambda h: h.hub_id)]
 
 
-@router.get("/plant-stats", dependencies=dashboard)
+@router.get("/plant-stats", dependencies=owner_only)
 async def get_plant_stats(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
@@ -253,7 +255,7 @@ async def get_history(
     }
 
 
-@router.put("/camera-source", dependencies=dashboard)
+@router.put("/camera-source", dependencies=owner_only)
 async def set_camera_source(update: CameraSourceUpdate, hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:

@@ -85,6 +85,16 @@ function applyDemoChrome(user) {
     if (email) email.textContent = "Guest demo";
     if (logoutButton) logoutButton.textContent = "Exit demo";
     if (createAccount) createAccount.addEventListener("click", leaveDemoForAccount);
+    // Guest demo is read-only for shared hub config.
+    const crops = document.getElementById("crops-button");
+    if (crops) {
+        crops.disabled = true;
+        crops.title = "Create an account to change plants.";
+    }
+    document.querySelectorAll("#camera-source button[data-source]").forEach((button) => {
+        button.disabled = true;
+        button.title = "Create an account to change the camera source";
+    });
 }
 
 function wantsDemoEntry() {
@@ -104,17 +114,30 @@ function showDemoEntryError(message) {
         return;
     }
     banner.hidden = false;
-    banner.innerHTML = `
-        <div>
-            <strong>Demo unavailable</strong>
-            <span>${message || "Could not open the guest session. Try again shortly, or create an account."}</span>
-        </div>
-        <div class="demo-banner-actions">
-            <a class="btn btn-secondary" href="how-it-works.html">How AI care works</a>
-            <a class="btn btn-primary" href="dashboard.html?demo=1">Try again</a>
-            <a class="btn btn-primary" href="login.html">Log in</a>
-        </div>
-    `;
+    banner.replaceChildren();
+
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = "Demo unavailable";
+    const detail = document.createElement("span");
+    detail.textContent = message || "Could not open the guest session. Try again shortly, or create an account.";
+    copy.append(title, detail);
+
+    const actions = document.createElement("div");
+    actions.classname = "demo-banner-actions";
+    for (const [href, label, className] of [
+        ["how-it-works.html", "How AI care works", "btn btn-secondary"],
+        ["dashboard.html?demo=1", "Try again", "btn btn-primary"],
+        ["login.html", "Log in", "btn btn-primary"],
+    ]) {
+        const link = document.createElement("a");
+        link.className = className;
+        link.href = href;
+        link.textContent = label;
+        actions.append(link);
+    }
+    banner.append(copy, actions);
+    
     const header = document.getElementById("dashboard-header");
     if (header) header.hidden = true;
     document.getElementById("metric-grid")?.classList.add("hidden");
@@ -611,6 +634,7 @@ function renderCamera() {
 }
 
 async function selectCameraSource(source) {
+    if (!isDemoSession) return;
     if (!source || !currentHubId || cameraSourcePending) return;
     if (source === globalTelemetry?.camera_source) return;
 

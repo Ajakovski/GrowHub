@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from typing import List, Literal, Optional
+import hashlib
 
 import openai
 import requests
@@ -20,7 +21,7 @@ from config import (
     WEB_ORIGIN_REGEX,
 )
 from ratelimit import RateLimiter
-from skills import SKILLS
+from skills import SKILLS, WRITE_SKILLS, block_skills
 
 
 @asynccontextmanager
@@ -63,12 +64,28 @@ def require_user(request: Request) -> dict:
         raise HTTPException(status_code=502, detail="Could not reach the GrowHub backend to check your login.")
     if user is None:
         raise HTTPException(status_code=401, detail="Log in to use the GrowHub AI.")
+    user["_session_token"] = token or ""
     return user
 
 
+def _rate_limit_key(user: dict) -> str:
+    # Guest demos share one email - key by session so one guest cant exhaust everyones budget.
+    if user.get("is_demo"):
+        digest = hashlib.sha256(user.get("_session_token", "").encode()).hexdigest()[:32]
+        return f"demo:{digest}"
+    return user["email"]
+
+
 def _check_rate_limit(user: dict) -> None:
-    if not limiter.allow(user["email"]):
+    if not limiter.allow(_rate_limit_key(user)):
         raise HTTPException(status_code=429, detail="Too many AI requests, wait a minute and try again.")
+
+
+def _run_chat_llm(user: dict, conversation: list) -> str:
+    if user.get("is_demo"):
+        with block_skills(set[str](WRITE_SKILLS)):
+            return llm.run(conversation, exclude_skils=set[str](WRITE_SKILLS))
+    return llm.run(conversation)
 
 
 def _call_llm(action):
@@ -109,7 +126,7 @@ def chat(body: ChatRequest, user: dict = Depends(require_user)):
         {"role": "system", "content": prompts.chat_system_prompt(body.hub_id)},
         *({"role": m.role, "content": m.content} for m in messages),
     ]
-    reply = _call_llm(lambda: llm.run(conversation))
+    reply = _call_llm(lambda: _run_chat_llm(user, conversation))
     return {"reply": reply or "Sorry, I could not come up with an answer.", "model": LLM_MODEL}
 
 

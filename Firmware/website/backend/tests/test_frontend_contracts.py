@@ -47,3 +47,17 @@ def test_onboarding_waits_for_growhub_auth(frontend_root):
     js = (frontend_root / "js" / "onboarding.js").read_text(encoding="utf-8")
     assert "growhubAuth" in js
     assert "onboarding 401" in js
+
+
+def test_demo_error_banner_avoids_message_innerhtml(frontend_root):
+    js = (frontend_root / "js" / "dashboard.js").read_text(encoding="utf-8")
+    assert "function showDemoEntryError" in js
+    assert "detail.textContent" in js
+    assert "banner.innerHTML" not in js.split("function showDemoEntryError")[1].split("async function startDemoSession")[0]
+
+
+def test_plant_cards_escape_catalog_text(frontend_root):
+    js = (frontend_root / "js" / "plants.js").read_text(encoding="utf-8")
+    assert "function escapeHtml" in js
+    assert "escapeHtml(plant.name)" in js
+    

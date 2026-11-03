@@ -13,6 +13,7 @@ import onboarding
 import plants
 from logutil import get_logger
 from ratelimit import RateLimiter
+from requestutil import client_ip
 from routers.ai import ai_key_matches
 
 SESSION_COOKIE = "growhub_session"
@@ -101,8 +102,19 @@ def require_viewer(request: Request, x_ai_key: Optional[str] = Header(default=No
     require_user(request)
 
 
+def require_owner(request: Request) -> accounts.User:
+    """Verified non-demo user for mutating hub config (plants, camera source)."""
+    user = require_user(request)
+    if accounts.is_demo_user(user):
+        raise HTTPException(
+            status_code=403,
+            detail="Guest demo is read only, create an account to change plants or camera settings"
+        )
+    return user
+
+
 def _check_rate_limit(request: Request) -> None:
-    client = request.client.host if request.client else "unknown"
+    client = client_ip(request)
     if not limiter.allow(client):
         raise HTTPException(status_code=429, detail="Too many attempts, wait a minute and try again.")
 
@@ -181,7 +193,7 @@ def login(body: Credentials, request: Request, response: Response):
 def start_demo(request: Request, response: Response):
     """Guest session for the public live demo."""
     existing = current_user(request)
-    client = request.client.host if request.client else "unknown"
+    client = client_ip(request)
     # Already in a demo session — just refresh, don't burn the rate limit.
     if existing is not None and accounts.is_demo_user(existing) and existing.email_verified:
         auth_log.info("demo session refreshed client=%s", client)

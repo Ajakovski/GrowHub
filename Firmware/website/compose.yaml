@@ -8,6 +8,8 @@ services:
       # Override with real secrets in .env for anything beyond local testing.
       GROWHUB_DEVICE_KEY: ${GROWHUB_DEVICE_KEY:-dev-device-key}
       GROWHUB_AI_KEY: ${GROWHUB_AI_KEY:-dev-ai-key}
+      # Trust X-Real-IP / X-Forwarded-For from the frontend nginx container for rate limits.
+      GROWHUB_TRUST_PROXY: ${GROWHUB_TRUST_PROXY:-1}
       GROWHUB_STOCK_IMAGES_DIR: /stock_images
       GROWHUB_WEB_ORIGIN_REGEX: ${GROWHUB_WEB_ORIGIN_REGEX:-}
       GROWHUB_COOKIE_SECURE: ${GROWHUB_COOKIE_SECURE:-0}

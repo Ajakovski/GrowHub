@@ -20,7 +20,10 @@ def client(tmp_path, monkeypatch):
     """Fresh app + sqlite DB per test so demo/auth cases don't share sessions."""
     db_path = tmp_path / "growhub-test.db"
     monkeypatch.setenv("GROWHUB_DB_PATH", str(db_path))
+    # Tests that need open device ingest opt in; production fails close withour a key.
     monkeypatch.delenv("GROWHUB_DEVICE_KEY", raising=False)
+    monkeypatch.setenv("GROWHUB_ALLOW_INSECURE_DEVICE", "1")
+    monkeypatch.delenv("GROWHUB_TRUST_PROXY", raising=False)
 
     for name in list(sys.modules):
         if name in {
@@ -34,6 +37,7 @@ def client(tmp_path, monkeypatch):
             "stock_images",
             "logutil",
             "ratelimit",
+            "requestutil",
         } or name.startswith("routers"):
             del sys.modules[name]
 

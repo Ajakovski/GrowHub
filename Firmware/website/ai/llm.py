@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from typing import List
+from typing import List, Optional, Set
 
 from openai import OpenAI
 
@@ -56,11 +56,11 @@ def _parse_arguments(raw: str) -> dict:
     return parsed if isinstance(parsed, dict) else {}
 
 
-def run(messages: List[dict]) -> str:
+def run(messages: List[dict], *, exclude_skils: Optional[Set[str]] = None) -> str:
     """Answer the conversation, letting the model call skills for up to MAX_TOOL_ROUNDS rounds."""
     client = _client()
     conversation = list(messages)
-    tools = tool_definitions()
+    tools = tool_definitions(exclude=exclude_skils)
 
     for _ in range(MAX_TOOL_ROUNDS):
         response = client.chat.completions.create(model=LLM_MODEL, messages=conversation, tools=tools)
