@@ -4,6 +4,38 @@
 
 ---
 
+## 29. Timelapse 3.11.2026
+
+I lowkey speedran the floor PCB
+
+Maybe because of the previous PCB being so complex this one felt extrordinarily easy.
+
+**What i did:**
+
+- Finished the floor PCB
+- Assigned all .step files
+
+---
+
+**Problems that occured:**
+
+- Nothing much except my irl sickness
+
+---
+
+**What's next:**
+
+- Do a DRC on the floor PCB
+- Do a visual revision on both PCBs
+- Write the documentation
+- Start the firmware
+
+![Image68](./Documentation/Pictures/Journal_AJ/Image68.png)
+![Image69](./Documentation/Pictures/Journal_AJ/Image69.png)
+ 
+
+---
+
 ## 28. Timelapse 2.11.2026
 
 Bruhh i feel like having a period:////
