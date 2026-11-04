@@ -114,70 +114,120 @@ A lot of working skills are required for this project to succeed so i hope you u
 
 # Software
 
-The software side of GrowHub is the live monitoring layer: a local FastAPI backend, a web dashboard, and an ESP32-style simulator that can also push webcam frames so the optical node on the dashboard feels real during development.
+Everything lives under `Firmware/website`. Compose brings up **backend**, **AI**, **nginx frontend**, and an optional **simulator**. 
 
 ### Stack
 
-- **Frontend** — static site under `Firmware/website/frontend` (HTML / CSS / JS)
-- **Backend** — FastAPI app under `Firmware/website/backend` (`uvicorn`, port `8000`)
-- **Database** — SQLite (`growhub.db`) for sensor history, no extra server needed
-- **Simulator** — `esp32_simulator.py` (fake hub telemetry + optional webcam upload via OpenCV)
-- **Docker Compose** — `Firmware/website/compose.yaml` starts all three with one command
+| Piece | Location | Notes |
+|---|---|---|
+| Frontend | `frontend/` | Static HTML/CSS/JS (landing, how-it-works, shop, demo, login, dashboard) |
+| Nginx | `nginx.conf` | Servers the site on `:5000` and proxies `/api` → backend (same-origin cookies) |
+| Backend | `backend/` | FastAPI on `:8000` - aith, web dashboard APIs, device ingest, AI status/controls |
+| AI | `ai/` | FastAPI on `:8001` - chat + reviews; talks to the backend with `GROWHUB_AI_KEY` |
+| Database | SQLite | Accounts, sessions, hub history / plants / camera source / AI summaries |
+| Simulator | `backend/esp32_simulator.py` | Fake hub telemetry + optional OpenCV webcam frames |
 
-### What it does today
+### Product surfaces
 
-- Hub + per-tile telemetry (moisture, temperature, water reservoir, AI status)
-- Device selector to switch between **Main Hub** averages and individual tiles
-- Live “last updated” stamp and 1-hour sparklines on the moisture / temperature cards
-- Sensor history stored on the backend in SQLite, so every browser sees the same charts and they survive refreshes and restarts
-- Expandable moisture / temperature cards with a larger history chart (min / avg / max) and **1h / 24h / 7d** range buttons
-- History is averaged into at most 120 points per chart and kept for **7 days**, older readings are deleted automatically
-- **Hub offline detection**: the backend tracks when the hub last reported and how often it reports. If about 3 reports are missed (never less than 30 seconds), the dashboard shows a red "Hub offline" pill, "Last report Xm ago", and fades the last known values. This works for both the 5-second simulator and a real ESP32 that wakes every 15 minutes
-- **Alerts**: a red banner appears above the cards, and a red dot on that device's button, when a tile stays below 30% moisture or the reservoir stays low for 3 readings in a row. One noisy reading never triggers an alert
-- Camera still feed served by the backend (`/api/web/camera`) and shown on the dashboard. Frames are kept in memory only, never written to the database
-- Simulator posts JSON telemetry to `/api/device/telemetry` and JPEG frames to `/api/device/camera` every 5 seconds
+- **Landing** (`index.html`) - product story and contact
+- **How it works** - AI care explainer + path into the demo
+- **Catalog** (`shop.html`) - Hub / planter tile / stack modules from `/api/web/tiles`
+- **Live demo** (`demo.html`) - `POST /api/auth/demo` guest session, then dashboard
+- **Login / verify** - email + password; verification via Resend or backend log when unset
+- **Dashboard** - plant stats, history (1h / 24h / 7d), camera (webacm or stock images), AI chat, plant picker
+  Guest sessions can **view** the shared hub but cannot change plants, camera source, or actuators via AI
+
+### What the backend tracks
+
+- Hub + per tile telemetry: water temp / heater, EC, pH, reservoir level, air temp, humidity, light, flow
+- Offline detection from report cadence (missed reports → hub offline UI)
+- Sustained alerts (pH out of range, low/no flow, low water, cold water) - noisy single readings do not fire
+- Actuator modes for lights / pump / heater (`auto` | `on` | `off`), returned to devices on the next telemetry cycle
+- Camera frames in memory only (size-capped uploads); optional stock image folder for demos without a webcam
+- Shared SQLite history (averaged charts, ~7 day retention)
 
 ### How to run (Docker, recommended)
 
 From `Firmware/website`:
 
 ```bash
+cp .env.example .env # optional; fill LLM / email / secrets for a fuller setup
 docker compose up -d --build
 ```
 
-- Dashboard: `http://localhost:5000/dashboard.html`
-- API: `http://localhost:8000`
-- Stop everything with `docker compose down` (history stays in the `growhub-data` volume; `docker compose down -v` wipes it)
-- The simulator container uses the webcam at `/dev/video0`. Remove the `devices` lines in `compose.yaml` if your machine has no camera
+| URL | What |
+|---|---|
+| http://localhost:5000/ | Marketing site |
+| http://localhost:5000/demo.html | Guest demo entry |
+| http://localhost:5000/dashboard.html | Dashboard (login or demo) |
+| http://localhost:8000/ | Backend API (direct; prefer `:5000/api/` from the browser) |
+| http://localhost:8001/ | AI service |
 
-### How to run (manually, three terminals)
+```bash
+docker compose down       # keep SQLite volume
+docker compose down -v    # wipe growhub-data
+```
 
-1. Start the API from `Firmware/website/backend` (example: `uvicorn main:app --reload --port 8000`)
-2. Serve the frontend (example: `python -m http.server 5000` from `Firmware/website/frontend`)
-3. Run the simulator: `python esp32_simulator.py`
-4. Open the dashboard and hard-refresh if assets were just updated
+The simulator mounts `/dev/video0`. Remove the `devices:` block in `compose.yaml` if you have no camera. 
 
-Optional environment variables:
+### How to run (manual)
 
-| Variable | Default | Used by |
-|---|---|---|
-| `GROWHUB_DB_PATH` | `backend/growhub.db` | Backend, where the SQLite file lives |
-| `GROWHUB_API_BASE` | `http://localhost:8000` | Simulator, which backend to post to |
-| `CAMERA_INDEX` | `0` | Simulator, which webcam OpenCV opens |
+1. Backend: from `Firmware/website/backend`, `uvicorn main:app --reload --port 8000`
+2. Frontend: either nginx with `nginx.conf`, or temporarily `python -m http.server 5000` from `frontend/` (API calls should still hit the
+same origin or set `GROWHUB_API_ORIGIN`)
+3. AI (optional): from `Firmware/website/ai`, run its uvicorn entry on `8001` with `GROWHUB_API_BASE` and keys set
+4. Simulator: `python esp32_simulator.py` (needs `GROWHUB_DEVICE_KEY` matching the backend)
 
-Useful endpoints:
+### Environment (high level)
+
+Copy `Frimware/website/.env.example` → `.env`. Important knobs:
+
+| Variable | Purpose |
+|---|---|
+| `GROWHUB_DEVICE_KEY` | Required for device ingest (unset → rejected unless `GROWHUB_ALLOW_INSECURE_DEVICE=1`) |
+| `GROWHUB_AI_KEY` | Shared secret for AI ↔ backend status/controls and AI-key dashboard reads |
+| `GROWHUB_TRUST_PROXY` | `1` in compose so rate limits use nginx `X-Real-IP` / `X-Forwarded-For` |
+| `GROWHUB_COOKIE_SECURE` | `1` when serving HTTPS |
+| `GROWHUB_WEB_ORIGIN_REGEX` | Allowed browser origins for cookies/CORS (default: localhost + LAN) |
+| `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL` | OpenAI-compatible provider for chat + reviews |
+| `RESEND_API_KEY` / `GROWHUB_EMAIL_FROM` | Verification + contact email (empty → log verification links) |
+| `GROWHUB_PUBLIC_LINKS` | Absolute base for verification links in production |
+
+### Useful API routes
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/web/plant-stats` | Current hub/tile state for the dashboard, plus `hub_online`, `last_telemetry_at` and active `alerts` |
-| GET | `/api/web/history?device=hub&range=1h` | Moisture / temperature history (`device` = `hub` or a tile id, `range` = `1h`, `24h`, `7d`) |
-| POST | `/api/device/telemetry` | Simulator / device telemetry ingest |
-| POST | `/api/device/camera` | Upload latest camera frame |
-| GET | `/api/web/camera` | Latest still image for the dashboard |
+| POST | `/api/auth/register` · `/login` · `/demo` · `/logout` | Accounts + guest demo |
+| GET | `/api/auth/me` | Current user (`email`, `is_demo`) |
+| GET | `/api/web/plant-stats` | Dashboard snapshot (auth or AI key) |
+| GET | `/api/web/history?device=...&range-1h` | Chart history |
+| PUT | `/api/we/plants` · `/camera-source` | Hub config (**non-demo users only**) |
+| GET | `/api/web/camera` · `/camera/stream` | Still / MJPEG |
+| POST | `/api/web/contact` | Contact form (honeypot + rate limit) |
+| POST | `/api/device/telemetry` · `/camera` | Device ingest (`X-Device-Key`) |
+| GET/PUT | `api/ai/controls` | Actuator modes (`X-AI-Key`) |
+| POST | AI `:8001/chat` · `/review` | Logged-in chat / on-demand review |
+
+### Tests
+
+From `Firmware/website/backend` (with `requirements-dev.txt` installed):
+
+```bash
+python -m pytest tests/ -q
+```
+
+Covers demo/auth, web API, security guards (demo read-only, device fail-closed, upload cap, proxy IP) and static frontend/nginx contracts.
+
+### Deploy notes
+
+For anything beyond local compose: use stron secrets (not the `dev-*-key` defaults), set `GROWHUB_COOKIE_SECURE=1` on HTTPS, prefer
+exposing only `:5000` (or your TLS terminator) rather than publishing `:8000` / `:8001`, and keep `GROWHUB_TRUST_PROXY` aligned with
+whether a reverse proxy sits in front of the backend.
 
 ### Status
 
-Software is further ahead than the physical build: the dashboard and simulator loop are usable now, while schematic / PCB / final sensor wiring are still in progress on the hardware side.
+The website/software part is done now. It features everything from the frontend all the way to the backend with AI, tests, docker compose files,
+nginx conf files and everything. I think the hardware aka the PCB design is done as well so now we need to start working on the firmware.
 
 ---
 
