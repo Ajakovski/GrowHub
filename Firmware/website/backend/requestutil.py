@@ -16,12 +16,12 @@ def client_ip(request: Request) -> str:
 
     When GROWHUB_TRUST_PROXY=1, prefer X-Real-IP / first X-Forwarded-For hop
     (nginx sets these). Otherwise use the direct TCP peer so clients cannot
-    spoof limits by sending forget forwarded headers to a published :8000.
+    spoof limits by sending forged forwarded headers to a published :8000.
     """
-    if os.environ.get("GROWHUB_TEST_PROXY", "0") == "1":
+    if os.environ.get("GROWHUB_TRUST_PROXY", "0") == "1":
         forwarded = (request.headers.get("x-real-ip") or "").strip()
         if not forwarded:
-            raw = (request.headers.get("x-forwarded=for") or "").split(",")[0].strip()
+            raw = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
             forwarded = raw
         if forwarded and _IP_RE.match(forwarded):
             return forwarded.lstrip("[").rstrip("]")

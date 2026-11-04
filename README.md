@@ -114,34 +114,34 @@ A lot of working skills are required for this project to succeed so i hope you u
 
 # Software
 
-Everything lives under `Firmware/website`. Compose brings up **backend**, **AI**, **nginx frontend**, and an optional **simulator**. 
+Everything lives under `Firmware/website`. Compose brings up **backend**, **AI**, **nginx frontend**, and an optional **simulator**.
 
 ### Stack
 
 | Piece | Location | Notes |
 |---|---|---|
 | Frontend | `frontend/` | Static HTML/CSS/JS (landing, how-it-works, shop, demo, login, dashboard) |
-| Nginx | `nginx.conf` | Servers the site on `:5000` and proxies `/api` → backend (same-origin cookies) |
-| Backend | `backend/` | FastAPI on `:8000` - aith, web dashboard APIs, device ingest, AI status/controls |
-| AI | `ai/` | FastAPI on `:8001` - chat + reviews; talks to the backend with `GROWHUB_AI_KEY` |
+| Nginx | `nginx.conf` | Serves the site on `:5000` and proxies `/api/` → backend (same-origin cookies) |
+| Backend | `backend/` | FastAPI on `:8000` — auth, web dashboard APIs, device ingest, AI status/controls |
+| AI | `ai/` | FastAPI on `:8001` — chat + reviews; talks to the backend with `GROWHUB_AI_KEY` |
 | Database | SQLite | Accounts, sessions, hub history / plants / camera source / AI summaries |
 | Simulator | `backend/esp32_simulator.py` | Fake hub telemetry + optional OpenCV webcam frames |
 
 ### Product surfaces
 
-- **Landing** (`index.html`) - product story and contact
-- **How it works** - AI care explainer + path into the demo
-- **Catalog** (`shop.html`) - Hub / planter tile / stack modules from `/api/web/tiles`
-- **Live demo** (`demo.html`) - `POST /api/auth/demo` guest session, then dashboard
-- **Login / verify** - email + password; verification via Resend or backend log when unset
-- **Dashboard** - plant stats, history (1h / 24h / 7d), camera (webacm or stock images), AI chat, plant picker
+- **Landing** (`index.html`) — product story and contact
+- **How it works** — AI care explainer + path into the demo
+- **Catalog** (`shop.html`) — Hub / planter tile / stack modules from `/api/web/tiles`
+- **Live demo** (`demo.html`) — `POST /api/auth/demo` guest session, then dashboard
+- **Login / verify** — email + password; verification via Resend or backend log when unset
+- **Dashboard** — plant stats, history (1h / 24h / 7d), camera (webcam or stock images), AI chat, plant picker  
   Guest sessions can **view** the shared hub but cannot change plants, camera source, or actuators via AI
 
 ### What the backend tracks
 
-- Hub + per tile telemetry: water temp / heater, EC, pH, reservoir level, air temp, humidity, light, flow
+- Hub + per-tile telemetry: water temp / heater, EC, pH, reservoir level, air temp, humidity, light, flow
 - Offline detection from report cadence (missed reports → hub offline UI)
-- Sustained alerts (pH out of range, low/no flow, low water, cold water) - noisy single readings do not fire
+- Sustained alerts (pH out of range, low/no flow, low water, cold water) — noisy single readings do not fire
 - Actuator modes for lights / pump / heater (`auto` | `on` | `off`), returned to devices on the next telemetry cycle
 - Camera frames in memory only (size-capped uploads); optional stock image folder for demos without a webcam
 - Shared SQLite history (averaged charts, ~7 day retention)
@@ -151,7 +151,7 @@ Everything lives under `Firmware/website`. Compose brings up **backend**, **AI**
 From `Firmware/website`:
 
 ```bash
-cp .env.example .env # optional; fill LLM / email / secrets for a fuller setup
+cp .env.example .env   # optional; fill LLM / email / secrets for a fuller setup
 docker compose up -d --build
 ```
 
@@ -164,23 +164,22 @@ docker compose up -d --build
 | http://localhost:8001/ | AI service |
 
 ```bash
-docker compose down       # keep SQLite volume
-docker compose down -v    # wipe growhub-data
+docker compose down        # keep SQLite volume
+docker compose down -v     # wipe growhub-data
 ```
 
-The simulator mounts `/dev/video0`. Remove the `devices:` block in `compose.yaml` if you have no camera. 
+The simulator mounts `/dev/video0`. Remove the `devices:` block in `compose.yaml` if you have no camera.
 
 ### How to run (manual)
 
 1. Backend: from `Firmware/website/backend`, `uvicorn main:app --reload --port 8000`
-2. Frontend: either nginx with `nginx.conf`, or temporarily `python -m http.server 5000` from `frontend/` (API calls should still hit the
-same origin or set `GROWHUB_API_ORIGIN`)
+2. Frontend: either nginx with `nginx.conf`, or temporarily `python -m http.server 5000` from `frontend/` (API calls should still hit the same origin or set `GROWHUB_API_ORIGIN`)
 3. AI (optional): from `Firmware/website/ai`, run its uvicorn entry on `8001` with `GROWHUB_API_BASE` and keys set
 4. Simulator: `python esp32_simulator.py` (needs `GROWHUB_DEVICE_KEY` matching the backend)
 
 ### Environment (high level)
 
-Copy `Frimware/website/.env.example` → `.env`. Important knobs:
+Copy `Firmware/website/.env.example` → `.env`. Important knobs:
 
 | Variable | Purpose |
 |---|---|
@@ -191,7 +190,7 @@ Copy `Frimware/website/.env.example` → `.env`. Important knobs:
 | `GROWHUB_WEB_ORIGIN_REGEX` | Allowed browser origins for cookies/CORS (default: localhost + LAN) |
 | `LLM_API_KEY` / `LLM_BASE_URL` / `LLM_MODEL` | OpenAI-compatible provider for chat + reviews |
 | `RESEND_API_KEY` / `GROWHUB_EMAIL_FROM` | Verification + contact email (empty → log verification links) |
-| `GROWHUB_PUBLIC_LINKS` | Absolute base for verification links in production |
+| `GROWHUB_PUBLIC_URL` | Absolute base for verification links in production |
 
 ### Useful API routes
 
@@ -200,12 +199,12 @@ Copy `Frimware/website/.env.example` → `.env`. Important knobs:
 | POST | `/api/auth/register` · `/login` · `/demo` · `/logout` | Accounts + guest demo |
 | GET | `/api/auth/me` | Current user (`email`, `is_demo`) |
 | GET | `/api/web/plant-stats` | Dashboard snapshot (auth or AI key) |
-| GET | `/api/web/history?device=...&range-1h` | Chart history |
-| PUT | `/api/we/plants` · `/camera-source` | Hub config (**non-demo users only**) |
+| GET | `/api/web/history?device=…&range=1h` | Chart history |
+| PUT | `/api/web/plants` · `/camera-source` | Hub config (**non-demo users only**) |
 | GET | `/api/web/camera` · `/camera/stream` | Still / MJPEG |
 | POST | `/api/web/contact` | Contact form (honeypot + rate limit) |
 | POST | `/api/device/telemetry` · `/camera` | Device ingest (`X-Device-Key`) |
-| GET/PUT | `api/ai/controls` | Actuator modes (`X-AI-Key`) |
+| GET/PUT | `/api/ai/controls` | Actuator modes (`X-AI-Key`) |
 | POST | AI `:8001/chat` · `/review` | Logged-in chat / on-demand review |
 
 ### Tests
@@ -216,13 +215,11 @@ From `Firmware/website/backend` (with `requirements-dev.txt` installed):
 python -m pytest tests/ -q
 ```
 
-Covers demo/auth, web API, security guards (demo read-only, device fail-closed, upload cap, proxy IP) and static frontend/nginx contracts.
+Covers demo/auth, web API, security guards (demo read-only, device fail-closed, upload cap, proxy IP), and static frontend/nginx contracts.
 
 ### Deploy notes
 
-For anything beyond local compose: use stron secrets (not the `dev-*-key` defaults), set `GROWHUB_COOKIE_SECURE=1` on HTTPS, prefer
-exposing only `:5000` (or your TLS terminator) rather than publishing `:8000` / `:8001`, and keep `GROWHUB_TRUST_PROXY` aligned with
-whether a reverse proxy sits in front of the backend.
+For anything beyond local compose: use strong secrets (not the `dev-*-key` defaults), set `GROWHUB_COOKIE_SECURE=1` on HTTPS, prefer exposing only `:5000` (or your TLS terminator) rather than publishing `:8000` / `:8001`, and keep `GROWHUB_TRUST_PROXY` aligned with whether a reverse proxy sits in front of the backend.
 
 ### Status
 

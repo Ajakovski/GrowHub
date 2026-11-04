@@ -28,16 +28,16 @@ CAMERA_SOURCE_STOCK = "stock"
 CAMERA_SOURCES = (CAMERA_SOURCE_WEBCAM, CAMERA_SOURCE_STOCK)
 
 DEVICE_KEY = os.environ.get("GROWHUB_DEVICE_KEY") or ""
-# Local/dev escape hatch only. Production and compose always set GROWHUB_DEVICE_KEY
+# Local/dev escape hatch only. Production and compose always set GROWHUB_DEVICE_KEY.
 ALLOW_INSECURE_DEVICE = os.environ.get("GROWHUB_ALLOW_INSECURE_DEVICE", "0") == "1"
-# Cap webcam uploads so a misbehaving client cannot fill memory/disk
-MAX_CAMERA_FRAME_BYTES = int(os.environ.get("GROWHUB_MAX_CAMERA_BYTES", str(5 * 1024 * 1024)))
+# Cap webcam uploads so a misbehaving client cannot fill memory/disk.
+MAX_CAMERA_FRAME_BYTES = int(os.environ.get("GROWHUB_MAX_CAMERA_FRAME_BYTES", str(5 * 1024 * 1024)))
 
 if not DEVICE_KEY:
     if ALLOW_INSECURE_DEVICE:
         print("WARNING: GROWHUB_DEVICE_KEY is not set and GROWHUB_ALLOW_INSECURE_DEVICE=1; device endpoints are open.")
     else:
-        print("WARNING: GROWHUB_DEVICE_KEY is not set; device endpoints reject all requests untill it is configured.")
+        print("WARNING: GROWHUB_DEVICE_KEY is not set; device endpoints reject all requests until it is configured.")
 
 
 def require_device_key(x_device_key: Optional[str] = Header(default=None)) -> None:
@@ -46,7 +46,7 @@ def require_device_key(x_device_key: Optional[str] = Header(default=None)) -> No
             return
         raise HTTPException(
             status_code=503,
-            detail="Device ingest is disabled: set GROWHUB_DEVICE_KEY (or GROWHUB_ALLOW_INSECURE_DEVICE=1 for local only)."
+            detail="Device ingest is disabled: set GROWHUB_DEVICE_KEY (or GROWHUB_ALLOW_INSECURE_DEVICE=1 for local only).",
         )
     if x_device_key is None or not secrets.compare_digest(x_device_key.encode(), DEVICE_KEY.encode()):
         raise HTTPException(status_code=401, detail="Invalid or missing device key")
@@ -343,11 +343,12 @@ async def receive_camera_frame(hub_id: str = Form(...), frame: UploadFile = File
     if not frame.content_type or not frame.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Expected an image upload")
 
+    # Read one byte past the limit so oversized bodies fail without buffering the whole upload.
     frame_bytes = await frame.read(MAX_CAMERA_FRAME_BYTES + 1)
     if len(frame_bytes) > MAX_CAMERA_FRAME_BYTES:
         raise HTTPException(
             status_code=413,
-            detail=f"Camera frame too large (max {MAX_CAMERA_FRAME_BYTES} bytes)"
+            detail=f"Camera frame too large (max {MAX_CAMERA_FRAME_BYTES} bytes)",
         )
     if not frame_bytes:
         raise HTTPException(status_code=400, detail="Empty frame")

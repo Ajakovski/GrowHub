@@ -89,7 +89,7 @@ function applyDemoChrome(user) {
     const crops = document.getElementById("crops-button");
     if (crops) {
         crops.disabled = true;
-        crops.title = "Create an account to change plants.";
+        crops.title = "Create an account to change plants";
     }
     document.querySelectorAll("#camera-source button[data-source]").forEach((button) => {
         button.disabled = true;
@@ -124,7 +124,7 @@ function showDemoEntryError(message) {
     copy.append(title, detail);
 
     const actions = document.createElement("div");
-    actions.classname = "demo-banner-actions";
+    actions.className = "demo-banner-actions";
     for (const [href, label, className] of [
         ["how-it-works.html", "How AI care works", "btn btn-secondary"],
         ["dashboard.html?demo=1", "Try again", "btn btn-primary"],
@@ -634,7 +634,7 @@ function renderCamera() {
 }
 
 async function selectCameraSource(source) {
-    if (!isDemoSession) return;
+    if (isDemoSession) return;
     if (!source || !currentHubId || cameraSourcePending) return;
     if (source === globalTelemetry?.camera_source) return;
 

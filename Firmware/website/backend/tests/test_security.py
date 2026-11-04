@@ -22,7 +22,7 @@ def _seed_hub(client: TestClient):
                     "air_temperature": 22.0,
                     "humidity": 55.0,
                     "light_lux": 400.0,
-                    "flow_lpm": 2.0
+                    "flow_lpm": 2.0,
                 }
             ],
         },
@@ -55,16 +55,16 @@ def test_demo_cannot_change_camera_source(client):
 
 def test_ai_key_cannot_change_plants(client, monkeypatch):
     monkeypatch.setenv("GROWHUB_AI_KEY", "test-ai-key")
-    # Reload routers.ai key after env change - client fixture already imported modules.
+    # Reload routers.ai key after env change — client fixture already imported modules.
     from routers import ai as ai_router
 
     ai_router.AI_KEY = "test-ai-key"
-    _seed_hub(client=)
+    _seed_hub(client)
     denied = client.put(
         "/api/web/plants",
         params={"hub": "hub_sec"},
         json={"plant_ids": ["lettuce"], "tile_plants": {}},
-        headers={"X-Ai-Key": "test-ai-key"},
+        headers={"X-AI-Key": "test-ai-key"},
     )
     assert denied.status_code == 401
 
@@ -77,7 +77,7 @@ def test_device_ingest_fails_closed_without_key(tmp_path, monkeypatch):
 
     import sys
 
-    for name in list[str](sys.modules):
+    for name in list(sys.modules):
         if name in {
             "main",
             "history",
@@ -128,12 +128,12 @@ def test_camera_frame_size_capped(client, monkeypatch):
     response = client.post(
         "/api/device/camera",
         data={"hub_id": "hub_cam"},
-        files={"frame": ("frame.jpeg", io.BytesIO(oversized), "image/jpeg")},
+        files={"frame": ("frame.jpg", io.BytesIO(oversized), "image/jpeg")},
     )
     assert response.status_code == 413
 
 
-def test_rate_limit_uses_frowarded_ip_when_trusted(client, monkeypatch):
+def test_rate_limit_uses_forwarded_ip_when_trusted(client, monkeypatch):
     monkeypatch.setenv("GROWHUB_TRUST_PROXY", "1")
     from requestutil import client_ip
     from starlette.requests import Request
@@ -151,11 +151,11 @@ def test_rate_limit_uses_frowarded_ip_when_trusted(client, monkeypatch):
         "client": ("172.18.0.5", 12345),
         "server": ("test", 80),
     }
-    request = Request(scope=)
+    request = Request(scope)
     assert client_ip(request) == "203.0.113.50"
 
 
-def test_rate_liimit_ignores_forwarded_ip_without_trust(monkeypatch):
+def test_rate_limit_ignores_forwarded_ip_without_trust(monkeypatch):
     monkeypatch.delenv("GROWHUB_TRUST_PROXY", raising=False)
     # Fresh import path already used by client; call helper directly after env clear.
     import importlib
@@ -178,4 +178,4 @@ def test_rate_liimit_ignores_forwarded_ip_without_trust(monkeypatch):
         "server": ("test", 80),
     }
     request = Request(scope)
-    assert request.client_ip(request) == "172.18.0.5"
+    assert requestutil.client_ip(request) == "172.18.0.5"

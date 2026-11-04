@@ -183,7 +183,7 @@ async def list_hubs():
     return [{"hub_id": hub.hub_id, **hub.status(now)} for hub in sorted(hubs.values(), key=lambda h: h.hub_id)]
 
 
-@router.get("/plant-stats", dependencies=owner_only)
+@router.get("/plant-stats", dependencies=dashboard)
 async def get_plant_stats(hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:
@@ -208,7 +208,7 @@ async def get_plant_stats(hub: Optional[str] = None):
     return snapshot
 
 
-@router.put("/plants", dependencies=dashboard)
+@router.put("/plants", dependencies=owner_only)
 async def set_hub_plants(update: HubPlantsUpdate, hub: Optional[str] = None):
     record = _resolve_hub(hub)
     if record is None:

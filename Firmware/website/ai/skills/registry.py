@@ -5,9 +5,9 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Set
 
 from backend_client import BackendError
 
-# Skills that mutate hubs - blocked for guest demo sessions.
-WRITE_SKILLS = frozenset[str]({"set_controls"})
-_blocked_skills: ContextVar[frozenset] = ContextVar[frozenset]("blocked_skills", default=frozenset[Any]())
+# Skills that mutate hubs — blocked for guest demo sessions.
+WRITE_SKILLS = frozenset({"set_controls"})
+_blocked_skills: ContextVar[frozenset] = ContextVar("blocked_skills", default=frozenset())
 
 
 @dataclass
@@ -46,7 +46,7 @@ def skill(name: str, description: str, properties: Optional[dict] = None, requir
 
 @contextmanager
 def block_skills(names: Set[str]) -> Iterator[None]:
-    token = _blocked_skills.set(frozenset[str](names))
+    token = _blocked_skills.set(frozenset(names))
     try:
         yield
     finally:
@@ -54,7 +54,7 @@ def block_skills(names: Set[str]) -> Iterator[None]:
 
 
 def tool_definitions(exclude: Optional[Set[str]] = None) -> List[dict]:
-    blocked = exclude if exclude is not None else set[Any](_blocked_skills.get())
+    blocked = exclude if exclude is not None else set(_blocked_skills.get())
     return [
         {
             "type": "function",
@@ -72,9 +72,9 @@ def tool_definitions(exclude: Optional[Set[str]] = None) -> List[dict]:
 def run_skill(name: str, arguments: dict) -> SkillResult:
     if name in _blocked_skills.get():
         return SkillResult({
-            "error": "Guest demo is read-only. Create an account to change lights, pump or heater."
+            "error": "Guest demo is read-only. Create an account to change lights, pump, or heater.",
         })
-    
+
     found = SKILLS.get(name)
     if found is None:
         return SkillResult({"error": f"Unknown skill '{name}'"})

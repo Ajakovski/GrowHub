@@ -69,7 +69,7 @@ def require_user(request: Request) -> dict:
 
 
 def _rate_limit_key(user: dict) -> str:
-    # Guest demos share one email - key by session so one guest cant exhaust everyones budget.
+    # Guest demos share one email — key by session so one guest cannot exhaust everyone's budget.
     if user.get("is_demo"):
         digest = hashlib.sha256(user.get("_session_token", "").encode()).hexdigest()[:32]
         return f"demo:{digest}"
@@ -83,8 +83,8 @@ def _check_rate_limit(user: dict) -> None:
 
 def _run_chat_llm(user: dict, conversation: list) -> str:
     if user.get("is_demo"):
-        with block_skills(set[str](WRITE_SKILLS)):
-            return llm.run(conversation, exclude_skils=set[str](WRITE_SKILLS))
+        with block_skills(set(WRITE_SKILLS)):
+            return llm.run(conversation, exclude_skills=set(WRITE_SKILLS))
     return llm.run(conversation)
 
 

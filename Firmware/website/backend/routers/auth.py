@@ -108,7 +108,7 @@ def require_owner(request: Request) -> accounts.User:
     if accounts.is_demo_user(user):
         raise HTTPException(
             status_code=403,
-            detail="Guest demo is read only, create an account to change plants or camera settings"
+            detail="Guest demo is read-only. Create an account to change plants or camera settings.",
         )
     return user
 
