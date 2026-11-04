@@ -1,0 +1,16 @@
+# clangd config for ESP-IDF: compile flags come from build/compile_commands.json
+# (regenerate with `idf.py reconfigure` after adding source files).
+# Remove GCC-only flags that clangd does not understand.
+CompileFlags:
+  Remove:
+    - -mlongcalls
+    - -mno-disable-hardware-atomics
+    - -mdisable-hardware-atomics
+    - -fno-tree-switch-conversion
+    - -fstrict-volatile-bitfields
+    - -fzero-init-padding-bits=*
+    - -fno-malloc-dce
+    - -fno-shrink-wrap
+    - -fno-inline-functions-called-once
+    - -fno-inline-small-functions
+    - -fuse-cxa-atexit
