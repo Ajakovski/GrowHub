@@ -2,9 +2,19 @@
 
 - Author: ajakovski07
 
+## 30. Timelapse 04.11.2026
+
+Forgot to journal for yesterday so ill do it real quick now.
+
+I finished every DRC error, remove via in pads and optimised the Plane Fills.
+I also improved wiring and i need to focus on that a little bit more.
+
+Im lowkey soo sick i can barely thug out this week :////
+
+
 ---
 
-## 29. Timelapse 3.11.2026
+## 29. Timelapse 03.11.2026
 
 I lowkey speedran the floor PCB
 
