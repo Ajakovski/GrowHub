@@ -2,6 +2,44 @@
 
 - Author: ajakovski07
 
+---
+
+## 31. Timelapse 05.11.2026
+
+Were getting close to the end and so is the work with the project.
+
+I am running late on time for the firmware so thats why my partner started it.
+
+But i am also assigned for the whole README so while he does the code i will just sort out the READMEE i guess.
+
+---
+
+**What i did:**
+
+- Created every file needed from KiCad
+- Fixed minor PCB errors
+- Imported a missing .step file
+- Started the README
+
+---
+
+**Problems that i've had:**
+
+- My laptop crashed a couple times which is due to low RAM sadly its a 2019 500$ laptop so it does need an upgrade [sideye] i suppose that why im working on thirdspace :)))
+- A lot of files were created but its fine github loves files
+
+---
+
+**Whats next:**
+
+- Finish the README. It is quite a big task so it might lowkey be only that untill the end of week 8.
+- Help on the firmware
+- Sort out the repo for shipping
+
+About pictures... There is nothing much except the amount of files that i've created but that will be available soon when i commit it.
+
+---
+
 ## 30. Timelapse 04.11.2026
 
 Forgot to journal for yesterday so ill do it real quick now.
