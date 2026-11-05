@@ -3,7 +3,8 @@
 # GrowHub - Vertical Garden
 
 <p>
-  <!--Pictures will be placed here in the future-->
+  <img src="./Documentation/Full GrowHub Garden.png" width="40%" height="500">
+  <img src="./Documentation/Transparent Chess Board.png" width="40%" height="450">
 </p>
 
 ### _A highly efficient vertical plant growing garden with AI controlls for user-free handling experience._ 
@@ -14,18 +15,15 @@
 
 # Overview
 
-***WARNING!!!***
-_This is a README created in particular only for week 1 on Thirdspace so that we can ship the project. Future README versions will be far more advanced._
-
 ***GrowHub - Vertical Garden***
 
 A sophisticated way of growing whatever kind of plant (only legal ones :}) from your living room, balcony, even your bedroom or wherever you want!
 
-The idea of the project is to have a work-free environment where the user only monitors his plants from the website and we the developers are resposnible for making everything functional for healthy and low-cost plant growing.
+The idea of the project is to have a care-free environment where the user only monitors his plants from the website and we the developers are resposnible for making everything functional for healthy and low-cost plant growing.
 
 It is a modular garden capable of supplying 1-3 floors of growing area split between 8 tiles per floor!!!
 
-With a good team we managed to split the 4 main segments of this project accordingly which are: PCB and electrical construction, mechanical functioning of the project, AI and server control, User-friendly and work-free experience for the customers.
+With a good team we managed to split the 4 main segments of this project accordingly which are: PCB and electrical construction, mechanical functioning of the project, server control, User-friendly and work-free experience for the customers.
 
 ---
 
@@ -49,23 +47,23 @@ A lot of working skills are required for this project to succeed so i hope you u
 
 # BOM
 
-**BOM.csv is still not present due to unfinished secondary PCBs**
-
 *Some modules are dependant based on the amount of floors accounted in the project (1-3)
+
+_Everything is calculated for the highest amount of floors - 3_
 
 | Designator | Function | Part | Package | Qty | Price(USD) | Link |
 |---|---|---|---|---|---|---|
-| X | MCU MODULE | ESP32-S3-WROOM-1U N16R8 | LCC-54 | 1 | X | X |
+| U6 | MCU MODULE | ESP32-S3-WROOM-1U N16R8 | LCC-54 | 1 | $6.90 | [Mouser](https://www.mouser.com/en/ProductDetail/Espressif-Systems/ESP32-S3-WROOM-1U-N16R8?qs=Li%252BoUPsLEns6V0Pr5KRJtw%3D%3D) |
 | X | Server (if cloud exempted) | Raspberry Pi 5 | X | 1 | X | X |
-| X | Soil moisture sensor | Capactive | X | 8-24 | X | X |
-| X | CO2 Sensor | SC41-D-R2 NDIR | X | 1 | X | X | 
+| U8 | Surge Protection | LTC4364IS-2_PBF | SOIC-16 | 1 | $14.82 | | [Mouser](https://www.mouser.com/en/ProductDetail/Analog-Devices/LTC4364IS-2PBF?qs=hVkxg5c3xu9riE%252B4zWkG8g%3D%3D) | 
+| U10 | 24V->5V Buck | LMR33630ADDA | HSOP-8-1EP | 1 | $3.67 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/LMR33630ADDA?qs=r5DSvlrkXmL3yj62Sna%2FpQ%3D%3D) |
+| U11 | Power Monitor | INA226AIDGSR | TSSOP-10 | 1 | $2.95	| [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/INA226AIDGSR?qs=tQG3bEuiOZD4quG3egR36g%3D%3D) 
 | X | Humidity + Temp sensor | SHT40 | DFN | 1 | X | X |
 | X | Light Sensor | VEML7700-TT | SMD-4P | 1 | X | X |
 | X | LED Strips | WS2811 24V | 60/m 67IP | 5m | X | X |
 | X | Level Shifter | 74AHCT125D | SOIC127P600X175-14N | 1 | X | X |
 | X | Load cell ADC | NAU7802SGI | 16-SOIC | 1 | X | X |
 | X | Power Supply | 24V 8A DC | X | 1 | X | X |
-| X | 24V->5V Buck | LMR33630ADDA | HSOIC | 1 | X | X |
 | X | 5V->3V3 Buck | LMR33610BDDAR | HSOIC | 1 | X | X |
 | X | High Current Protection | INA226AIDGSR | VSSOP-10P | 1 | X | X |
 | X | Input Protection Controller | LTC4364IS-2#PBF | 16-SOIC | 1 | X | X |
@@ -98,14 +96,14 @@ A lot of working skills are required for this project to succeed so i hope you u
 - [X] Initial Concept
 - [X] Component List
 - [X] Schematic Layout Main PCB
-- [ ] PCB Design Main PCB
+- [X] PCB Design Main PCB
 - [X] Schematic Layout Floor PCB
-- [ ] PCB Design Floor PCB
+- [X] PCB Design Floor PCB
 - [ ] Firmware
 - [ ] AI training
 - [ ] Cloud or Raspberry server Integration
-- [ ] Final BOM
-- [ ] Create a Zine (if needed)
+- [X] Final BOM
+- [X] Create a Zine (if needed)
 - [ ] Final build
 - [ ] Add more sensors
 - [ ] Lower BOM costs
