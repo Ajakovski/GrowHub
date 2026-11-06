@@ -54,26 +54,45 @@ _Everything is calculated for the highest amount of floors - 3_
 | Designator | Function | Part | Package | Qty | Price(USD) | Link |
 |---|---|---|---|---|---|---|
 | U6 | MCU MODULE | ESP32-S3-WROOM-1U N16R8 | LCC-54 | 1 | $6.90 | [Mouser](https://www.mouser.com/en/ProductDetail/Espressif-Systems/ESP32-S3-WROOM-1U-N16R8?qs=Li%252BoUPsLEns6V0Pr5KRJtw%3D%3D) |
-| X | Server (if cloud exempted) | Raspberry Pi 5 | X | 1 | X | X |
+| U1 | USB-C Surge Protection | USBLC6-2P6 | SOT-666 | 1 | $0.69 | [Mouser](https://www.mouser.com/en/ProductDetail/STMicroelectronics/USBLC6-2P6?qs=6ARB0lp6jlViGcbUSvj1Mw%3D%3D) |
+| U2 | Ambient Light Sensor | VEML7700-TT | XDCR_VEML7700-TT | 1 | $1.35 | [Mouser](https://www.mouser.com/en/ProductDetail/Vishay-Semiconductors/VEML7700-TT?qs=BcfjnG7NVaXdL6DJFdWbdw%3D%3D) |
+| U3 | Load cell ADC | NAU7802SGI | SOIC-16 | 1 | $1.87 | [Mouser](https://www.mouser.com/en/ProductDetail/Nuvoton/NAU7802SGI?qs=A6eO%252BMLsxmSrxisJRahwRQ%3D%3D) |
+| U4 | Valve Switch | TPS27S100BPWPR | HTSSOP-14 | 1 | $1.87 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/TPS27S100BPWPR?qs=0lQeLiL1qyaF4011Zes0Yg%3D%3D) |
+| U5,U7,U9 | I2C Buffers | PCA9600DPZ | TSSOP-8 | 3 | $21.00 | [Mouser](https://www.mouser.com/en/ProductDetail/NXP-Semiconductors/PCA9600DPZ?qs=Li%252BoUPsLEnu5vr2lXlgE1A%3D%3D)
 | U8 | Surge Protection | LTC4364IS-2_PBF | SOIC-16 | 1 | $14.82 | | [Mouser](https://www.mouser.com/en/ProductDetail/Analog-Devices/LTC4364IS-2PBF?qs=hVkxg5c3xu9riE%252B4zWkG8g%3D%3D) | 
 | U10 | 24V->5V Buck | LMR33630ADDA | HSOP-8-1EP | 1 | $3.67 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/LMR33630ADDA?qs=r5DSvlrkXmL3yj62Sna%2FpQ%3D%3D) |
-| U11 | Power Monitor | INA226AIDGSR | TSSOP-10 | 1 | $2.95	| [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/INA226AIDGSR?qs=tQG3bEuiOZD4quG3egR36g%3D%3D) 
-| X | Humidity + Temp sensor | SHT40 | DFN | 1 | X | X |
-| X | Light Sensor | VEML7700-TT | SMD-4P | 1 | X | X |
-| X | LED Strips | WS2811 24V | 60/m 67IP | 5m | X | X |
-| X | Level Shifter | 74AHCT125D | SOIC127P600X175-14N | 1 | X | X |
-| X | Load cell ADC | NAU7802SGI | 16-SOIC | 1 | X | X |
-| X | Power Supply | 24V 8A DC | X | 1 | X | X |
-| X | 5V->3V3 Buck | LMR33610BDDAR | HSOIC | 1 | X | X |
-| X | High Current Protection | INA226AIDGSR | VSSOP-10P | 1 | X | X |
-| X | Input Protection Controller | LTC4364IS-2#PBF | 16-SOIC | 1 | X | X |
-| X | I2C Mux | TCA9548APWR |  24-TSSOP | 4 | X | X |
-| X | Analog Mux | ADG706BRU | RU-28 | 3 | X | X |
-| X | I/O Expander | MCP23017T | SOIC-28 | 3 | X | X |
-| X | ADC 16-bit | ADS1115IDGSR | DGS | 3 | X | X |
-| X | PWM Expander | PCA9685BS_118 | 28-HVQFN | 3 | X | X |
-| X | I2C Buffer | P82B96D | SOIC-8 | 3 | X | X |
-| X | Board ID | DS28E07Q_T | TDFN-EP | 3 | X | X |
+| U11 | High Current Protection | INA226AIDGSR | TSSOP-10 | 1 | $2.95	| [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/INA226AIDGSR?qs=tQG3bEuiOZD4quG3egR36g%3D%3D) 
+| U12 | I2C Mux | TCA9548APWR |  24-TSSOP | 1 | $1.65 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/TCA9548APWR?qs=sGAEpiMZZMutXGli8Ay4kHAf4%2FN1WW693xDAZd3LyqA%3D) |
+| C (various) | Decoupling / Bulk | 100nF, 1µF, 4.7µF, 10µF, 22µF | 0402/0603/0805/1206 | 105 | $16 | [Amazon](https://www.amazon.com/Bridgold-111Types-Capacitor-1pF-10uF-3-9pF-22uF/dp/B0C196FBK3/ref=sr_1_10?dib=eyJ2IjoiMSJ9.Sik-1N6T3B22pMHx3gZwssQe9HV9aXahGuDaX-uB1yfBLuMOqud5ObrWRTFUEP5qQT2cI_n6L6fgTxfF61UY6m7jwAR2JlYfwWtNi5UCKX4QVam3zu4P14UT01DyXCllphzxt5CmLBpMIcKJr-lpdFgCHgOWfw1AMDWRa0VJgoOHSTB1Ejcqxwg_bRNHyVE3csjNCQKdCS_s7IOfQRityBtC0y6ZoSuw4EYrFxCoT9w.R-0uFALOYO601m_UiLGERn05S21OQveJX7LUG-RrBD0&dib_tag=se&keywords=SMD%2BCapacitor&qid=1781345348&sr=8-10&th=1) |
+| C (various) | Decoupling | 10nF | 0603 | 6 | $1.62 | [Mouser](https://www.mouser.com/en/ProductDetail/KEMET/C0603F103K8RACTU?qs=sGAEpiMZZMukHu%252BjC5l7YXqC3L5J1PSDOxyZlqyYeaQ%3D) |
+| C11 | Decoupling | 330pF | 0603 | 1 | $0.20 | [Mouser](https://www.mouser.com/en/ProductDetail/Walsin/0603B331K100CT?qs=sGAEpiMZZMsh%252B1woXyUXj9Vc%2FsqQGnyV%2FOvNY0Ao%252BFA%3D) | 
+| C(various) | Decoupling | 47nF | 0603 | 3 | $1.17 | [Mouser](https://www.mouser.com/en/ProductDetail/KEMET/C0603J473K8RAC7411?qs=sGAEpiMZZMukHu%252BjC5l7YXqC3L5J1PSDRSkJBnpGzwM%3D) |
+| C19 | Decoupling | 1nF | 0603 | 1 | $0.19 | [Mouser](https://www.mouser.com/en/ProductDetail/KYOCERA-AVX/06031F102K4T2A?qs=%252BdQmOuGyFcFZxL9GWikwcQ%3D%3D) | 
+| C(various) | Decouplong | 220nF | 0603 | 3 | $0.51 | [Mouser](https://www.mouser.com/en/ProductDetail/YAGEO/CC0603KPX7R6BB224?qs=57cj7OiSijk39MinEZxVnw%3D%3D) |
+| C(various) | Bulk | 220uF | AEC | 7 | $18.41 | [Mouser](https://www.mouser.com/en/ProductDetail/Vishay-BC-Components/MAL215097102E3?qs=qmStTZH4TznNa7zgwdGJWg%3D%3D) |
+| D(various) | Protective diode | ESD5Z3.3T1G | SOD-523-2 | 11 | $1.58 | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/ESD5Z3.3T1G?qs=OSf9jACorvaH3Y8oRWEcuQ%3D%3D) |
+| D3 | Pump Diode | SS34 | DO-214AB | 1 | $1.01 | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/SS34?qs=2ONuHmP%2FXzb3ub11UdFfdQ%3D%3D) |
+| D(various) | LED | SK6812 | 5050 | 3 | $2.95 | [Mouser](https://www.mouser.com/en/ProductDetail/Adafruit/4960?qs=pBJMDPsKWf1Q%252BqeEoLnQjA%3D%3D) |
+| D(various) | Protective Diode | ESD5Z6.0T1G | SOD-523-2 | 10 | $0.9 | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/ESD5Z6.0T1G?qs=OSf9jACorvYUyIPFpvnErQ%3D%3D) |
+| D(various) | Valve Diode | SS16 | DO-214AC-2 | 4 | $1.44 | [Mouser](https://www.mouser.com/en/ProductDetail/Taiwan-Semiconductor/SS16?qs=JV7lzlMm3yJVXqornbcQQA%3D%3D) |
+| D21 | Filter Diode | 1N4148W | 	SOD-123F | 1 | $0.12 | [Mouser](https://www.mouser.com/en/ProductDetail/Diotec-Semiconductor/1N4148W?qs=OlC7AqGiEDmsbkbAeXQtXg%3D%3D) | 
+| D23 | Filter Diode | SMBJ33A | DO-214AA | 1 | $0.77 | [Mouser](https://www.mouser.com/en/ProductDetail/Semtech/SMBJ33A?qs=jcD%2FCkGBYeN%2FjSJFT7pReg%3D%3D) |
+| F1 | Little Fuse | 3A Slo-Blo 125V | X | 1 | $3.36 | [Mouser](https://www.mouser.com/en/ProductDetail/Littelfuse/0460003.UR?qs=YKoktUZms5J5DMRoJY1GHw%3D%3D) |
+| IC1 | LED Signal optimiser | 74AHCT125D, 118 | SOIC-14 | 1 | $0.35 | [Mouser](https://www.mouser.com/en/ProductDetail/Nexperia/74AHCT125D118?qs=P62ublwmbi8WxHlonNNcrA%3D%3D) |
+| J1 | USB-C port | USB-C 2495155-1 | X | 1 | $2.25	 | [Mouser](https://www.mouser.com/en/ProductDetail/TE-Connectivity/2495155-1?qs=2FehpBK1j95l8dIFdQH6Ww%3D%3D) |   
+| J2 | Pump Conn | Micro-Fit 1x4 | X | 1 | $1.18 | [Mouser](https://www.mouser.com/en/ProductDetail/Molex/43650-0400?qs=A%252B%2FNCR0PvNV09lp6LzdRYg%3D%3D) |
+| J4,J14,J15 | Floor Conn | Micro-Fit 3.0 2x6 | X | 3 | $9.24 | [Mouser](https://www.mouser.com/en/ProductDetail/Molex/43045-1213?qs=359VwiUTsp0cSsT%2FR1N%2Feg%3D%3D) |
+| J5 | PSU DIN | KPJX-4S | 1 | $1.69 | [Mouser](https://www.mouser.com/en/ProductDetail/Kycon/KPJX-4S?qs=PGF6ObTbUZ1PHc9As62%2FZQ%3D%3D) |
+| J8,J9,J10 | Valve Conn | G88MPB02002C1EU | X | 3 | $2.34 | [Mouser](https://www.mouser.com/en/ProductDetail/Amphenol-Commercial-Products/G88MPB02002C1EU?qs=%252BRAvXJslkuDOP%2FIlLZvKQA%3D%3D) |
+| J11 | Load Cell Conn | JST PH 5p | X | 1 | $0.69 | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B5B-PH-K-S-GW?qs=cIziFXvMxOWNYlDdZstBdA%3D%3D) |
+| J12 | Base Leak Conn | JST PH 2p | X | 1 | $0.19 | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B2B-PH-K-MLFSN?qs=QpmGXVUTftFtjXkolasBkg%3D%3D) |
+| J13 | Float S11 | JST PH 2p | X | 1 | $0.19 | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B2B-PH-K-MLFSN?qs=QpmGXVUTftFtjXkolasBkg%3D%3D) |
+| L1 | Voltage Regulation | 8.2uH | 1 | $5.11 | [Mouser](https://www.mouser.com/en/ProductDetail/Coilcraft/XAL1010-822MED?qs=zCSbvcPd3pba7AVSEX0Sqw%3D%3D) |
+| L2 | Voltage Regulation | 6.8uH | 1 | $3.06 | [Mouser](https://www.mouser.com/en/ProductDetail/Coilcraft/XAL7070-682MEC?qs=zCSbvcPd3pZMktES6ULAbA%3D%3D) |
+| PS1 | 5V->3.3V Regulator | LMR33610ADDAR | HSOP-8 | 1 | $2.39 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/LMR33610ADDAR?qs=Cb2nCFKsA8qZzeebnoCDFA%3D%3D) |
+| Q1-Q9 | Driver FETs | BSS138BK-215 | TO-236AB-3 | 10 | $1.15 | [Mouser](https://www.mouser.com/en/ProductDetail/Nexperia/BSS138BK215?qs=A1cBxND5mHIu7uZeHkM5Xw%3D%3D) |
+
+
 
 *Notice: These shipping costs are for a Balkan country so if youa re from EU or USA there are very high chances of having lower shipping costs*
 
@@ -81,32 +100,135 @@ _Everything is calculated for the highest amount of floors - 3_
 
 ---
 
-# Planned Features 
+# Features 
 
-- High production %
-- Lower water waste
-- Small occupacy of space
-- Automated garden control
-- User friendly and work-free 
+- **High Efficiency** - Greater production compared to normal gardening
+- **Water Saving** - Lower consumption through optimised watering systems
+- **Small occupation of space** - The vertical trait makes it suitable for homes
+- **Care-Free Product** - Everything is automated
+- **User friendly** - No need of gardening expertise to start
 
 ---
 
-# Current Status
+# PCB Design
 
-- [X] Initial Concept
-- [X] Component List
-- [X] Schematic Layout Main PCB
-- [X] PCB Design Main PCB
-- [X] Schematic Layout Floor PCB
-- [X] PCB Design Floor PCB
-- [ ] Firmware
-- [ ] AI training
-- [ ] Cloud or Raspberry server Integration
-- [X] Final BOM
-- [X] Create a Zine (if needed)
-- [ ] Final build
-- [ ] Add more sensors
-- [ ] Lower BOM costs
+The PCB was designed specifically for this project and its layout.
+
+Key concepts of the design:
+- 4 layer on main PCB
+- Work is split on two PCBs
+- GND Plane on L2 for return path
+- GND Fill on L1,L3,L4 for signal integrity
+- Power Fills for certain areas of L3
+- Protection circuits and components for safety
+
+## PCB Layout
+
+### Main PCB
+
+_*Some pictures may have been distorted in order to fit them in the README.*
+
+<img src="./Documentation/Pictures/Journal_AJ/Image.png" width="80%" height="80%">
+
+### Floor PCB
+
+<img src="./Documentation/Pictures/Floor_PCB.png" width="100%" height="100%">
+
+---
+ 
+## Schematic
+
+***Refer to the PDF file for better overview*** [PDF](Documentation/GrowHub_Elec.pdf)
+
+### Main Schematic
+
+#### Main Floor Schematic
+
+<img src="./Documentation/Pictures/Main_Sch.png">
+
+#### Board IO Schematic
+
+<img src="./Documentation/Pictures/Board_IO_Sch.png">
+
+### Floor Schematic
+
+<img src="./Documentation/Pictures/Floor_Sch.png">
+
+## Components Placement
+
+<div align="center">
+
+### Main PCB
+
+<img src="./Documentation/Pictures/Main_PCB.png">
+
+### Floor PCB
+
+<img src="./Documentation/Pictures/Journal_AJ/Image68.png">
+
+</div>
+
+---
+
+# Assembly Guide
+
+## Hardware
+
+***A visual representation of the whole project has been provided withing repository files***
+
+```
+Hardware/FULLY_ASSEMBLED_PROJECT.step
+```
+
+### 1. Order the PCBs and 3D Model
+
+Navigate to: (For PCBs)
+
+```bash
+Hardware/KiCad/Gerbers/
+```
+
+Some files are in zip files due to github memory restrictions.
+
+*Upload the G-Code files to your preferred manufacturer and order the parts.*
+
+### 2. Order the Components
+
+Whether you want to order it trough PCBA or solder it manually you should refer to the BOM file.
+
+```bash
+Hardware/BOM.csv
+```
+
+I recommend getting PCBA or sorting them out before you start assembling because this is a big project with loads of components.
+
+### 3. Soldering Process
+
+I highly suggest using oven reflow or hot pad soldering for the SMD whether you have decided to assemble it yourself.
+
+Solder in regions if you use a smaller heating plate and always double check how you place the components.
+
+Place larger modules first and then every passive peripheral components.
+
+Some soldering might require a soldering iron due to L1 fill and heat dissipation in the copper.
+
+Recommended tools are:
+- FLux
+- Reflow soldering oven or Heating plate for soldering
+- Tweezers for placing the components
+- Solder paste
+- Helping hands with a magnifying glass would be wonderfull
+
+### 4. Assemble the PCBs in the Enclosure
+
+***Materials needed for assembling:***
+
+- 16x m3 Screw nuts (if you install main board +3 floor boards)
+- Other screws should come with the designated components.
+
+***Steps for assembling***
+
+
 
 ---
 
@@ -219,10 +341,22 @@ Covers demo/auth, web API, security guards (demo read-only, device fail-closed, 
 
 For anything beyond local compose: use strong secrets (not the `dev-*-key` defaults), set `GROWHUB_COOKIE_SECURE=1` on HTTPS, prefer exposing only `:5000` (or your TLS terminator) rather than publishing `:8000` / `:8001`, and keep `GROWHUB_TRUST_PROXY` aligned with whether a reverse proxy sits in front of the backend.
 
-### Status
+---
 
-The website/software part is done now. It features everything from the frontend all the way to the backend with AI, tests, docker compose files,
-nginx conf files and everything. I think the hardware aka the PCB design is done as well so now we need to start working on the firmware.
+# Current Status
+
+- [X] Initial Concept
+- [X] Component List
+- [X] Schematic Layout Main PCB
+- [X] PCB Design Main PCB
+- [X] Schematic Layout Floor PCB
+- [X] PCB Design Floor PCB
+- [ ] Firmware
+- [X] Final BOM
+- [X] Create a Zine (if needed)
+- [X] Final build
+- [ ] Add more sensors
+- [ ] Lower BOM costs
 
 ---
 
