@@ -4,6 +4,37 @@
 
 ---
 
+## 32. Timelapse 06.11.2026
+
+Bruhhh i am getting so sick i can barely work on the project....
+
+Im lowkey trying to survive while i work on the project but here i am. Tomorrow i will do around 1:30 hours more and im done for week 8.
+
+---
+
+**What I did:**
+
+- Worked on the README file.
+- Researched the BOM for the project and how to assemble it.
+
+---
+
+**Probmes that occured:**
+
+- A lot of BOM components for which i will just use AI. I really think that it wont be againts the rules o generate a .md table with AI because i feel like a fraud tipying it out manually and then i will just find the links and prices for them.
+
+---
+
+**Whats next:**
+
+- Finish off the README
+- Sort out the files in the repository
+- Help my partner with the firmware
+
+Once again nothing much i can screenshot honestly. 
+
+---
+
 ## 31. Timelapse 05.11.2026
 
 Were getting close to the end and so is the work with the project.
@@ -14,7 +45,7 @@ But i am also assigned for the whole README so while he does the code i will jus
 
 ---
 
-**What i did:**
+**What I did:**
 
 - Created every file needed from KiCad
 - Fixed minor PCB errors
