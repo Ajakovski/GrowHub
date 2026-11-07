@@ -51,47 +51,107 @@ A lot of working skills are required for this project to succeed so i hope you u
 
 _Everything is calculated for the highest amount of floors - 3_
 
-| Designator | Function | Part | Package | Qty | Price(USD) | Link |
-|---|---|---|---|---|---|---|
-| U6 | MCU MODULE | ESP32-S3-WROOM-1U N16R8 | LCC-54 | 1 | $6.90 | [Mouser](https://www.mouser.com/en/ProductDetail/Espressif-Systems/ESP32-S3-WROOM-1U-N16R8?qs=Li%252BoUPsLEns6V0Pr5KRJtw%3D%3D) |
-| U1 | USB-C Surge Protection | USBLC6-2P6 | SOT-666 | 1 | $0.69 | [Mouser](https://www.mouser.com/en/ProductDetail/STMicroelectronics/USBLC6-2P6?qs=6ARB0lp6jlViGcbUSvj1Mw%3D%3D) |
-| U2 | Ambient Light Sensor | VEML7700-TT | XDCR_VEML7700-TT | 1 | $1.35 | [Mouser](https://www.mouser.com/en/ProductDetail/Vishay-Semiconductors/VEML7700-TT?qs=BcfjnG7NVaXdL6DJFdWbdw%3D%3D) |
-| U3 | Load cell ADC | NAU7802SGI | SOIC-16 | 1 | $1.87 | [Mouser](https://www.mouser.com/en/ProductDetail/Nuvoton/NAU7802SGI?qs=A6eO%252BMLsxmSrxisJRahwRQ%3D%3D) |
-| U4 | Valve Switch | TPS27S100BPWPR | HTSSOP-14 | 1 | $1.87 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/TPS27S100BPWPR?qs=0lQeLiL1qyaF4011Zes0Yg%3D%3D) |
-| U5,U7,U9 | I2C Buffers | PCA9600DPZ | TSSOP-8 | 3 | $21.00 | [Mouser](https://www.mouser.com/en/ProductDetail/NXP-Semiconductors/PCA9600DPZ?qs=Li%252BoUPsLEnu5vr2lXlgE1A%3D%3D)
-| U8 | Surge Protection | LTC4364IS-2_PBF | SOIC-16 | 1 | $14.82 | | [Mouser](https://www.mouser.com/en/ProductDetail/Analog-Devices/LTC4364IS-2PBF?qs=hVkxg5c3xu9riE%252B4zWkG8g%3D%3D) | 
-| U10 | 24V->5V Buck | LMR33630ADDA | HSOP-8-1EP | 1 | $3.67 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/LMR33630ADDA?qs=r5DSvlrkXmL3yj62Sna%2FpQ%3D%3D) |
-| U11 | High Current Protection | INA226AIDGSR | TSSOP-10 | 1 | $2.95	| [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/INA226AIDGSR?qs=tQG3bEuiOZD4quG3egR36g%3D%3D) 
-| U12 | I2C Mux | TCA9548APWR |  24-TSSOP | 1 | $1.65 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/TCA9548APWR?qs=sGAEpiMZZMutXGli8Ay4kHAf4%2FN1WW693xDAZd3LyqA%3D) |
-| C (various) | Decoupling / Bulk | 100nF, 1µF, 4.7µF, 10µF, 22µF | 0402/0603/0805/1206 | 105 | $16 | [Amazon](https://www.amazon.com/Bridgold-111Types-Capacitor-1pF-10uF-3-9pF-22uF/dp/B0C196FBK3/ref=sr_1_10?dib=eyJ2IjoiMSJ9.Sik-1N6T3B22pMHx3gZwssQe9HV9aXahGuDaX-uB1yfBLuMOqud5ObrWRTFUEP5qQT2cI_n6L6fgTxfF61UY6m7jwAR2JlYfwWtNi5UCKX4QVam3zu4P14UT01DyXCllphzxt5CmLBpMIcKJr-lpdFgCHgOWfw1AMDWRa0VJgoOHSTB1Ejcqxwg_bRNHyVE3csjNCQKdCS_s7IOfQRityBtC0y6ZoSuw4EYrFxCoT9w.R-0uFALOYO601m_UiLGERn05S21OQveJX7LUG-RrBD0&dib_tag=se&keywords=SMD%2BCapacitor&qid=1781345348&sr=8-10&th=1) |
-| C (various) | Decoupling | 10nF | 0603 | 6 | $1.62 | [Mouser](https://www.mouser.com/en/ProductDetail/KEMET/C0603F103K8RACTU?qs=sGAEpiMZZMukHu%252BjC5l7YXqC3L5J1PSDOxyZlqyYeaQ%3D) |
-| C11 | Decoupling | 330pF | 0603 | 1 | $0.20 | [Mouser](https://www.mouser.com/en/ProductDetail/Walsin/0603B331K100CT?qs=sGAEpiMZZMsh%252B1woXyUXj9Vc%2FsqQGnyV%2FOvNY0Ao%252BFA%3D) | 
-| C(various) | Decoupling | 47nF | 0603 | 3 | $1.17 | [Mouser](https://www.mouser.com/en/ProductDetail/KEMET/C0603J473K8RAC7411?qs=sGAEpiMZZMukHu%252BjC5l7YXqC3L5J1PSDRSkJBnpGzwM%3D) |
-| C19 | Decoupling | 1nF | 0603 | 1 | $0.19 | [Mouser](https://www.mouser.com/en/ProductDetail/KYOCERA-AVX/06031F102K4T2A?qs=%252BdQmOuGyFcFZxL9GWikwcQ%3D%3D) | 
-| C(various) | Decouplong | 220nF | 0603 | 3 | $0.51 | [Mouser](https://www.mouser.com/en/ProductDetail/YAGEO/CC0603KPX7R6BB224?qs=57cj7OiSijk39MinEZxVnw%3D%3D) |
-| C(various) | Bulk | 220uF | AEC | 7 | $18.41 | [Mouser](https://www.mouser.com/en/ProductDetail/Vishay-BC-Components/MAL215097102E3?qs=qmStTZH4TznNa7zgwdGJWg%3D%3D) |
-| D(various) | Protective diode | ESD5Z3.3T1G | SOD-523-2 | 11 | $1.58 | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/ESD5Z3.3T1G?qs=OSf9jACorvaH3Y8oRWEcuQ%3D%3D) |
-| D3 | Pump Diode | SS34 | DO-214AB | 1 | $1.01 | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/SS34?qs=2ONuHmP%2FXzb3ub11UdFfdQ%3D%3D) |
-| D(various) | LED | SK6812 | 5050 | 3 | $2.95 | [Mouser](https://www.mouser.com/en/ProductDetail/Adafruit/4960?qs=pBJMDPsKWf1Q%252BqeEoLnQjA%3D%3D) |
-| D(various) | Protective Diode | ESD5Z6.0T1G | SOD-523-2 | 10 | $0.9 | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/ESD5Z6.0T1G?qs=OSf9jACorvYUyIPFpvnErQ%3D%3D) |
-| D(various) | Valve Diode | SS16 | DO-214AC-2 | 4 | $1.44 | [Mouser](https://www.mouser.com/en/ProductDetail/Taiwan-Semiconductor/SS16?qs=JV7lzlMm3yJVXqornbcQQA%3D%3D) |
-| D21 | Filter Diode | 1N4148W | 	SOD-123F | 1 | $0.12 | [Mouser](https://www.mouser.com/en/ProductDetail/Diotec-Semiconductor/1N4148W?qs=OlC7AqGiEDmsbkbAeXQtXg%3D%3D) | 
-| D23 | Filter Diode | SMBJ33A | DO-214AA | 1 | $0.77 | [Mouser](https://www.mouser.com/en/ProductDetail/Semtech/SMBJ33A?qs=jcD%2FCkGBYeN%2FjSJFT7pReg%3D%3D) |
-| F1 | Little Fuse | 3A Slo-Blo 125V | X | 1 | $3.36 | [Mouser](https://www.mouser.com/en/ProductDetail/Littelfuse/0460003.UR?qs=YKoktUZms5J5DMRoJY1GHw%3D%3D) |
-| IC1 | LED Signal optimiser | 74AHCT125D, 118 | SOIC-14 | 1 | $0.35 | [Mouser](https://www.mouser.com/en/ProductDetail/Nexperia/74AHCT125D118?qs=P62ublwmbi8WxHlonNNcrA%3D%3D) |
-| J1 | USB-C port | USB-C 2495155-1 | X | 1 | $2.25	 | [Mouser](https://www.mouser.com/en/ProductDetail/TE-Connectivity/2495155-1?qs=2FehpBK1j95l8dIFdQH6Ww%3D%3D) |   
-| J2 | Pump Conn | Micro-Fit 1x4 | X | 1 | $1.18 | [Mouser](https://www.mouser.com/en/ProductDetail/Molex/43650-0400?qs=A%252B%2FNCR0PvNV09lp6LzdRYg%3D%3D) |
-| J4,J14,J15 | Floor Conn | Micro-Fit 3.0 2x6 | X | 3 | $9.24 | [Mouser](https://www.mouser.com/en/ProductDetail/Molex/43045-1213?qs=359VwiUTsp0cSsT%2FR1N%2Feg%3D%3D) |
-| J5 | PSU DIN | KPJX-4S | 1 | $1.69 | [Mouser](https://www.mouser.com/en/ProductDetail/Kycon/KPJX-4S?qs=PGF6ObTbUZ1PHc9As62%2FZQ%3D%3D) |
-| J8,J9,J10 | Valve Conn | G88MPB02002C1EU | X | 3 | $2.34 | [Mouser](https://www.mouser.com/en/ProductDetail/Amphenol-Commercial-Products/G88MPB02002C1EU?qs=%252BRAvXJslkuDOP%2FIlLZvKQA%3D%3D) |
-| J11 | Load Cell Conn | JST PH 5p | X | 1 | $0.69 | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B5B-PH-K-S-GW?qs=cIziFXvMxOWNYlDdZstBdA%3D%3D) |
-| J12 | Base Leak Conn | JST PH 2p | X | 1 | $0.19 | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B2B-PH-K-MLFSN?qs=QpmGXVUTftFtjXkolasBkg%3D%3D) |
-| J13 | Float S11 | JST PH 2p | X | 1 | $0.19 | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B2B-PH-K-MLFSN?qs=QpmGXVUTftFtjXkolasBkg%3D%3D) |
-| L1 | Voltage Regulation | 8.2uH | 1 | $5.11 | [Mouser](https://www.mouser.com/en/ProductDetail/Coilcraft/XAL1010-822MED?qs=zCSbvcPd3pba7AVSEX0Sqw%3D%3D) |
-| L2 | Voltage Regulation | 6.8uH | 1 | $3.06 | [Mouser](https://www.mouser.com/en/ProductDetail/Coilcraft/XAL7070-682MEC?qs=zCSbvcPd3pZMktES6ULAbA%3D%3D) |
-| PS1 | 5V->3.3V Regulator | LMR33610ADDAR | HSOP-8 | 1 | $2.39 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/LMR33610ADDAR?qs=Cb2nCFKsA8qZzeebnoCDFA%3D%3D) |
-| Q1-Q9 | Driver FETs | BSS138BK-215 | TO-236AB-3 | 10 | $1.15 | [Mouser](https://www.mouser.com/en/ProductDetail/Nexperia/BSS138BK215?qs=A1cBxND5mHIu7uZeHkM5Xw%3D%3D) |
+_M = main board (×1) · F = floor board (×3) · Qty = M + 3 × F. Capacitors with no voltage listed sit on ≤ 5 V nets. Resistors are 1 % thick film, 0603 = 0.1 W, unless noted. DNP footprints and test pads are not listed._
 
+| Designator | Function | Part | Package | Qty (3 floors) | Price (USD) | Link |
+|---|---|---|---|---:|---|---|
+| M: U6 | MCU module, Wi-Fi/BLE (16 MB flash, 8 MB PSRAM, U.FL antenna) | ESP32-S3-WROOM-1U-N16R8 | SMD module | 1 | $6.90 | [Mouser](https://www.mouser.com/en/ProductDetail/Espressif-Systems/ESP32-S3-WROOM-1U-N16R8?qs=Li%252BoUPsLEns6V0Pr5KRJtw%3D%3D) |
+| M: U1 | USB ESD protection | USBLC6-2P6 | SOT-666 | 1 | $0.69 | [Mouser](https://www.mouser.com/en/ProductDetail/STMicroelectronics/USBLC6-2P6?qs=6ARB0lp6jlViGcbUSvj1Mw%3D%3D) |
+| M: U2 | Ambient light sensor | VEML7700-TT | SMD, 4-pin | 1 | $1.35 | [Mouser](https://www.mouser.com/en/ProductDetail/Vishay-Semiconductors/VEML7700-TT?qs=BcfjnG7NVaXdL6DJFdWbdw%3D%3D) |
+| M: U3 | Load-cell ADC | NAU7802SGI | SOIC-16 | 1 | $1.87 | [Mouser](https://www.mouser.com/en/ProductDetail/Nuvoton/NAU7802SGI?qs=A6eO%252BMLsxmSrxisJRahwRQ%3D%3D) |
+| M: U4 | Valve rail switch | TPS27S100BPWPR | HTSSOP-14 | 1 | $1.87 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/TPS27S100BPWPR?qs=0lQeLiL1qyaF4011Zes0Yg%3D%3D) |
+| M: U5, U7, U9 | Floor-cable I²C buffers | PCA9600DPZ | TSSOP-8 | 3 | $21.00 | [Mouser](https://www.mouser.com/en/ProductDetail/NXP-Semiconductors/PCA9600DPZ?qs=Li%252BoUPsLEnu5vr2lXlgE1A%3D%3D) |
+| M: U8 | Surge stopper | LTC4364IS-2#PBF | SOIC-16 | 1 | $14.82 | [Mouser](https://www.mouser.com/en/ProductDetail/Analog-Devices/LTC4364IS-2PBF?qs=hVkxg5c3xu9riE%252B4zWkG8g%3D%3D) |
+| M: U10 | Buck, 24 V → 5 V | LMR33630ADDA | HSOP-8 (exposed pad) | 1 | $3.67 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/LMR33630ADDA?qs=r5DSvlrkXmL3yj62Sna%2FpQ%3D%3D) |
+| M: U11 | Input current / power monitor | INA226AIDGSR | VSSOP-10 | 1 | $2.95 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/INA226AIDGSR?qs=tQG3bEuiOZD4quG3egR36g%3D%3D) |
+| M: U12 | Floor bus switch (I²C mux) | TCA9548APWR | TSSOP-24 | 1 | $1.65 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/TCA9548APWR?qs=sGAEpiMZZMutXGli8Ay4kHAf4%2FN1WW693xDAZd3LyqA%3D) |
+| F: U13 | Temperature & humidity |  SHT40I-AD1F-R2 | DFN-4, 1.5 × 1.5 mm | 3 | $9.18 | [Mouser](https://www.mouser.com/en/ProductDetail/Sensirion/SHT40I-AD1F-R2?qs=rQFj71Wb1eVYLTRlLwJKVQ%3D%3D) |
+| F: U14, U17 | 3.3 V LDOs: logic (U17), switched sensor rail (U14) | TPS7A2033PDBVR | SOT-23-5 | 6 |  |  |
+| F: U16 | Tray-electrode ADC | ADS1115IDGSR | VSSOP-10 | 3 |  |  |
+| F: U18 | Floor ID (1-Wire EEPROM) | DS28E07Q+T | TDFN-6, 3 × 3 mm | 3 |  |  |
+| F: U19 | PWM: 4 LED channels | PCA9685BS,118 | HVQFN-28, 6 × 6 mm | 3 |  |  |
+| F: U20 | Floor-end cable buffer | P82B96D | SOIC-8 | 3 |  |  |
+| M: C11 | Load-cell ADC | 330 pF C0G | 0603 | 1 | $0.20 | [Mouser](https://www.mouser.com/en/ProductDetail/Walsin/0603B331K100CT?qs=sGAEpiMZZMsh%252B1woXyUXj9Vc%2FsqQGnyV%2FOvNY0Ao%252BFA%3D) |
+| M: C19 | Valve current-monitor filter | 1 nF | 0603 | 1 | $0.19 | [Mouser](https://www.mouser.com/en/ProductDetail/KYOCERA-AVX/06031F102K4T2A?qs=%252BdQmOuGyFcFZxL9GWikwcQ%3D%3D) |
+| M: C24 | Valve-switch input | 4.7 nF X7R 50 V | 0603 | 1 |  |  |
+| M: C4, C6, C16, C18, C20, C57<br>F: C56, C64 | ADC / input filters | 10 nF X7R | 0603 | 12 |  | [Mouser](https://www.mouser.com/en/ProductDetail/KEMET/C0603F103K8RACTU?qs=sGAEpiMZZMukHu%252BjC5l7YXqC3L5J1PSDOxyZlqyYeaQ%3D) |
+| M: C25 | Valve rail output | 22 nF X7R 50 V | 0603 | 1 |  |  |
+| M: C13 | IO0 boot RC | 47 nF X7R | 0603 | 1 |  | [Mouser](https://www.mouser.com/en/ProductDetail/KEMET/C0603J473K8RAC7411?qs=sGAEpiMZZMukHu%252BjC5l7YXqC3L5J1PSDRSkJBnpGzwM%3D) |
+| M: C34 | Surge-stopper fault timer | 47 nF C0G | 0603 | 1 |  |  |
+| M: C40 | Surge-stopper gate RC | 47 nF X7R 50 V | 0603 | 1 |  |  |
+| M: C1, C5, C7, C10, C12, C15, C17, C22, C26–C28, C35, C37, C47–C50, C83, C84<br>F: C58, C59, C68, C70, C72, C85 | Decoupling, ≤ 5 V | 100 nF X7R | 0603 | 37 |  |  |
+| M: C79–C81<br>F: C77, C78 | Decoupling, 24 V rails | 100 nF X7R 50 V | 0603 | 9 |  |  |
+| M: C30, C43 | surge-stopper supply | 100 nF X7R 100 V | 0805 | 2 |  |  |
+| M: C23, C32 | input caps (U4, U10) | 220 nF X7R 50 V | 0603 | 2 |  |  |
+| M: C45 | 3.3 V buck input | 220 nF X7R | 0603 | 1 |  | [Mouser](https://www.mouser.com/en/ProductDetail/YAGEO/CC0603KPX7R6BB224?qs=57cj7OiSijk39MinEZxVnw%3D%3D) |
+| M: C2, C9, C14, C33, C46<br>F: C55, C60, C65, C67, C69, C71 | Decoupling / regulator VCC, ≤ 5 V | 1 µF X7R | 0603 | 23 |  |  |
+| F: C75, C76 | Floor 24 V entry | 1 µF X7R 50 V | 0805 | 6 |  |  |
+| M: C31 | 5 V buck input, 24 V | 4.7 µF X7R 50 V | 1210 | 1 |  |  |
+| M: C8, C44<br>F: C21 | Bulk, 3.3 / 5 V | 10 µF X7R | 0805 | 5 |  |  |
+| M: C82 | Bulk, debug LEDs (5 V) | 10 µF X7R | 1206 | 1 |  |  |
+| M: C29 | 5 V buck input, 24 V | 10 µF X7R 50 V | 1210 | 1 |  |  |
+| M: C3, C38, C39, C41, C42, C51–C54 | Buck outputs, 3.3 / 5 V | 22 µF X7R | 1206 | 9 |  |  |
+| M: C36<br>F: C73, C74 | Bulk, 24 V rail | 220 µF 50 V aluminium, low-ESR | SMD can, 10 × 10.5 mm | 7 | $18.41 | [Mouser](https://www.mouser.com/en/ProductDetail/Vishay-BC-Components/MAL215097102E3?qs=qmStTZH4TznNa7zgwdGJWg%3D%3D) |
+| M: D1, D2, D5–D7, D17, D18, D39, D40, D42, D43<br>F: D24–D26, D45 | ESD, 3.3 V lines (load cell, leak, float, tray, OE, nRESET) | ESD5Z3.3T1G | SOD-523 | 23 |  | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/ESD5Z3.3T1G?qs=OSf9jACorvaH3Y8oRWEcuQ%3D%3D) |
+| M: D3 | Pump flyback | SS34 | SMA (DO-214AC) | 1 | $1.01 | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/SS34?qs=2ONuHmP%2FXzb3ub11UdFfdQ%3D%3D) |
+| M: D4, D37, D38 | Debug LEDs | SK6812 | 5050 | 3 | $2.95 | [Mouser](https://www.mouser.com/en/ProductDetail/Adafruit/4960?qs=pBJMDPsKWf1Q%252BqeEoLnQjA%3D%3D) |
+| M: D8, D9, D13, D14, D19, D20, D22, D41, D44<br>F: D27–D29 | ESD, 5 V cable lines (I²C, 1-Wire) | ESD5Z6.0T1G | SOD-523 | 18 |  | [Mouser](https://www.mouser.com/en/ProductDetail/onsemi/ESD5Z6.0T1G?qs=OSf9jACorvYUyIPFpvnErQ%3D%3D) |
+| M: D16, D34–D36 | Valve flybacks (D34–D36), 5 V → 24 V reverse diode (D16) | SS16 | SMA (DO-214AC) | 4 | $1.44 | [Mouser](https://www.mouser.com/en/ProductDetail/Taiwan-Semiconductor/SS16?qs=JV7lzlMm3yJVXqornbcQQA%3D%3D) |
+| M: D21 | Surge-stopper gate network | 1N4148W | SOD-123 | 1 | $0.12 | [Mouser](https://www.mouser.com/en/ProductDetail/Diotec-Semiconductor/1N4148W?qs=OlC7AqGiEDmsbkbAeXQtXg%3D%3D) |
+| M: D23 | Input TVS | SMBJ33A | SMB (DO-214AA) | 1 | $0.77 | [Mouser](https://www.mouser.com/en/ProductDetail/Semtech/SMBJ33A?qs=jcD%2FCkGBYeN%2FjSJFT7pReg%3D%3D) |
+| F: D30, D31 | LED channel flybacks | SS25 | SMA (DO-214AC) | 6 |  |  |
+| M: F1 | Pump fuse, 3 A slow-blow | 3 A slow-blow ⚠ | NANO2 (6.1 × 2.69 mm) | 1 | $3.36 | [Mouser](https://www.mouser.com/en/ProductDetail/Littelfuse/0460003.UR?qs=YKoktUZms5J5DMRoJY1GHw%3D%3D) |
+| F: FB1 | Sensor-rail filter | Ferrite bead, value not set (or 0 Ω) | 0603 | 3 |  |  |
+| M: IC1<br>F: U15 | 5 V drivers: LED data + pump gate (M), LED gates (F) | 74AHCT125D,118 | SOIC-14 | 4 |  | [Mouser](https://www.mouser.com/en/ProductDetail/Nexperia/74AHCT125D118?qs=P62ublwmbi8WxHlonNNcrA%3D%3D) |
+| M: J1 | USB-C, programming / console | TE 2495155-1 | USB-C receptacle | 1 | $2.25 | [Mouser](https://www.mouser.com/en/ProductDetail/TE-Connectivity/2495155-1?qs=2FehpBK1j95l8dIFdQH6Ww%3D%3D) |
+| M: J2 | Pump | Molex Micro-Fit 3.0 43650-0400 | THT, 1×4, 3.00 mm, right-angle | 1 | $1.18 | [Mouser](https://www.mouser.com/en/ProductDetail/Molex/43650-0400?qs=A%252B%2FNCR0PvNV09lp6LzdRYg%3D%3D) |
+| F: J3 | Light plate (24 V + CH1–CH4) | Molex Micro-Fit 3.0 43650-0500 | THT, 1×5, 3.00 mm, right-angle | 3 |  |  |
+| M: J4, J14, J15<br>F: J6 | Floor cable, main ↔ floor | Molex Micro-Fit 3.0 43045-1213 | THT, 2×6, 3.00 mm, vertical | 6 |  | [Mouser](https://www.mouser.com/en/ProductDetail/Molex/43045-1213?qs=359VwiUTsp0cSsT%2FR1N%2Feg%3D%3D) |
+| M: J5 | 24 V adapter input | Kycon KPJX-4S | 4-pin power DIN | 1 | $1.69 | [Mouser](https://www.mouser.com/en/ProductDetail/Kycon/KPJX-4S?qs=PGF6ObTbUZ1PHc9As62%2FZQ%3D%3D) |
+| M: J8–J10 | Valves V1–V3 | Amphenol G88MPB02002C1EU | THT, 1×2, 3.00 mm, right-angle | 3 | $2.34 | [Mouser](https://www.mouser.com/en/ProductDetail/Amphenol-Commercial-Products/G88MPB02002C1EU?qs=%252BRAvXJslkuDOP%2FIlLZvKQA%3D%3D) |
+| M: J11 | Load cell | JST PH B5B-PH-K | THT, 1×5, 2.00 mm, vertical | 1 | $0.69 | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B5B-PH-K-S-GW?qs=cIziFXvMxOWNYlDdZstBdA%3D%3D) |
+| M: J12, J13<br>F: J7 | Leak electrode (J12), float switch (J13), tray electrode (J7) | JST PH B2B-PH-K | THT, 1×2, 2.00 mm, vertical | 5 |  | [Mouser](https://www.mouser.com/en/ProductDetail/JST-Commercial/B2B-PH-K-MLFSN?qs=QpmGXVUTftFtjXkolasBkg%3D%3D) |
+| F: J20 | Spectral light sensor | Adafruit 4698 (AS7341 breakout) | Breakout on 1×6 header | 3 |  |  |
+| M: L1 | 5 V buck inductor | 8.2 µH, Coilcraft XAL1010-822MED | SMD (XAL1010) | 1 | $5.11 | [Mouser](https://www.mouser.com/en/ProductDetail/Coilcraft/XAL1010-822MED?qs=zCSbvcPd3pba7AVSEX0Sqw%3D%3D) |
+| M: L2 | 3.3 V buck inductor | 6.8 µH, Coilcraft XAL7070-682MEC | SMD (XAL7070) | 1 | $3.06 | [Mouser](https://www.mouser.com/en/ProductDetail/Coilcraft/XAL7070-682MEC?qs=zCSbvcPd3pZMktES6ULAbA%3D%3D) |
+| M: PS1 | Buck, 5 V → 3.3 V | LMR33610ADDAR | HSOP-8 (exposed pad) | 1 | $2.39 | [Mouser](https://www.mouser.com/en/ProductDetail/Texas-Instruments/LMR33610ADDAR?qs=Cb2nCFKsA8qZzeebnoCDFA%3D%3D) |
+| M: Q1–Q9<br>F: Q12, Q13 | OE/nRESET drivers (Q1–Q6), 1-Wire shifters (Q7–Q9), sensor-bus isolation (Q12, Q13) | BSS138BK,215 | SOT-23 | 15 |  | [Mouser](https://www.mouser.com/en/ProductDetail/Nexperia/BSS138BK215?qs=A1cBxND5mHIu7uZeHkM5Xw%3D%3D) |
+| M: Q10 | Surge-stopper FET (M1) | FDB3632 | D²PAK (TO-263) | 1 |  |  |
+| M: Q11 | Reverse-blocking FET (M2) | FDMS86101 | Power56 (5 × 6 mm) | 1 |  |  |
+| F: Q14, Q15 | LED channel switches CH1, CH2 | DMN4035L-7 | SOT-23 | 6 |  |  |
+| M: Q18–Q20 | Valve switches V1–V3 | AO3422 | SOT-23 | 3 |  |  |
+| M: Q21 | Pump switch | FDMS86500L | Power56 (5 × 6 mm) | 1 |  |  |
+| M: R70 | Input current shunt (U8 + U11) | 5 mΩ 1 % ≥1 W, 4-terminal (Vishay WSK2512) | 2512, Kelvin | 1 |  |  |
+| M: R5, R6 | USB D+/D− links | 0 Ω | 0603 | 2 |  |  |
+| M: R17, R67, R91, R92 | M1 gate series, U2 supply filter, U11 input filter | 10 Ω | 0603 | 4 |  |  |
+| F: R111, R112 | LED gate resistors | 33 Ω | 0603 | 6 |  |  |
+| M: R22 | Debug-LED data series | 47 Ω | 0603 | 1 |  |  |
+| M: R13, R14, R81, R119–R121 | Load-cell filter, valve gate series, U8 gate RC | 100 Ω | 0603 | 6 |  |  |
+| M: R25 | Pump gate series | 220 Ω | 0603 | 1 |  |  |
+| M: R43 | Valve current-monitor divider | 820 Ω | 0603 | 1 |  |  |
+| M: R26, R32, R35–R39, R54, R63, R133<br>F: R103 | ADC/input series, 1-Wire pull-ups (5 V), U8 supply feed | 1 kΩ | 0603 | 13 |  |  |
+| M: R140–R145 | OE/nRESET drain resistors (survive a cable short to 24 V) | 1 kΩ ≥0.75 W | 2010 | 6 |  |  |
+| M: R41 | Valve current-monitor divider | 1.2 kΩ | 0603 | 1 |  |  |
+| M: R52, R53, R64, R65, R76, R77<br>F: R104, R106 | Floor-cable I²C pull-ups to 5 V | 2.2 kΩ | 0603 | 12 |  |  |
+| M: R4, R9, R40, R42, R51, R84, R85<br>F: R109, R110 | I²C pull-ups, float pull-up, U4 enable / diagnostics | 4.7 kΩ | 0603 | 13 |  |  |
+| M: R45 | U4 current-limit set | 4.87 kΩ | 0603 | 1 |  |  |
+| M: R74 | U8 output-clamp divider (≈ 30 V) | 4.99 kΩ | 0603 | 1 |  |  |
+| M: R15, R23 | USB-C CC pull-downs | 5.1 kΩ | 0603 | 2 |  |  |
+| M: R34 | VIN sense divider | 5.6 kΩ | 0603 | 1 |  |  |
+| M: R60 | U8 UV/OV divider | 6.04 kΩ | 0603 | 1 |  |  |
+| M: R28 | Valve-rail sense divider | 8.2 kΩ | 0603 | 1 |  |  |
+| M: R3, R16, R21, R24, R29–R31, R61, R80, R82, R88–R90, R95, R96, R131, R134–R139<br>F: R99, R105, R125, R126 | Pull-ups, pull-downs, gate series | 10 kΩ | 0603 | 34 |  |  |
+| M: R48 | Valve-rail bleed (24 V) | 10 kΩ ≥0.25 W | 0603 | 1 |  |  |
+| M: R46, R47, R55, R56, R68, R69 | Mux channel pull-ups, floors 1–3 | 22 kΩ | 0603 | 6 |  |  |
+| M: R79 | 5 V buck feedback | 24.9 kΩ | 0603 | 1 |  |  |
+| M: R94 | 3.3 V buck feedback | 43.2 kΩ | 0603 | 1 |  |  |
+| F: R96 | nRESET pull-up / sensor-rail enable | 47 kΩ | 0603 | 3 |  |  |
+| M: R10–R12, R18–R20, R27, R33, R44, R66, R75, R78, R83, R93, R97, R122–R124, R132<br>F: R101, R113, R114, R127–R130 | Gate pull-downs, divider and feedback tops, enables | 100 kΩ | 0603 | 40 |  |  |
+| M: R73 | U8 output-clamp divider (≈ 30 V) | 115 kΩ | 0603 | 1 |  |  |
+| M: R59 | U8 UV/OV divider | 243 kΩ | 0603 | 1 |  |  |
+| M: R62 | U8 shutdown pull-up | 1 MΩ | 0603 | 1 |  |  |
+| M: SW1, SW2 | Reset / boot buttons | Tactile switch (TL3342 footprint) | SMD | 2 |  |  |
+| M: Z1, Z2 | M1/M2 gate–source Zeners | DDZ9702T-7 | SOD-523 | 2 |  |  |
 
 
 *Notice: These shipping costs are for a Balkan country so if youa re from EU or USA there are very high chances of having lower shipping costs*
@@ -128,7 +188,7 @@ Key concepts of the design:
 
 _*Some pictures may have been distorted in order to fit them in the README.*
 
-<img src="./Documentation/Pictures/Journal_AJ/Image.png" width="80%" height="80%">
+<img src="./Documentation/Pictures/Journal_AJ/Image62.png" width="80%" height="80%">
 
 ### Floor PCB
 
@@ -228,7 +288,9 @@ Recommended tools are:
 
 ***Steps for assembling***
 
+On the part with the PCB assembling you really just need to screw them in place and thats it. 4 m3 screw nuts and a good place for the external antenna.
 
+How to assemble the 3D model:
 
 ---
 
@@ -343,6 +405,12 @@ For anything beyond local compose: use strong secrets (not the `dev-*-key` defau
 
 ---
 
+## Firmware Install
+
+Soon...
+
+---
+
 # Current Status
 
 - [X] Initial Concept
@@ -366,3 +434,8 @@ For anything beyond local compose: use strong secrets (not the `dev-*-key` defau
 ### Ajakovski - Hardware and PCB Design
 
 ### soggy8 - 3D Design and Software
+
+# License
+
+This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for full terms.
+
