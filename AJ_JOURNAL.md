@@ -4,6 +4,22 @@
 
 ---
 
+## 33. Timelapse 07.11.2026
+
+I will keep it short considering that i am still having crazy fatigues and nausea due to my illness.
+
+README and Repo sorting is DONE...
+
+The README lacks only Firmware configuration and that will be done in week 9
+
+Otherwise everything else is set to be sorted out by the end of week 9 where we will finally ship it as a functional project. YIPPIEEEE
+
+I am following on how to prepare a README from my previous shipped project back in Fallout where it got approved  and i remember following every rule back then for having a nice README. So i hope it is what its supposed to be and if not we will quickly fix it in order to get approved :)
+
+Also sorry for timelapsing on VSCode it was only for the purpose of creating folders into the repository because i find it easier that way xD
+
+---
+
 ## 32. Timelapse 06.11.2026
 
 Bruhhh i am getting so sick i can barely work on the project....
