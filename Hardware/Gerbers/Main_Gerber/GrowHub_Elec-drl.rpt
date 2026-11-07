@@ -1,0 +1,46 @@
+Drill report for GrowHub_Elec.kicad_pcb
+Created on 2026-11-05T16:11:14
+
+Copper Layer Stackup:
+    =============================================================
+    L1 :  F.Cu                      front
+    L2 :  In1.Cu                    in1
+    L3 :  In2.Cu                    in2
+    L4 :  B.Cu                      back
+
+
+Drill file 'GrowHub_Elec-PTH-drl.gbr' contains
+    plated through holes:
+    =============================================================
+    T1  0.200mm  0.0079"  (12 holes))
+    T2  0.300mm  0.0118"  (193 holes))
+    T3  0.350mm  0.0138"  (8 holes))
+    T4  0.400mm  0.0157"  (236 holes))
+    T5  0.500mm  0.0197"  (40 holes))
+    T6  0.530mm  0.0209"  (4 holes)  (with 4 slots)
+    T7  0.600mm  0.0236"  (3 holes))
+    T8  0.600mm  0.0236"  (4 holes)  (with 4 slots)
+    T9  0.700mm  0.0276"  (2 holes))
+    T10  0.750mm  0.0295"  (9 holes))
+    T11  0.900mm  0.0354"  (1 hole)
+    T12  0.920mm  0.0362"  (36 holes))
+    T13  1.000mm  0.0394"  (7 holes))
+    T14  1.000mm  0.0394"  (1 hole)  (with 1 slot)
+    T15  1.020mm  0.0402"  (4 holes))
+    T16  1.070mm  0.0421"  (6 holes))
+    T17  1.500mm  0.0591"  (2 holes))
+
+    Total plated holes count 568
+
+
+Drill file 'GrowHub_Elec-NPTH-drl.gbr' contains
+    unplated through holes:
+    =============================================================
+    T1  0.920mm  0.0362"  (6 holes))
+    T2  1.070mm  0.0421"  (2 holes))
+    T3  1.700mm  0.0669"  (2 holes))
+    T4  3.000mm  0.1181"  (2 holes))
+    T5  3.050mm  0.1201"  (3 holes))
+    T6  3.200mm  0.1260"  (4 holes))
+
+    Total unplated holes count 19
