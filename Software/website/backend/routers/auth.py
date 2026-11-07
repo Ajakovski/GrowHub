@@ -1,0 +1,302 @@
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional
+from urllib.parse import urlencode
+import logging
+import os
+import re
+import time
+
+import accounts
+import mailer
+import onboarding
+import plants
+from logutil import get_logger
+from ratelimit import RateLimiter
+from requestutil import client_ip
+from routers.ai import ai_key_matches
+
+SESSION_COOKIE = "growhub_session"
+COOKIE_SECURE = os.environ.get("GROWHUB_COOKIE_SECURE", "0") == "1"
+AUTH_ATTEMPTS_PER_MINUTE = int(os.environ.get("GROWHUB_AUTH_ATTEMPTS_PER_MINUTE", "10"))
+EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+# Login cookies need exact origins, so "*" is not allowed. The default covers localhost and home-network IPs.
+WEB_ORIGIN_REGEX = os.environ.get("GROWHUB_WEB_ORIGIN_REGEX") or (
+    r"https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?"
+)
+PUBLIC_URL = os.environ.get("GROWHUB_PUBLIC_URL", "").rstrip("/")
+FALLBACK_PUBLIC_URL = "http://localhost:5000"
+
+router = APIRouter()
+limiter = RateLimiter(AUTH_ATTEMPTS_PER_MINUTE)
+resend_limiter = RateLimiter(3, window_seconds=600)
+demo_limiter = RateLimiter(60, window_seconds=600)
+logger = logging.getLogger("uvicorn.error")
+auth_log = get_logger("auth")
+
+
+def _normalise_email(value: str) -> str:
+    value = value.strip().lower()
+    if not EMAIL_PATTERN.match(value):
+        raise ValueError("Enter a valid email address")
+    return value
+
+
+class Credentials(BaseModel):
+    email: str = Field(max_length=254)
+    password: str = Field(min_length=1, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, value: str) -> str:
+        return _normalise_email(value)
+
+
+class NewAccount(Credentials):
+    password: str = Field(min_length=8, max_length=128)
+
+
+class EmailOnly(BaseModel):
+    email: str = Field(max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, value: str) -> str:
+        return _normalise_email(value)
+
+
+class VerificationToken(BaseModel):
+    token: str = Field(min_length=1, max_length=200)
+
+
+class OnboardingAnswers(BaseModel):
+    goal: str
+    harvest: str
+    plant_ids: List[str] = Field(min_length=1, max_length=20)
+    time: str
+    experience: str
+    space: str
+
+
+def current_user(request: Request) -> Optional[accounts.User]:
+    token = request.cookies.get(SESSION_COOKIE)
+    return accounts.user_for_session(token) if token else None
+
+
+def require_user(request: Request) -> accounts.User:
+    user = current_user(request)
+    if user is None or not user.email_verified:
+        has_cookie = bool(request.cookies.get(SESSION_COOKIE))
+        auth_log.info(
+            "auth rejected path=%s has_session_cookie=%s",
+            request.url.path,
+            has_cookie,
+        )
+        raise HTTPException(status_code=401, detail="Log in to continue")
+    return user
+
+
+def require_viewer(request: Request, x_ai_key: Optional[str] = Header(default=None)) -> None:
+    if ai_key_matches(x_ai_key):
+        return
+    require_user(request)
+
+
+def require_owner(request: Request) -> accounts.User:
+    """Verified non-demo user for mutating hub config (plants, camera source)."""
+    user = require_user(request)
+    if accounts.is_demo_user(user):
+        raise HTTPException(
+            status_code=403,
+            detail="Guest demo is read-only. Create an account to change plants or camera settings.",
+        )
+    return user
+
+
+def _check_rate_limit(request: Request) -> None:
+    client = client_ip(request)
+    if not limiter.allow(client):
+        raise HTTPException(status_code=429, detail="Too many attempts, wait a minute and try again.")
+
+
+def _site_url(request: Request) -> str:
+    if PUBLIC_URL:
+        return PUBLIC_URL
+    origin = request.headers.get("origin", "")
+    return origin if re.fullmatch(WEB_ORIGIN_REGEX, origin) else FALLBACK_PUBLIC_URL
+
+
+def _send_verification(request: Request, user: accounts.User) -> bool:
+    token = accounts.create_verification_token(user.id)
+    link = f"{_site_url(request)}/verify.html?{urlencode({'token': token})}"
+    try:
+        mailer.send_verification_email(user.email, link)
+    except mailer.EmailError as error:
+        logger.error("Verification email to %s failed: %s", user.email, error)
+        return False
+    return True
+
+
+def _user_payload(user: accounts.User) -> dict:
+    return {"email": user.email, "is_demo": accounts.is_demo_user(user)}
+
+
+def _start_session(
+    response: Response,
+    user: accounts.User,
+    *,
+    ttl_seconds: int = accounts.SESSION_TTL_SECONDS,
+) -> dict:
+    response.set_cookie(
+        SESSION_COOKIE,
+        accounts.create_session(user.id, ttl_seconds=ttl_seconds),
+        max_age=ttl_seconds,
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite="lax",
+        path="/",
+    )
+    return _user_payload(user)
+
+
+@router.post("/register", status_code=201)
+def register(body: NewAccount, request: Request):
+    _check_rate_limit(request)
+    try:
+        user = accounts.create_user(body.email, body.password)
+    except accounts.EmailTaken:
+        auth_log.info("register rejected email_taken=%s", body.email)
+        raise HTTPException(status_code=409, detail="An account with this email already exists")
+    email_sent = _send_verification(request, user)
+    auth_log.info("register ok email=%s email_sent=%s", user.email, email_sent)
+    return {"email": user.email, "email_sent": email_sent}
+
+
+@router.post("/login")
+def login(body: Credentials, request: Request, response: Response):
+    _check_rate_limit(request)
+    if body.email == accounts.DEMO_EMAIL:
+        auth_log.info("login rejected demo_email=%s", body.email)
+        raise HTTPException(status_code=401, detail="Wrong email or password")
+    user = accounts.authenticate(body.email, body.password)
+    if user is None:
+        auth_log.info("login rejected bad_credentials email=%s", body.email)
+        raise HTTPException(status_code=401, detail="Wrong email or password")
+    if not user.email_verified:
+        auth_log.info("login rejected unverified email=%s", body.email)
+        raise HTTPException(status_code=403, detail="Verify your email first. Check your inbox for the link.")
+    auth_log.info("login ok email=%s", user.email)
+    return _start_session(response, user)
+
+
+@router.post("/demo")
+def start_demo(request: Request, response: Response):
+    """Guest session for the public live demo."""
+    existing = current_user(request)
+    client = client_ip(request)
+    # Already in a demo session — just refresh, don't burn the rate limit.
+    if existing is not None and accounts.is_demo_user(existing) and existing.email_verified:
+        auth_log.info("demo session refreshed client=%s", client)
+        return _start_session(response, existing, ttl_seconds=accounts.DEMO_SESSION_TTL_SECONDS)
+
+    if not demo_limiter.allow(client):
+        auth_log.warning("demo rate-limited client=%s", client)
+        raise HTTPException(status_code=429, detail="Too many demo starts. Wait a few minutes and try again.")
+    user = accounts.ensure_demo_user()
+    auth_log.info("demo session started client=%s user_id=%s", client, user.id)
+    return _start_session(response, user, ttl_seconds=accounts.DEMO_SESSION_TTL_SECONDS)
+
+
+@router.post("/verify")
+def verify(body: VerificationToken, request: Request, response: Response):
+    _check_rate_limit(request)
+    user = accounts.verify_email(body.token)
+    if user is None:
+        auth_log.info("verify rejected invalid_or_expired_token")
+        raise HTTPException(status_code=400, detail="This verification link is invalid or has expired.")
+    auth_log.info("verify ok email=%s", user.email)
+    return _start_session(response, user)
+
+
+@router.post("/resend-verification")
+def resend_verification(body: EmailOnly, request: Request):
+    _check_rate_limit(request)
+    if not resend_limiter.allow(body.email):
+        raise HTTPException(status_code=429, detail="We already sent a few emails. Wait 10 minutes and try again.")
+    user = accounts.find_user(body.email)
+    if user is not None and not user.email_verified:
+        _send_verification(request, user)
+    # Same answer either way so this can't be used to find out which emails have accounts.
+    return {"status": "If that account still needs verifying, a new link is on its way."}
+
+
+@router.post("/logout")
+def logout(request: Request, response: Response):
+    token = request.cookies.get(SESSION_COOKIE)
+    user = accounts.user_for_session(token) if token else None
+    if token:
+        accounts.delete_session(token)
+    response.delete_cookie(SESSION_COOKIE, path="/", secure=COOKIE_SECURE, httponly=True, samesite="lax")
+    auth_log.info(
+        "logout email=%s was_demo=%s",
+        user.email if user else None,
+        accounts.is_demo_user(user) if user else False,
+    )
+    return {"status": "logged out"}
+
+
+@router.get("/me")
+def me(user: accounts.User = Depends(require_user)):
+    return _user_payload(user)
+
+
+def _onboarding_payload(user: accounts.User) -> dict:
+    state = onboarding.parse_state(accounts.get_onboarding(user.id))
+    return {
+        "completed": state["completed"],
+        "answers": state["answers"],
+        "recommendation": state["recommendation"],
+        "completed_at": state["completed_at"],
+        "tour_seen_at": state["tour_seen_at"],
+        "quiz": onboarding.quiz_options(),
+        "plants": plants.catalog(),
+    }
+
+
+@router.get("/onboarding")
+def get_onboarding(user: accounts.User = Depends(require_user)):
+    return _onboarding_payload(user)
+
+
+@router.put("/onboarding")
+def save_onboarding_answers(body: OnboardingAnswers, user: accounts.User = Depends(require_user)):
+    try:
+        answers = onboarding.validate_answers(body.model_dump())
+        recommendation = onboarding.recommend(answers)
+    except onboarding.InvalidAnswers as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+    accounts.merge_onboarding(
+        user.id,
+        completed=False,
+        answers=answers,
+        recommendation=recommendation,
+        completed_at=None,
+        tour_seen_at=None,
+    )
+    return _onboarding_payload(user)
+
+
+@router.post("/onboarding/complete")
+def complete_onboarding(user: accounts.User = Depends(require_user)):
+    state = onboarding.parse_state(accounts.get_onboarding(user.id))
+    now = time.time()
+    accounts.merge_onboarding(
+        user.id,
+        completed=True,
+        answers=state["answers"],
+        recommendation=state["recommendation"],
+        completed_at=state["completed_at"] or now,
+        tour_seen_at=now,
+    )
+    return _onboarding_payload(user)

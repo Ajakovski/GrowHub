@@ -1,0 +1,4 @@
+fastapi==0.142.2
+uvicorn==0.54.0
+openai==3.24.0
+requests==2.34.2

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Open the GrowHub live dashboard demo — no account required.">
+    <title>GrowHub | Live demo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="assets/img/favicon.svg">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand focus-strip" href="index.html" aria-label="GrowHub home">
+                <img src="assets/img/growhub.svg" alt="GrowHub logo" />
+            </a>
+            <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle Menu">Menu</button>
+            <nav class="nav-menu" data-nav-menu aria-label="Primary">
+                <a class="nav-link" href="index.html#products">Products</a>
+                <a href="how-it-works.html" class="nav-link">How it works</a>
+                <a href="shop.html" class="nav-link">Catalog</a>
+                <a href="demo.html" class="nav-link active">Live demo</a>
+                <a href="index.html#contact" class="nav-link navcta">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="section auth-page">
+        <div class="container">
+            <section class="auth-card" aria-labelledby="demo-title">
+                <span class="kicker">Live demo</span>
+                <h1 class="section-title" id="demo-title">Try the dashboard as a guest</h1>
+                <p class="section-lead" id="demo-lead">
+                    Open the sample hub with live telemetry, camera, and AI status — no email or password.
+                    When you're ready for your own hub, create an account.
+                </p>
+                <p class="auth-error" id="demo-error" role="alert" hidden></p>
+                <div class="button-group" id="demo-actions">
+                    <a class="btn btn-primary" href="dashboard.html?demo=1" data-demo-entry>Continue as guest</a>
+                    <a class="btn btn-secondary" href="login.html?mode=register">Create account</a>
+                    <a class="btn btn-secondary" href="login.html">Log in</a>
+                </div>
+                <p class="auth-hint" id="demo-entry-status" hidden></p>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>GrowHub</p>
+            <p>&copy; <span data-year></span> GrowHub. Built to grow better, everywhere.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js?v=demo7"></script>
+    <script src="js/demo-entry.js?v=demo7"></script>
+    <script src="js/demo.js"></script>
+</body>
+</html>

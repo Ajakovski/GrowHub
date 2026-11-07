@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowHub | Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="assets/img/favicon.svg">
+</head>
+<body class="auth-pending">
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand focus-strip" href="index.html" aria-label="GrowHub home">
+                <img src="assets/img/growhub.svg" alt="GrowHub logo" />
+            </a>
+            <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle Menu">Menu</button>
+            <nav class="nav-menu" data-nav-menu aria-label="Primary">
+                <a class="nav-link" href="index.html#products">Products</a>
+                <a href="how-it-works.html" class="nav-link">How it works</a>
+                <a href="shop.html" class="nav-link">Catalog</a>
+                <a href="demo.html" class="nav-link active" data-nav-dashboard>Live demo</a>
+                <a href="index.html#contact" class="nav-link navcta">Contact</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="section dashboard-page">
+        <div class="container">
+            <div class="demo-banner" id="demo-banner" hidden>
+                <div>
+                    <strong>Live demo</strong>
+                    <span>You're on a shared sample hub — same UI partners use. Changes here aren't tied to a personal account.</span>
+                </div>
+                <div class="demo-banner-actions">
+                    <a class="btn btn-secondary" href="how-it-works.html">How AI care works</a>
+                    <a class="btn btn-primary" href="login.html?mode=register" id="demo-create-account">Create account</a>
+                </div>
+            </div>
+
+            <div class="dashboard-header" id="dashboard-header">
+                <div>
+                    <span class="kicker">Live Telemetry</span>
+                    <h1 class="section-title">Plant Health & Stats</h1>
+                    <p class="section-lead">Real-time Deep Water Culture (DWC) telemetry and optical camera node streaming.</p>
+                    <p class="last-updated" id="last-updated">Waiting for first update...</p>
+                </div>
+                <div class="dashboard-account">
+                    <button type="button" class="pill" id="crops-button" hidden>Set plants</button>
+                    <span class="account-email" id="account-email"></span>
+                    <button type="button" class="pill" id="logout-button">Log out</button>
+                    <div class="pill" id="system-status">Connecting...</div>
+                </div>
+            </div>
+
+            <div class="alert-list" id="alert-list" hidden></div>
+
+            <div class="dashboard-metrics is-loading" id="metric-grid">
+                <article class="metric-card metric-card-wide" id="ai-status-card">
+                    <span class="kicker">AI Plant Stress</span>
+                    <strong id="ai-status">--</strong>
+                    <span id="ai-status-detail">Waiting for the first AI review</span>
+                </article>
+
+                <section class="tour-section" id="tour-reservoir" aria-labelledby="reservoir-heading">
+                    <div class="metric-group-heading" id="reservoir-heading">
+                        <h2>Reservoir</h2>
+                        <span>Shared water in the hub</span>
+                    </div>
+                    <div class="metric-grid" id="hub-metrics">
+                        <article class="metric-card">
+                            <span class="kicker">Reservoir Level</span>
+                            <strong id="water-val">--</strong>
+                            <span id="water-status">18 L base reservoir</span>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="tour-section" id="tour-tiles" aria-labelledby="tiles-heading">
+                    <div class="metric-group-heading" id="tiles-heading">
+                        <h2>Tiles</h2>
+                        <span id="tile-scope">Average across all tiles</span>
+                    </div>
+                    <div class="eyebrow-row device-selector" id="device-selector">
+                        <button type="button" class="pill active" data-id="hub">All tiles</button>
+                    </div>
+                    <div class="metric-grid" id="tile-metrics"></div>
+                </section>
+            </div>
+
+            <div class="card camera-card" id="camera-card">
+                <div class="camera-card-header">
+                    <h3>Optical node stream</h3>
+                    <div class="camera-controls">
+                        <span class="pill camera-node-pill" id="camera-node-pill">Waiting for camera</span>
+                        <div class="detail-range" id="camera-source" role="group" aria-label="Camera source">
+                            <button type="button" class="pill active" data-source="webcam">Webcam</button>
+                            <button type="button" class="pill" data-source="stock">Stock images</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-image cover camera-frame">
+                    <img id="camera-feed" src="assets/img/growhub_tile_render_v1.png" alt="Optical feed" />
+                </div>
+            </div>
+
+            <div class="card chat-card" id="ai-chat">
+                <div class="camera-card-header">
+                    <h3>Ask GrowHub AI</h3>
+                    <span class="pill">Reads live data and photos</span>
+                </div>
+                <div class="chat-log" id="ai-chat-log" aria-live="polite">
+                    <p class="chat-empty">Ask about your plants, their readings, or what to do next.</p>
+                </div>
+                <div class="eyebrow-row chat-suggestions" id="ai-chat-suggestions">
+                    <button type="button" class="pill">How are my plants doing?</button>
+                    <button type="button" class="pill">Is my EC in range?</button>
+                    <button type="button" class="pill">What does the latest photo show?</button>
+                </div>
+                <form class="chat-form" id="ai-chat-form">
+                    <input type="text" id="ai-chat-input" placeholder="Ask about your plants..." maxlength="2000" autocomplete="off" aria-label="Message GrowHub AI" required />
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div class="onboard-modal" id="onboard-modal" hidden>
+        <div class="onboard-card" role="dialog" aria-modal="true" aria-labelledby="onboard-title">
+            <div class="onboard-progress" id="onboard-progress" aria-hidden="true"></div>
+            <span class="kicker" id="onboard-kicker">GrowHub setup</span>
+            <h2 class="section-title" id="onboard-title">Let's build your grow</h2>
+            <p class="section-lead" id="onboard-lead">A few quick picks — no typing required.</p>
+            <div id="onboard-body"></div>
+            <p class="auth-error" id="onboard-error" role="alert" hidden></p>
+            <div class="button-group onboard-actions" id="onboard-actions">
+                <button type="button" class="btn btn-secondary" id="onboard-back" hidden>Back</button>
+                <button type="button" class="btn btn-primary" id="onboard-next">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tour-overlay" id="tour-overlay" hidden>
+        <div class="tour-spotlight" id="tour-spotlight"></div>
+        <div class="tour-bubble" id="tour-bubble" role="dialog" aria-live="polite">
+            <span class="kicker" id="tour-kicker">Quick tour</span>
+            <strong id="tour-title">Welcome aboard</strong>
+            <p id="tour-text"></p>
+            <div class="button-group tour-actions">
+                <button type="button" class="btn btn-secondary" id="tour-skip">Skip</button>
+                <button type="button" class="btn btn-primary" id="tour-next">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="plant-modal" id="plant-modal" hidden>
+        <div class="plant-modal-card" role="dialog" aria-modal="true" aria-labelledby="plant-modal-title">
+            <span class="kicker">Your GrowHub</span>
+            <h2 class="section-title" id="plant-modal-title">What are you growing?</h2>
+            <p class="section-lead" id="plant-modal-lead">
+                Pick the plants in this hub so nutrient targets, alerts and the AI match your crop mix.
+            </p>
+            <div class="plant-grid" id="plant-grid" role="group" aria-label="Plant types"></div>
+            <p class="plant-conflict" id="plant-conflict" hidden></p>
+            <div class="plant-tile-step" id="plant-tile-step" hidden>
+                <h3>Assign plants to tiles</h3>
+                <p class="section-lead">Optional. Leave a tile empty to grow the full mix there.</p>
+                <div id="plant-tile-assign"></div>
+            </div>
+            <p class="auth-error" id="plant-modal-error" role="alert" hidden></p>
+            <div class="button-group plant-modal-actions">
+                <button type="button" class="btn btn-secondary" id="plant-modal-cancel" hidden>Cancel</button>
+                <button type="button" class="btn btn-primary" id="plant-modal-save">Save and continue</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>GrowHub</p>
+            <p>&copy; <span data-year></span> GrowHub. Built to grow better, everywhere.</p>
+        </div>
+    </footer>
+
+    <script>
+        if (new URLSearchParams(window.location.search).get("demo") === "1") {
+            try { sessionStorage.setItem("growhub_demo_entry", "1"); } catch (error) {}
+        }
+    </script>
+    <script src="js/main.js?v=demo7"></script>
+    <script>
+        // Start guest auth before onboarding can race a 401 → login.
+        window.growhubDemoBootstrap = (new URLSearchParams(window.location.search).get("demo") === "1")
+            ? fetch(`${AUTH_URL}/demo`, { method: "POST", credentials: "include", cache: "no-store" }).then(async (response) => {
+                const body = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const detail = typeof body.detail === "string"
+                        ? body.detail
+                        : `Could not start demo (${response.status})`;
+                    throw new Error(detail);
+                }
+                return body;
+            })
+            : Promise.resolve(null);
+    </script>
+    <script src="js/dashboard.js?v=demo8"></script>
+    <script src="js/plants.js?v=demo8"></script>
+    <script src="js/onboarding.js?v=demo7"></script>
+    <script src="js/ai-chat.js?v=demo7"></script>
+</body>
+</html>
