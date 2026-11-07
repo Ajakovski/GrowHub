@@ -234,7 +234,7 @@ Recommended tools are:
 
 # Software
 
-Everything lives under `Firmware/website`. Compose brings up **backend**, **AI**, **nginx frontend**, and an optional **simulator**.
+Everything lives under `Software/website`. Compose brings up **backend**, **AI**, **nginx frontend**, and an optional **simulator**.
 
 ### Stack
 
@@ -268,7 +268,7 @@ Everything lives under `Firmware/website`. Compose brings up **backend**, **AI**
 
 ### How to run (Docker, recommended)
 
-From `Firmware/website`:
+From `Software/website`:
 
 ```bash
 cp .env.example .env   # optional; fill LLM / email / secrets for a fuller setup
@@ -292,14 +292,14 @@ The simulator mounts `/dev/video0`. Remove the `devices:` block in `compose.yaml
 
 ### How to run (manual)
 
-1. Backend: from `Firmware/website/backend`, `uvicorn main:app --reload --port 8000`
+1. Backend: from `Software/website/backend`, `uvicorn main:app --reload --port 8000`
 2. Frontend: either nginx with `nginx.conf`, or temporarily `python -m http.server 5000` from `frontend/` (API calls should still hit the same origin or set `GROWHUB_API_ORIGIN`)
-3. AI (optional): from `Firmware/website/ai`, run its uvicorn entry on `8001` with `GROWHUB_API_BASE` and keys set
+3. AI (optional): from `Software/website/ai`, run its uvicorn entry on `8001` with `GROWHUB_API_BASE` and keys set
 4. Simulator: `python esp32_simulator.py` (needs `GROWHUB_DEVICE_KEY` matching the backend)
 
 ### Environment (high level)
 
-Copy `Firmware/website/.env.example` → `.env`. Important knobs:
+Copy `Software/website/.env.example` → `.env`. Important knobs:
 
 | Variable | Purpose |
 |---|---|
@@ -329,7 +329,7 @@ Copy `Firmware/website/.env.example` → `.env`. Important knobs:
 
 ### Tests
 
-From `Firmware/website/backend` (with `requirements-dev.txt` installed):
+From `Software/website/backend` (with `requirements-dev.txt` installed):
 
 ```bash
 python -m pytest tests/ -q
@@ -352,6 +352,7 @@ For anything beyond local compose: use strong secrets (not the `dev-*-key` defau
 - [X] Schematic Layout Floor PCB
 - [X] PCB Design Floor PCB
 - [ ] Firmware
+- [X] Software
 - [X] Final BOM
 - [X] Create a Zine (if needed)
 - [X] Final build
