@@ -1,0 +1,4 @@
+[mapping:actuators_safe_state]
+archive: libactuators.a
+entries:
+    safe_state (noflash)
