@@ -230,7 +230,7 @@ _*Some pictures may have been distorted in order to fit them in the README.*
 
 ## Hardware
 
-***A visual representation of the whole project has been provided withing repository files***
+***A visual representation of the whole project has been provided within repository files***
 
 ```
 Hardware/FULLY_ASSEMBLED_PROJECT.step
@@ -401,9 +401,62 @@ For anything beyond local compose: use strong secrets (not the `dev-*-key` defau
 
 ---
 
-## Firmware Install
+# Firmware
 
-Soon...
+ESP-IDF firmware for the Hub MCU lives under **Firmware/firmware**. Target is the **ESP32-S3-WROOM-1U-N16R8** (16 MB flash, 8 MB octal
+PSRAM) matching the main board.
+
+### Status
+
+Scaffolding is in place; this is **not** a finished production image yet. `app_main` currently logs a start line. Actuator control,
+safe-state latching, and a USB bench console are implemented to bring up and exercise the nine FW-27 actuator pins on real hardware
+or a DevKit.
+
+### Layout
+
+| Path | Role |
+|---|---|
+| `main/main.c` | ESP-IDF entry (`app_main`) |
+| `main/board.h` + `Kconfig.projbuild` | Pin map + board variant (`GROWHUB_REV_A` or `BENCH_DEVKITC1`) |
+| `main/actuators*.{c,h}` | Valve / pump / dose-select / OE / nRESET API, latching faults, pin reports |
+| `main/safe_state.c` | Drive actuator pins low and latch untill reboot |
+| `main/bench_cosnole.c` | USB console commands for pin dump, valve open/close, safe, restart |
+| `main/hw_if/` + `hw_*_esp.c` | Thin hardware interface (pins, time, lock, system) |
+| `sdkconfig.defaults` | ESP32-S3 + 16 MB flash + octal PSRAM defaults |
+| `sdkconfig.bench` | Extra config overlay for DevKit bench work |
+| `partitions.csv` | Partition table |
+
+### Build (ESP-IDF)
+
+Needs a normal ESP-IDF environment with `IDF_PATH` set (ESP-IDF v5.x recommended).
+
+```bash
+cd Firmware/firmware
+idf.py set-target esp32s3
+# Pick a board variant in menuconfig - GrowHub board
+idf.py menuconfig
+idf.py build
+idf.py -p /dev/ttyUSB0 flash monitor  # adjust port as needed
+```
+
+For bench bring-up on a DevKit, use the `BENCH_DEVKITC1` Kconfig choice (and `sdkconfig.bench` where helpful). On the real Hub PCB, use
+`GROWHUB_REV_A`.
+
+### What works today vs next
+
+**In tree now**
+
+- Actuator boot latch + init / safe-state
+- Valve open/close and pump on/off with refusal reasons (busy, another valve, pin fault, ...)
+- Bench console over USB for manual pin checks
+
+**Still to do**
+
+- Sensors, floor bus, networking, and posting telemetry/camera to `/api/device*`
+- Applying dashboard/AI control modes (`lights` / `pump` / `heater`) from the backend response
+- Packaging a "Firmware Install" guide for end users once the image is production-ready
+
+Untill the device firmware talks to the cloud API, use the **website simulator** (`esp32_simulator.py` in Compose) to drive the dashboard.
 
 ---
 
@@ -415,8 +468,8 @@ Soon...
 - [X] PCB Design Main PCB
 - [X] Schematic Layout Floor PCB
 - [X] PCB Design Floor PCB
-- [ ] Firmware
-- [X] Software
+- [ ] Firmware (ESP-IDF scaffolding + actuators / bench console; sensors & cloud link still open)
+- [X] Software (website, guset demo, AI, tests, docker)
 - [X] Final BOM
 - [X] Create a Zine (if needed)
 - [X] Final build
