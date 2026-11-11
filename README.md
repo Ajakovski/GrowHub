@@ -3,8 +3,8 @@
 # GrowHub - Vertical Garden
 
 <p>
-  <img src="./Documentation/Full GrowHub Garden.png" width="40%" height="500">
-  <img src="./Documentation/Transparent Chess Board.png" width="40%" height="450">
+  <img src="./Documentation/3Fl_GrowHub.png" width="40%" height="450">
+  <img src="./Documentation/PCB_Ass_GrowHub.png" width="40%" height="450">
 </p>
 
 ### _A highly efficient vertical plant growing garden with AI controlls for user-free handling experience._ 
@@ -288,6 +288,8 @@ On the part with the PCB assembling you really just need to screw them in place 
 
 How to assemble the 3D model:
 
+The 3D prints arrive ready for stacking. There is no manual work needed and the latches for the PCBs are easy to mount on. The floors stack on top of each other safely so that they dont fall off so easily.
+
 ---
 
 # Software
@@ -454,7 +456,6 @@ For bench bring-up on a DevKit, use the `BENCH_DEVKITC1` Kconfig choice (and `sd
 
 - Sensors, floor bus, networking, and posting telemetry/camera to `/api/device*`
 - Applying dashboard/AI control modes (`lights` / `pump` / `heater`) from the backend response
-- Packaging a "Firmware Install" guide for end users once the image is production-ready
 
 Untill the device firmware talks to the cloud API, use the **website simulator** (`esp32_simulator.py` in Compose) to drive the dashboard.
 
@@ -468,13 +469,14 @@ Untill the device firmware talks to the cloud API, use the **website simulator**
 - [X] PCB Design Main PCB
 - [X] Schematic Layout Floor PCB
 - [X] PCB Design Floor PCB
-- [ ] Firmware (ESP-IDF scaffolding + actuators / bench console; sensors & cloud link still open)
+- [X] Firmware (ESP-IDF scaffolding + actuators / bench console; sensors & cloud link still open)
 - [X] Software (website, guset demo, AI, tests, docker)
 - [X] Final BOM
 - [X] Create a Zine (if needed)
-- [X] Final build
+- [X] Functional build
 - [ ] Add more sensors
 - [ ] Lower BOM costs
+- [ ] v2.0 Build
 
 ---
 
