@@ -4,6 +4,18 @@
 
 ---
 
+## 34. Timelapse 11.11.2026
+
+We've finally shipped the project as functional!!!
+
+it is ready for review and I hope that it passes first try so that we can claim our rewards :)))
+
+It was an amazing project to work with my partner and we sacrificed a lot during these 2 months in order to make this functional.
+
+There is still more to work on but this can also be accounted for fully functional and anything else would only be an upgrade.
+
+---
+
 ## 33. Timelapse 07.11.2026
 
 I will keep it short considering that i am still having crazy fatigues and nausea due to my illness.
