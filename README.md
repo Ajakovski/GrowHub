@@ -23,7 +23,7 @@ The idea of the project is to have a care-free environment where the user only m
 
 It is a modular garden capable of supplying 1-3 floors of growing area split between 8 tiles per floor!!!
 
-With a good team we managed to split the 4 main segments of this project accordingly which are: PCB and electrical construction, mechanical functioning of the project, server control, User-friendly and work-free experience for the customers.
+With a good team we managed to split the 4 main segments of this project accordingly which are: PCB and electrical construction, mechanical functioning of the project, server control, User-friendly and work-free experience for growers.
 
 ---
 
@@ -161,7 +161,7 @@ _M = main board (×1) · F = floor board (×3) · Qty = M + 3 × F. Capacitors w
 - **High Efficiency** - Greater production compared to normal gardening
 - **Water Saving** - Lower consumption through optimised watering systems
 - **Small occupation of space** - The vertical trait makes it suitable for homes
-- **Care-Free Product** - Everything is automated
+- **Care-Free operation** - Sensors and automation handle day to day care
 - **User friendly** - No need of gardening expertise to start
 
 ---

@@ -52,8 +52,8 @@ def test_contact_sends_without_resend_key(client, monkeypatch):
         json={
             "name": "Andrej",
             "email": "andrej@example.com",
-            "topic": "Pilot",
-            "message": "Interested in a greenhouse pilot next quarter.",
+            "topic": "Question",
+            "message": "Interested in building a stacked GrowHub for a kitchen next quarter.",
             "company": "",
         },
     )

@@ -51,7 +51,6 @@ function renderCatalogItem(item, index) {
         ? `<span class="catalog-badge">${escapeHtml(item.badge)}</span>`
         : "";
     const category = escapeHtml(item.category_label || item.category || "");
-    const price = item.price != null ? escapeHtml(item.price) : "Pricing on request";
 
     return `
         <article class="catalog-item" data-category="${escapeHtml(item.category || "")}" style="--reveal-delay: ${index * 60}ms">
@@ -72,8 +71,7 @@ function renderCatalogItem(item, index) {
                 ${renderSpecs(item.specs)}
                 ${renderFeatures(item.features)}
                 <div class="catalog-item-actions">
-                    <span class="catalog-price">${price}</span>
-                    <a href="index.html#contact" class="btn btn-secondary">Inquire</a>
+                    <a href="https://github.com/Ajakovski/GrowHub" class="btn btn-secondary">View on GitHub</a>
                 </div>
             </div>
         </article>

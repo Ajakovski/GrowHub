@@ -104,7 +104,6 @@ async def get_hardware_catalog():
                 "The central power and water unit. It runs continuous-loop circulation, nutrient and climate "
                 "control, and feeds every planter tile daisy-chained to it."
             ),
-            "price": "Under $300",
             "image": "growhub_render_v2.png",
             "badge": "Core",
             "specs": [
@@ -129,7 +128,6 @@ async def get_hardware_catalog():
                 "A complete Deep Water Culture floor: 18 clay-pebble cups under a smart LED canopy. "
                 "Stack or daisy-chain tiles to scale harvest without changing the footprint."
             ),
-            "price": "$90",
             "image": "growhub_tile_render_v1.png",
             "badge": None,
             "specs": [
@@ -154,7 +152,6 @@ async def get_hardware_catalog():
                 "Add floors on the same 40 × 70 cm pad. Each level keeps its own DWC grid and canopy while "
                 "the Hub below still runs the shared water loop."
             ),
-            "price": "From $90 / floor",
             "image": "growhub_stack_poster.jpg",
             "badge": "Scale",
             "specs": [
